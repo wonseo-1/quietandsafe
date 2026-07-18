@@ -197,10 +197,11 @@ header{position:sticky;top:0;z-index:30;background:rgba(250,249,246,.92);backdro
 /* 데모 칩 = 배지와 같은 '인쇄물 하이라이트' 문법 — 테두리 알약(기본값 지문) 금지 (2026-07-17 유저 지적) */
 .hd-chips button{font:inherit;font-size:13px;font-weight:500;color:var(--ink);background:#efece2;border:0;border-radius:4px;padding:7px 11px;cursor:pointer;display:inline-flex;align-items:center;gap:7px}
 .hd-chips button.on{background:#ddd4ee;color:#2e2454}
-.vtabs{display:flex;gap:6px;margin:0 0 10px}
-.vtabs button{font:inherit;font-size:13.5px;font-weight:600;color:var(--ink-2);background:#efece2;border:0;border-radius:5px;padding:7px 16px;cursor:pointer}
-.vtabs button.on{background:var(--ink);color:#fff}
-.vtabs-r{margin:0 0 6px}
+/* 버티컬 탭 = 신문 섹션 제목 문법 (2026-07-18 유저: 칩꼴 재발 지적) — 배경·라운드 없음,
+   세리프 + 활성 밑줄(rtitle 밑줄과 같은 모티프). 배치는 검색 카드에 부착(트립닷컴). */
+.vtabs{display:flex;justify-content:center;gap:26px;margin:14px 0 2px}
+.vtabs button{font-family:'Fraunces',Georgia,serif;font-size:17.5px;font-weight:600;color:var(--ink-3);background:none;border:0;border-bottom:2px solid transparent;border-radius:0;padding:0 2px 6px;cursor:pointer;letter-spacing:0}
+.vtabs button.on{color:var(--ink);border-bottom-color:var(--ink)}
 .hd-chips .sw{width:14px;height:10px;border-radius:3px;display:inline-block}
 @media (min-width:1020px){ #heromap{height:300px} }
 /* 전체화면 지도 모드 — 리스트↔지도 왕복 토글 (Zillow·Airbnb 모바일 문법, 2026-07-17).
@@ -306,11 +307,17 @@ body.mapmode .maplegend{position:absolute;left:10px;bottom:88px;right:auto;max-w
 </div></header>
 
 <div class="wrap">
+  <!-- 버티컬 전환 — 에어비앤비 문법 (2026-07-18 유저): 탭이 화면 전체 경험을 바꾼다.
+       스타일 = 신문 섹션 제목 (세리프+활성 밑줄) — 칩·알약 금지 (재발 1위) -->
+  <div class="vtabs" id="vtabs">
+    <button type="button" data-v="park" class="on">Parking</button>
+    <button type="button" data-v="hotel">Hotels</button>
+  </div>
 
   <!-- cold start -->
   <section class="hero" id="hero">
-    <h1>Park where they<br>don’t break in.</h1>
-    <p>See real break-in records for every block before you park. Free, no app.</p>
+    <h1 id="heroH1">Park where they<br>don’t break in.</h1>
+    <p id="heroP">See real break-in records for every block before you park. Free, no app.</p>
   </section>
 
   <!-- 요약 pill: 검색 후 알약이 이걸로 접힘 — 탭하면 다시 펼침 (에어비앤비 문법) -->
@@ -320,11 +327,6 @@ body.mapmode .maplegend{position:absolute;left:10px;bottom:88px;right:auto;max-w
 
   <!-- search pill stack: Where / When / CTA 한 덩어리 (에어비앤비 문법) -->
   <div class="searchwrap" id="searchwrap">
-    <!-- 버티컬 탭 — 검색 카드에 부착 (Trip.com 실측 2026-07-18): 탭 = "무엇을 검색할까"의 전환 -->
-    <div class="vtabs" id="vtabs">
-      <button type="button" data-v="park" class="on">Parking</button>
-      <button type="button" data-v="hotel">Hotels</button>
-    </div>
     <div class="searchbox" id="searchbox">
       <div class="srow">
         <select class="cityin" id="citySel" aria-label="City"></select>
@@ -386,10 +388,6 @@ body.mapmode .maplegend{position:absolute;left:10px;bottom:88px;right:auto;max-w
 
   <!-- results — map-first: 지도가 공간 맥락의 주인공. 스크롤하면 덮이지 않고 '접힘'(띠로 남음) -->
   <section class="results" id="results">
-    <div class="vtabs vtabs-r" id="vtabs2">
-      <button type="button" data-v="park" class="on">Parking</button>
-      <button type="button" data-v="hotel">Hotels</button>
-    </div>
     <div class="rhead" id="rhead">Safe parking near</div>
     <h2 class="rtitle"><em id="destname"></em></h2>
 
@@ -1630,14 +1628,25 @@ function renderHotels(){
   if (!map) initMap();
   else { ensureWalkLayers(); applyModeLayers(); drawHotelPins(top.slice(0,8)); renderLegend(); renderLens(); }
 }
+function applyVModeChrome(){   // 모드가 화면 전체를 바꾼다 (에어비앤비 문법) — 홈·결과 공통 크롬
+  var hotel = vMode==='hotel';
+  var tabs=document.querySelectorAll('.vtabs button');
+  for (var i=0;i<tabs.length;i++) tabs[i].classList.toggle('on', tabs[i].getAttribute('data-v')===vMode);
+  $('gobtn').textContent = hotel ? 'Find a safe stay' : 'Find safe parking';
+  $('whenrow').style.display = hotel ? 'none' : '';
+  if ($('heroH1')) $('heroH1').innerHTML = hotel ? 'Stay where the streets<br>are quiet at night.' : 'Park where they<br>don’t break in.';
+  if ($('heroP')) $('heroP').textContent = hotel
+    ? 'See real robbery & assault records for every block before you book. Free, no app.'
+    : 'See real break-in records for every block before you park. Free, no app.';
+  document.title = hotel ? 'Quiet & Safe — hotels backed by street-crime data'
+                         : 'Quiet & Safe — parking backed by break-in data';
+  var hd=$('herodemo');   // 데모는 주차 문법 교육 — 호텔 모드에선 숨김 (호텔용 데모는 백로그)
+  if (hd){ if (hotel) hd.style.display='none'; else if (hd.__built && $('hero').style.display!=='none') hd.style.display=''; }
+}
 function setVMode(v){
   if (v===vMode) return;
   vMode=v;
-  var tabs=document.querySelectorAll('.vtabs button');
-  for (var i=0;i<tabs.length;i++) tabs[i].classList.toggle('on', tabs[i].getAttribute('data-v')===v);
-  $('gobtn').textContent = v==='hotel' ? 'Find a safe stay' : 'Find safe parking';
-  // When(도착시간·시간대)은 주차 예약 파라미터 — 호텔 모드는 저녁+밤 고정창이라 숨김 (가짜 날짜 입력 발명 금지)
-  $('whenrow').style.display = v==='hotel' ? 'none' : '';
+  applyVModeChrome();
   if (dest){
     if (v==='hotel'){ $('loading').style.display='block';
       loadHotelData().then(function(){ $('loading').style.display='none'; renderHotels(); syncModeUrl(); });
@@ -1652,9 +1661,8 @@ function syncModeUrl(){
   }catch(e){}
 }
 (function(){
-  var wire=function(id){ var el=$(id); if(!el) return;
-    el.addEventListener('click',function(e){ var b=e.target.closest?e.target.closest('button'):null; if (b) setVMode(b.getAttribute('data-v')); }); };
-  wire('vtabs'); wire('vtabs2');
+  var el=$('vtabs'); if(!el) return;
+  el.addEventListener('click',function(e){ var b=e.target.closest?e.target.closest('button'):null; if (b) setVMode(b.getAttribute('data-v')); });
 })();
 
 function pinEl(label){
@@ -1707,7 +1715,9 @@ function collapseSearch(){
   var sh=document.querySelector('.shint'); if (sh) sh.style.display='none';
   $('sumpill').style.display='flex';
   $('sumdest').textContent = dest ? dest.name : '';
-  $('sumwhen').textContent = whenSumText().replace(/ \([^)]*\)$/,'');   // 접힘 pill은 한 줄 — "(3 hrs)"는 Edit에서 보이니 생략
+  $('sumwhen').textContent = vMode==='hotel'
+    ? 'Hotels · evenings & nights'   // 주차 시간창은 호텔과 무관 — 거짓 정보 대신 모드 사실
+    : whenSumText().replace(/ \([^)]*\)$/,'');   // 접힘 pill은 한 줄 — "(3 hrs)"는 Edit에서 보이니 생략
 }
 function expandSearch(){
   $('searchwrap').style.display='';
@@ -2042,8 +2052,9 @@ function spotSnapshot(lat,lng){
 var heroMap=null, heroLens='risk';
 function initHeroDemo(){
   var box=$('herodemo'); if(!box) return;
-  if (typeof maplibregl==='undefined' || !riskGeojson){ box.style.display='none'; if(heroMap){try{heroMap.remove();}catch(e){} heroMap=null;} return; }
+  if (vMode==='hotel' || typeof maplibregl==='undefined' || !riskGeojson){ box.style.display='none'; if(heroMap){try{heroMap.remove();}catch(e){} heroMap=null;} return; }
   box.style.display='';
+  box.__built=true;
   if (heroMap){ try{ heroMap.remove(); }catch(e){} heroMap=null; }
   heroLens='risk'; var tb=$('hdTent'); if(tb) tb.classList.remove('on');
   heroMap = new maplibregl.Map({ container:'heromap', style:'https://tiles.openfreemap.org/styles/liberty',
@@ -2189,12 +2200,9 @@ function loadCity(key){
 (function boot(){
   var sp=new URLSearchParams(location.search), ll=sp.get('ll'), q=sp.get('q'), cp=sp.get('city');
   URL_LENS=sp.get('lens'); URL_Z=+sp.get('z')||0;   // 공유/디버그: 렌즈 상태·고정 줌 복원
-  if (sp.get('mode')==='hotels'){   // 호텔 버티컬 복원 — dest 처리 전에 모드부터 (탭·CTA·When 동기화)
+  if (sp.get('mode')==='hotels'){   // 호텔 버티컬 복원 — dest 처리 전에 모드부터 (탭·히어로·CTA·When 동기화)
     vMode='hotel';
-    var tbs=document.querySelectorAll('.vtabs button');
-    for (var ti=0;ti<tbs.length;ti++) tbs[ti].classList.toggle('on', tbs[ti].getAttribute('data-v')==='hotel');
-    if ($('gobtn')) $('gobtn').textContent='Find a safe stay';
-    if ($('whenrow')) $('whenrow').style.display='none';
+    applyVModeChrome();
   }
   var reLL=/^-?\d+\.?\d*,-?\d+\.?\d*$/, initKey='sf';
   if (ll && reLL.test(ll)){ var c0=ll.split(','); var cf=cityFor(+c0[0],+c0[1]); if(cf) initKey=cf.key; }
