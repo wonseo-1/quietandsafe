@@ -197,6 +197,10 @@ header{position:sticky;top:0;z-index:30;background:rgba(250,249,246,.92);backdro
 /* 데모 칩 = 배지와 같은 '인쇄물 하이라이트' 문법 — 테두리 알약(기본값 지문) 금지 (2026-07-17 유저 지적) */
 .hd-chips button{font:inherit;font-size:13px;font-weight:500;color:var(--ink);background:#efece2;border:0;border-radius:4px;padding:7px 11px;cursor:pointer;display:inline-flex;align-items:center;gap:7px}
 .hd-chips button.on{background:#ddd4ee;color:#2e2454}
+.vtabs{display:flex;gap:6px;margin:0 0 10px}
+.vtabs button{font:inherit;font-size:13.5px;font-weight:600;color:var(--ink-2);background:#efece2;border:0;border-radius:5px;padding:7px 16px;cursor:pointer}
+.vtabs button.on{background:var(--ink);color:#fff}
+.vtabs-r{margin:0 0 6px}
 .hd-chips .sw{width:14px;height:10px;border-radius:3px;display:inline-block}
 @media (min-width:1020px){ #heromap{height:300px} }
 /* 전체화면 지도 모드 — 리스트↔지도 왕복 토글 (Zillow·Airbnb 모바일 문법, 2026-07-17).
@@ -316,6 +320,11 @@ body.mapmode .maplegend{position:absolute;left:10px;bottom:88px;right:auto;max-w
 
   <!-- search pill stack: Where / When / CTA 한 덩어리 (에어비앤비 문법) -->
   <div class="searchwrap" id="searchwrap">
+    <!-- 버티컬 탭 — 검색 카드에 부착 (Trip.com 실측 2026-07-18): 탭 = "무엇을 검색할까"의 전환 -->
+    <div class="vtabs" id="vtabs">
+      <button type="button" data-v="park" class="on">Parking</button>
+      <button type="button" data-v="hotel">Hotels</button>
+    </div>
     <div class="searchbox" id="searchbox">
       <div class="srow">
         <select class="cityin" id="citySel" aria-label="City"></select>
@@ -376,6 +385,10 @@ body.mapmode .maplegend{position:absolute;left:10px;bottom:88px;right:auto;max-w
 
   <!-- results — map-first: 지도가 공간 맥락의 주인공. 스크롤하면 덮이지 않고 '접힘'(띠로 남음) -->
   <section class="results" id="results">
+    <div class="vtabs vtabs-r" id="vtabs2">
+      <button type="button" data-v="park" class="on">Parking</button>
+      <button type="button" data-v="hotel">Hotels</button>
+    </div>
     <div class="rhead" id="rhead">Safe parking near</div>
     <h2 class="rtitle"><em id="destname"></em></h2>
 
@@ -696,6 +709,8 @@ var TOD_PILL   = { morning:'this morning', afternoon:'this afternoon', evening:'
 /* ————— state ————— */
 var PARKING = [], CELLS = [], META = {}, riskGeojson = null, FACILITIES = [];
 var streetGeojson = null, STREET = [], mapLens = 'risk';   // Street reports 렌즈 (시민 311 신고 · SF PoC)
+/* 호텔 버티컬 (2026-07-18): vMode = 검색 대상. walk = 보행자범죄(강도+중폭행) 레이어 — 셀 스키마는 risk와 동일 */
+var vMode = 'park', walkGeojson = null, WCELLS = [], CITY_HOTELS = null, hotelDataKey = '';
 var URL_LENS = null, URL_Z = 0;   // 공유 링크의 렌즈·줌 복원 (z가 있으면 fitBounds 생략 — 고정 프레임)
 var dest = null, tod = 'evening', map = null, mapReady = false;   // tod = selected time block; real default set in boot()
 /* Tier B — nationwide mode: outside SF/LA (but inside the US) we still show live parking+protection,
@@ -1228,6 +1243,7 @@ function render(){
   if (!dest) return;
   $('hero').style.display='none'; $('pops').style.display='none'; $('herodemo').style.display='none';
   $('results').classList.add('show');
+  $('rhead').textContent='Safe parking near';   // 호텔 모드에서 돌아올 때 복원
   $('destname').textContent = dest.name;
   var as = renderArea();
   window.__lastArea = as;   // browsebar 힌트가 지역 성격(조용/위험/데이터없음)을 읽음
@@ -1346,6 +1362,14 @@ function renderLegend(){
       legendDotRow();
     return;
   }
+  if (vMode==='hotel'){
+    $('maplegend').innerHTML = 'Area color = Robberies & aggravated assaults, evenings & nights, past 12 mo:'+
+      '<span class="swatch" style="background:#22C55E"></span>0'+
+      '<span class="swatch" style="background:#EAB308"></span>3'+
+      '<span class="swatch" style="background:#EF4444"></span>10+'+
+      '<span class="lgrow"><span class="dotglyph"></span>hotels — tap any · <span class="pinglyph">1</span> lowest counts first</span>';
+    return;
+  }
   $('maplegend').innerHTML = 'Area color = Break-ins & thefts '+TOD_PILL[lensBlock]+', past 12 mo:'+
     '<span class="swatch" style="background:#22C55E"></span>0'+
     '<span class="swatch" style="background:#EAB308"></span>3'+
@@ -1428,7 +1452,10 @@ function initMap(){
       var c = map.getCenter();
       if (hav({lat:c.lat,lng:c.lng}, dest) > 400) $('searchArea').classList.add('show');
     });
-    mapReady=true; drawMapFocus(rank()); renderLegend(); renderLens();
+    mapReady=true;
+    ensureWalkLayers(); applyModeLayers();
+    if (vMode==='hotel') drawHotelPins(hotelList().slice(0,8)); else drawMapFocus(rank());
+    renderLegend(); renderLens();
     if (URL_LENS==='street' && streetGeojson) setLens('street');   // 공유 링크의 렌즈 복원
   });
 }
@@ -1438,16 +1465,14 @@ function renderLens(){
   var el=$('maplens'); if(!el) return;
   if (!streetGeojson || tierB){ el.classList.remove('show'); el.innerHTML=''; return; }
   el.innerHTML =   // 누구나 아는 단어로 — 'Encampments'는 비원어민 여행자가 모른다 (2026-07-14 유저 지적)
-    '<button type="button" data-l="risk" class="'+(mapLens==='risk'?'on':'')+'">Break-ins</button>'+
+    '<button type="button" data-l="risk" class="'+(mapLens==='risk'?'on':'')+'">'+(vMode==='hotel'?'Street crime':'Break-ins')+'</button>'+
     '<button type="button" data-l="street" class="'+(mapLens==='street'?'on':'')+'">Tent camps</button>';
   el.classList.add('show');
 }
 function setLens(l){
   if (l===mapLens || !map || !mapReady) return;
   mapLens=l;
-  var vis=function(id,on){ if(map.getLayer(id)) map.setLayoutProperty(id,'visibility',on?'visible':'none'); };
-  vis('risk-fill',l==='risk'); vis('risk-line',l==='risk');
-  vis('street-fill',l==='street'); vis('street-line',l==='street');
+  applyModeLayers();   // 모드(주차/호텔)별 면·점 가시성의 단일 소스
   renderLens(); renderLegend();
 }
 $('maplens').addEventListener('click',function(e){
@@ -1461,6 +1486,175 @@ $('searchArea').addEventListener('click',function(){
   $('searchArea').classList.remove('show');
   setDest('Map area', c.lat, c.lng);   // Tier A/B 라우팅 포함 전부 setDest가 처리 · When(시간창)은 유지
 });
+/* ————— 호텔 버티컬 ————— */
+function loadHotelData(){
+  // 커버 도시에서만 (walk-*.geojson은 26개 도시 데일리 빌드). 도시 전환 시 캐시 무효.
+  if (hotelDataKey === CITY.key && walkGeojson) return Promise.resolve();
+  return Promise.all([
+    fetch('data/walk-'+CITY.key+'.geojson',{cache:'no-store'}).then(function(r){ return r.ok?r.json():null; }).catch(function(){ return null; }),
+    fetch('data/hotels-'+CITY.key+'.json',{cache:'no-store'}).then(function(r){ return r.ok?r.json():null; }).catch(function(){ return null; })
+  ]).then(function(res){
+    walkGeojson = res[0]; CITY_HOTELS = (res[1]&&res[1].hotels)||[];
+    hotelDataKey = CITY.key;
+    WCELLS = walkGeojson ? walkGeojson.features.map(function(f){
+      var ring=f.geometry.coordinates[0],x=0,y=0;
+      for (var i=0;i<ring.length;i++){ x+=ring[i][0]; y+=ring[i][1]; }
+      var o=Object.assign({},f.properties); o.lng=x/ring.length; o.lat=y/ring.length; return o;
+    }) : [];
+  });
+}
+function nearestWalkCell(pt){   // H3 res9 셀 중심 ~175m — 200m 내 최근접 = 그 블록
+  var best=null, bd=200;
+  for (var i=0;i<WCELLS.length;i++){ var d=hav(pt,WCELLS[i]); if (d<bd){ bd=d; best=WCELLS[i]; } }
+  return best;
+}
+function hotelEN(c){ var b=(c&&c.bk12)||{}; return (b.evening||0)+(b.night||0); }   // 저녁+밤 — 호텔 결정의 시간대
+function hotelList(){
+  if (!dest || !CITY_HOTELS) return [];
+  var out=[];
+  for (var i=0;i<CITY_HOTELS.length;i++){
+    var h=CITY_HOTELS[i], d=hav(dest,h);
+    if (d>1200) continue;
+    var c=nearestWalkCell(h);
+    out.push({ name:h.name, lat:h.lat, lng:h.lng, dist:d, cell:c, en:hotelEN(c), c12:(c&&c.c12)||0 });
+  }
+  out.sort(function(a,b){ return (a.en-b.en) || (a.c12-b.c12) || (a.dist-b.dist); });
+  return out;
+}
+function hotelLine(h){   // 사실 문장 1개 + 한정어 각 1회 (COPY R1·R2) — 단복수·명사 생략 금지
+  var noun = function(n){ return n===1 ? '1 robbery or assault' : n+' robberies & assaults'; };
+  return h.en
+    ? noun(h.en)+' within a block <span style="white-space:nowrap">evenings & nights</span>, past 12 months'
+    : (h.c12 ? noun(h.c12)+' within a block, past 12 months — <span style="white-space:nowrap">none in the evening or overnight</span>'
+             : 'No robberies or assaults recorded on this block, past 12 months');
+}
+function drawHotelPins(picks){
+  for (var i=0;i<__marks.length;i++){ try{ __marks[i].remove(); }catch(e){} }
+  __marks=[];
+  (function(){   // 목적지 마커 — 주차 모드와 동일 문법
+    var dm = new maplibregl.Marker({color:'#3B82F6'}).setLngLat([dest.lng,dest.lat]).addTo(map);
+    var del = dm.getElement ? dm.getElement() : null;
+    if (del) del.addEventListener('click', function(ev){ ev.stopPropagation(); showInfo([dest.lng,dest.lat], '<b>'+esc(dest.name)+'</b>'); });
+    __marks.push(dm);
+  })();
+  if (infoPopup){ try{ infoPopup.remove(); }catch(e){} infoPopup=null; }
+  picks.forEach(function(h,i){
+    var el = pinEl(String(i+1));
+    el.addEventListener('click', function(ev){
+      ev.stopPropagation();
+      showInfo([h.lng,h.lat],
+        '<b>'+esc(h.name)+'</b><br>'+hotelLine(h)+
+        '<br>'+walkMin(h.dist)+' min walk · <a href="'+mapUrl(h)+'" target="_blank" rel="noopener">Open in Maps</a>');
+    });
+    __marks.push(new maplibregl.Marker({element:el, anchor:'bottom'}).setLngLat([h.lng,h.lat]).addTo(map));
+  });
+  var b = new maplibregl.LngLatBounds([dest.lng,dest.lat],[dest.lng,dest.lat]);
+  for (var j=0;j<picks.length;j++) b.extend([picks[j].lng,picks[j].lat]);
+  if (!URL_Z){ suppressMove=true; map.fitBounds(b,{padding:{top:64,bottom:36,left:36,right:36},maxZoom:16});
+    clearTimeout(suppressTimer); suppressTimer=setTimeout(function(){ suppressMove=false; },900); }
+}
+function walkFillExpr(){   // 저녁+밤 합 — 호텔 모드의 고정 시간창 (가짜 시간 입력 대신 정직한 고정)
+  return ['interpolate',['linear'],
+    ['+',['coalesce',['get','evening',['get','bk12']],0],['coalesce',['get','night',['get','bk12']],0]]].concat(RAMP_B);
+}
+function ensureWalkLayers(){
+  if (!map || !mapReady) return;
+  var layers=map.getStyle().layers, under;
+  for (var r=0;r<layers.length;r++){ if(/^(tunnel_|road_)/.test(layers[r].id)){ under=layers[r].id; break; } }
+  if (walkGeojson && !map.__walkAdded){ map.__walkAdded=true;   // getSource는 테스트 스텁에 없음 — 플래그로 idempotent
+    map.addSource('walk',{type:'geojson',data:walkGeojson});
+    map.addLayer({id:'walk-fill',type:'fill',source:'walk',layout:{visibility:'none'},paint:{'fill-color':walkFillExpr(),'fill-opacity':0.55}},under);
+    map.addLayer({id:'walk-line',type:'line',source:'walk',layout:{visibility:'none'},paint:{'line-color':'rgba(25,23,19,0.10)','line-width':0.4}},under);
+  }
+  if (CITY_HOTELS && CITY_HOTELS.length && !map.__hotelsAdded){ map.__hotelsAdded=true;
+    map.addSource('hotels',{type:'geojson',data:{type:'FeatureCollection',features:CITY_HOTELS.map(function(h){
+      return {type:'Feature',geometry:{type:'Point',coordinates:[h.lng,h.lat]},properties:{name:h.name}};
+    })}});
+    map.addLayer({id:'hotel-dot',type:'circle',source:'hotels',layout:{visibility:'none'},paint:{
+      'circle-radius':['interpolate',['linear'],['zoom'],11,2.5,14,5.5,16,8],
+      'circle-color':'#faf9f6','circle-stroke-color':'#191713','circle-stroke-width':1.4}});
+    map.on('click','hotel-dot',function(e){
+      var f=e.features[0], co=f.geometry.coordinates.slice();
+      var hh={name:f.properties.name, lat:co[1], lng:co[0]};
+      var c=nearestWalkCell(hh), h={name:hh.name, lat:hh.lat, lng:hh.lng, en:hotelEN(c), c12:(c&&c.c12)||0};
+      showInfo(co,'<b>'+esc(h.name)+'</b><br>'+hotelLine(h)+
+        (dest?'<br>'+walkMin(hav(dest,hh))+' min walk':'')+
+        ' · <a href="'+mapUrl(hh)+'" target="_blank" rel="noopener">Open in Maps</a>');
+    });
+    map.on('mouseenter','hotel-dot',function(){ map.getCanvas().style.cursor='pointer'; });
+    map.on('mouseleave','hotel-dot',function(){ map.getCanvas().style.cursor=''; });
+  }
+}
+function applyModeLayers(){   // 면 음영은 한 번에 하나 + 점은 모드의 주인공만
+  if (!map || !mapReady) return;
+  var vis=function(id,on){ if(map.getLayer(id)) map.setLayoutProperty(id,'visibility',on?'visible':'none'); };
+  var hotel = vMode==='hotel';
+  vis('risk-fill',!hotel && mapLens==='risk'); vis('risk-line',!hotel && mapLens==='risk');
+  vis('walk-fill',hotel && mapLens==='risk');  vis('walk-line',hotel && mapLens==='risk');
+  vis('street-fill',mapLens==='street');       vis('street-line',mapLens==='street');
+  vis('parking-dot',!hotel); vis('hotel-dot',hotel);
+}
+function renderHotels(){
+  if (!dest) return;
+  $('hero').style.display='none'; $('pops').style.display='none'; $('herodemo').style.display='none';
+  $('results').classList.add('show');
+  $('rhead').textContent='Where to stay near';
+  $('destname').textContent=dest.name;
+  $('avoidwrap').innerHTML=''; $('lugstrip').innerHTML=''; $('securewrap').innerHTML=''; $('areacard').innerHTML='';
+  if (!walkGeojson){   // 커버 밖 — 없는 데이터로 화면을 만들지 않는다
+    $('cards').innerHTML='<div class="lugcard"><div class="lugtop"><b>No street-crime layer for this city yet</b></div>'+
+      '<p class="lugmeta">Hotel areas need robbery &amp; assault records — this city isn\'t covered yet. Parking mode still works here.</p></div>';
+    $('trust').innerHTML='';
+    if (!map) initMap(); else { ensureWalkLayers(); applyModeLayers(); renderLegend(); renderLens(); }
+    return;
+  }
+  var list = hotelList(), top = list.slice(0,20);
+  var html = '<p class="bhint" style="font-size:12.5px;color:var(--ink-3);margin:2px 2px 10px">Safest blocks first — fewest reported robberies &amp; assaults <span style="white-space:nowrap">evenings &amp; nights</span>, past 12 months.</p>';
+  if (!top.length) html += '<div class="lugcard"><div class="lugtop"><b>No mapped hotels within a 15-min walk</b></div><p class="lugmeta">Try searching a spot closer to the city center.</p></div>';
+  for (var i=0;i<top.length;i++){
+    var h=top[i];
+    html += '<div class="lugcard"><div class="lugtop"><b>'+(i+1)+'. '+esc(h.name)+'</b>'+
+      '<a class="altlink" href="'+mapUrl(h)+'" target="_blank" rel="noopener">Maps</a></div>'+
+      '<p class="lugmeta">'+hotelLine(h)+' · '+walkMin(h.dist)+' min walk</p></div>';
+  }
+  $('cards').innerHTML = html;
+  // 정직성 푸터 — 기록이 실제로 언제까지 있나 (≥5건/월 규칙, 주차 푸터와 동일)
+  var total=0, lastM='', ms=Object.keys((walkGeojson&&walkGeojson.monthly)||{}).sort();
+  for (var m1=0;m1<ms.length;m1++) total += walkGeojson.monthly[ms[m1]];
+  for (var m2=ms.length-1;m2>=0;m2--){ if ((walkGeojson.monthly[ms[m2]]||0)>=5){ lastM=ms[m2]; break; } }
+  var upd = lastM ? new Date(lastM+'-15T12:00:00').toLocaleDateString('en-US',{month:'short',year:'numeric'}) : '';
+  $('trust').innerHTML = '<b>How this works.</b> Every reported robbery &amp; aggravated assault ('+total.toLocaleString()+' incidents) is mapped to block-zones from city police records. '+
+    'Hotel locations from OpenStreetMap. Checked daily'+(upd?' · records through <b>'+upd+'</b>':'')+'. Area risk, not a guarantee — check any block yourself on the map.';
+  if (!map) initMap();
+  else { ensureWalkLayers(); applyModeLayers(); drawHotelPins(top.slice(0,8)); renderLegend(); renderLens(); }
+}
+function setVMode(v){
+  if (v===vMode) return;
+  vMode=v;
+  var tabs=document.querySelectorAll('.vtabs button');
+  for (var i=0;i<tabs.length;i++) tabs[i].classList.toggle('on', tabs[i].getAttribute('data-v')===v);
+  $('gobtn').textContent = v==='hotel' ? 'Find a safe stay' : 'Find safe parking';
+  // When(도착시간·시간대)은 주차 예약 파라미터 — 호텔 모드는 저녁+밤 고정창이라 숨김 (가짜 날짜 입력 발명 금지)
+  $('whenrow').style.display = v==='hotel' ? 'none' : '';
+  if (dest){
+    if (v==='hotel'){ $('loading').style.display='block';
+      loadHotelData().then(function(){ $('loading').style.display='none'; renderHotels(); syncModeUrl(); });
+    } else { render(); if (map&&mapReady){ applyModeLayers(); drawMapFocus(rank()); renderLegend(); renderLens(); } syncModeUrl(); }
+  } else syncModeUrl();
+}
+function syncModeUrl(){
+  try{
+    var u=new URL(location.href);
+    if (vMode==='hotel') u.searchParams.set('mode','hotels'); else u.searchParams.delete('mode');
+    history.replaceState(null,'',u.pathname+(u.search||''));
+  }catch(e){}
+}
+(function(){
+  var wire=function(id){ var el=$(id); if(!el) return;
+    el.addEventListener('click',function(e){ var b=e.target.closest?e.target.closest('button'):null; if (b) setVMode(b.getAttribute('data-v')); }); };
+  wire('vtabs'); wire('vtabs2');
+})();
+
 function pinEl(label){
   // 균일한 잉크색 핀 — "1위 초록핀" 은퇴 (단일 정답 사상 폐기: 순서=거리일 뿐, 우열 아님)
   var el=document.createElement('div');
@@ -1525,8 +1719,15 @@ function commitDest(name,lat,lng,city){
   $('q').value=name; closeSugg();
   try{ history.replaceState(null,'','?q='+encodeURIComponent(name)+'&ll='+lat.toFixed(5)+','+lng.toFixed(5)
     +(win?'&at='+win.date+'T'+(win.startMin/60|0)+':'+(win.startMin%60<10?'0':'')+win.startMin%60+'&dur='+win.durMin:'')
-    +(mapLens==='street'?'&lens=street':'')); }catch(e){}   // 렌즈 상태 보존 — 주소 재작성이 lens를 벗기던 잔버그 (2026-07-14)
+    +(mapLens==='street'?'&lens=street':'')
+    +(vMode==='hotel'?'&mode=hotels':'')); }catch(e){}   // 렌즈 상태 보존 — 주소 재작성이 lens를 벗기던 잔버그 (2026-07-14)
   collapseSearch();
+  if (vMode==='hotel'){   // 호텔 버티컬 — 주차 렌더·라이브 조회 대신 보행범죄 경로
+    $('loading').style.display='block';
+    loadHotelData().then(function(){ $('loading').style.display='none'; renderHotels(); });
+    window.scrollTo({top:0,behavior:'smooth'});
+    return;
+  }
   render(); window.scrollTo({top:0,behavior:'smooth'});
   enhanceLive(lat,lng);   // 라이브 조회로 정확 매칭 업그레이드 (progressive, 실패 시 정적 유지)
 }
@@ -1986,6 +2187,13 @@ function loadCity(key){
 (function boot(){
   var sp=new URLSearchParams(location.search), ll=sp.get('ll'), q=sp.get('q'), cp=sp.get('city');
   URL_LENS=sp.get('lens'); URL_Z=+sp.get('z')||0;   // 공유/디버그: 렌즈 상태·고정 줌 복원
+  if (sp.get('mode')==='hotels'){   // 호텔 버티컬 복원 — dest 처리 전에 모드부터 (탭·CTA·When 동기화)
+    vMode='hotel';
+    var tbs=document.querySelectorAll('.vtabs button');
+    for (var ti=0;ti<tbs.length;ti++) tbs[ti].classList.toggle('on', tbs[ti].getAttribute('data-v')==='hotel');
+    if ($('gobtn')) $('gobtn').textContent='Find a safe stay';
+    if ($('whenrow')) $('whenrow').style.display='none';
+  }
   var reLL=/^-?\d+\.?\d*,-?\d+\.?\d*$/, initKey='sf';
   if (ll && reLL.test(ll)){ var c0=ll.split(','); var cf=cityFor(+c0[0],+c0[1]); if(cf) initKey=cf.key; }
   else if (cp && CITIES[cp]) initKey=cp;
@@ -2017,7 +2225,10 @@ if (window.__CURBSAFE_TEST__) window.__curbsafe = {
   cities: function(){ return CITIES; },   // SEO 생성기(gen-pages)용 — 도시·랜드마크의 유일한 소스는 이 파일
   rental: function(){ return RENTAL; },   // 렌터카 레지스트리도 동일 (단일 소스)
   hotels: function(){ return HOTELS; },
-  parseMapsUrl: parseMapsUrl
+  parseMapsUrl: parseMapsUrl,
+  // 호텔 버티컬 (2026-07-18) — qa-hotels 게이트용
+  vMode: function(){ return vMode; }, setVMode: setVMode,
+  hotelList: hotelList, walk: function(){ return walkGeojson; }, cityHotels: function(){ return CITY_HOTELS; }
 };
 
 })();
