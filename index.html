@@ -63,6 +63,10 @@ header{position:sticky;top:0;z-index:30;background:rgba(250,249,246,.92);backdro
 /* 접힘 요약 pill — 검색 후 헤더 자리 상주, 탭하면 다시 펼침 */
 .sumpill{display:flex;align-items:center;gap:9px;width:100%;font:inherit;text-align:left;background:var(--card);border:1px solid var(--line-2);border-radius:999px;padding:10px 16px;margin-top:12px;cursor:pointer;box-shadow:0 1px 6px rgba(25,23,19,.07)}
 .sumpill:hover{border-color:var(--ink-3)}
+/* 지도 모드 탈출구 (2026-07-19 유저: "맵 상태에서 나올 방법이 없네") — 캡슐이 지도 위에 떠서 탭=검색으로 복귀 */
+body.mapmode .sumpill{display:flex !important;position:fixed;top:10px;left:12px;right:12px;width:auto;z-index:90;margin:0;box-shadow:0 3px 12px rgba(25,23,19,.22)}
+body.mapmode .maplens{top:64px}   /* 렌즈 라디오는 캡슐 아래로 */
+body.mapmode .searcharea{top:64px}
 .sp1{font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:45%}
 .sp2{flex:1;font-size:12.5px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .spedit{flex:none;font-size:12px;color:var(--ink-3)}
@@ -1773,7 +1777,11 @@ function expandSearch(){
   var sh=document.querySelector('.shint'); if (sh) sh.style.display='';
   $('sumpill').style.display='none';
 }
-$('sumpill').addEventListener('click', expandSearch);
+$('sumpill').addEventListener('click', function(){
+  if (mapMode) setMapMode(false);   // 지도 모드 탈출 → 검색 편집 (재검색·탭 전환 모두 여기서)
+  expandSearch();
+  window.scrollTo({top:0});
+});
 function commitDest(name,lat,lng,city){
   dest={name:name,lat:lat,lng:lng,city:city||''};
   liveLoading = tierB;   // Tier B만 "첫 응답 대기" 로딩문구 필요 (Tier A는 정적 데이터가 즉시 있음)
