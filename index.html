@@ -1363,10 +1363,10 @@ function renderLegend(){
     return;
   }
   if (vMode==='hotel'){
-    $('maplegend').innerHTML = 'Area color = Robberies & aggravated assaults, evenings & nights, past 12 mo:'+
+    $('maplegend').innerHTML = 'Area color = Robberies & aggravated assaults, past 12 mo:'+
       '<span class="swatch" style="background:#22C55E"></span>0'+
-      '<span class="swatch" style="background:#EAB308"></span>3'+
-      '<span class="swatch" style="background:#EF4444"></span>10+'+
+      '<span class="swatch" style="background:#EAB308"></span>6'+
+      '<span class="swatch" style="background:#EF4444"></span>20+'+
       '<span class="lgrow"><span class="dotglyph"></span>hotels — tap any · <span class="pinglyph">1</span> lowest counts first</span>';
     return;
   }
@@ -1508,7 +1508,7 @@ function nearestWalkCell(pt){   // H3 res9 셀 중심 ~175m — 200m 내 최근�
   for (var i=0;i<WCELLS.length;i++){ var d=hav(pt,WCELLS[i]); if (d<bd){ bd=d; best=WCELLS[i]; } }
   return best;
 }
-function hotelEN(c){ var b=(c&&c.bk12)||{}; return (b.evening||0)+(b.night||0); }   // 저녁+밤 — 호텔 결정의 시간대
+function hotelN(c){ return (c&&c.c12)||0; }   // 12개월 총량 — 호텔은 시간대 슬라이스 불필요 (2026-07-18 유저)
 function hotelList(){
   if (!dest || !CITY_HOTELS) return [];
   var out=[];
@@ -1516,17 +1516,16 @@ function hotelList(){
     var h=CITY_HOTELS[i], d=hav(dest,h);
     if (d>1200) continue;
     var c=nearestWalkCell(h);
-    out.push({ name:h.name, lat:h.lat, lng:h.lng, dist:d, cell:c, en:hotelEN(c), c12:(c&&c.c12)||0 });
+    out.push({ name:h.name, lat:h.lat, lng:h.lng, dist:d, cell:c, c12:hotelN(c) });
   }
-  out.sort(function(a,b){ return (a.en-b.en) || (a.c12-b.c12) || (a.dist-b.dist); });
+  out.sort(function(a,b){ return (a.c12-b.c12) || (a.dist-b.dist); });
   return out;
 }
 function hotelLine(h){   // 사실 문장 1개 + 한정어 각 1회 (COPY R1·R2) — 단복수·명사 생략 금지
   var noun = function(n){ return n===1 ? '1 robbery or assault' : n+' robberies & assaults'; };
-  return h.en
-    ? noun(h.en)+' within a block <span style="white-space:nowrap">evenings & nights</span>, past 12 months'
-    : (h.c12 ? noun(h.c12)+' within a block, past 12 months — <span style="white-space:nowrap">none in the evening or overnight</span>'
-             : 'No robberies or assaults recorded on this block, past 12 months');
+  return h.c12
+    ? noun(h.c12)+' within a block, <span style="white-space:nowrap">past 12 months</span>'
+    : 'No robberies or assaults recorded on this block, past 12 months';
 }
 function drawHotelPins(picks){
   for (var i=0;i<__marks.length;i++){ try{ __marks[i].remove(); }catch(e){} }
@@ -1553,9 +1552,9 @@ function drawHotelPins(picks){
   if (!URL_Z){ suppressMove=true; map.fitBounds(b,{padding:{top:64,bottom:36,left:36,right:36},maxZoom:16});
     clearTimeout(suppressTimer); suppressTimer=setTimeout(function(){ suppressMove=false; },900); }
 }
-function walkFillExpr(){   // 저녁+밤 합 — 호텔 모드의 고정 시간창 (가짜 시간 입력 대신 정직한 고정)
-  return ['interpolate',['linear'],
-    ['+',['coalesce',['get','evening',['get','bk12']],0],['coalesce',['get','night',['get','bk12']],0]]].concat(RAMP_B);
+var WALK_RAMP = [0,'#22C55E',2,'#84cc16',6,'#EAB308',12,'#F59E0B',20,'#EF4444',36,'#991b1b'];   // 전일 12mo 총량 — RAMP_B(시간대당)의 2배 스케일
+function walkFillExpr(){   // 12개월 총량 — 호텔은 시간대 슬라이스 없음 (2026-07-18 유저)
+  return ['interpolate',['linear'],['coalesce',['get','c12'],0]].concat(WALK_RAMP);
 }
 function ensureWalkLayers(){
   if (!map || !mapReady) return;
@@ -1576,7 +1575,7 @@ function ensureWalkLayers(){
     map.on('click','hotel-dot',function(e){
       var f=e.features[0], co=f.geometry.coordinates.slice();
       var hh={name:f.properties.name, lat:co[1], lng:co[0]};
-      var c=nearestWalkCell(hh), h={name:hh.name, lat:hh.lat, lng:hh.lng, en:hotelEN(c), c12:(c&&c.c12)||0};
+      var c=nearestWalkCell(hh), h={name:hh.name, lat:hh.lat, lng:hh.lng, c12:hotelN(c)};
       showInfo(co,'<b>'+esc(h.name)+'</b><br>'+hotelLine(h)+
         (dest?'<br>'+walkMin(hav(dest,hh))+' min walk':'')+
         ' · <a href="'+mapUrl(hh)+'" target="_blank" rel="noopener">Open in Maps</a>');
@@ -1609,7 +1608,7 @@ function renderHotels(){
     return;
   }
   var list = hotelList(), top = list.slice(0,20);
-  var html = '<p class="bhint" style="font-size:12.5px;color:var(--ink-3);margin:2px 2px 10px">Safest blocks first — fewest reported robberies &amp; assaults <span style="white-space:nowrap">evenings &amp; nights</span>, past 12 months.</p>';
+  var html = '<p class="bhint" style="font-size:12.5px;color:var(--ink-3);margin:2px 2px 10px">Safest blocks first — fewest reported robberies &amp; assaults nearby, past 12 months.</p>';
   if (!top.length) html += '<div class="lugcard"><div class="lugtop"><b>No mapped hotels within a 15-min walk</b></div><p class="lugmeta">Try searching a spot closer to the city center.</p></div>';
   for (var i=0;i<top.length;i++){
     var h=top[i];
@@ -1640,8 +1639,8 @@ function applyVModeChrome(){   // 모드가 화면 전체를 바꾼다 (에어�
     : 'See real break-in records for every block before you park. Free, no app.';
   document.title = hotel ? 'Quiet & Safe — hotels backed by street-crime data'
                          : 'Quiet & Safe — parking backed by break-in data';
-  var hd=$('herodemo');   // 데모는 주차 문법 교육 — 호텔 모드에선 숨김 (호텔용 데모는 백로그)
-  if (hd){ if (hotel) hd.style.display='none'; else if (hd.__built && $('hero').style.display!=='none') hd.style.display=''; }
+  // 데모 지도는 모드의 데이터로 다시 그린다 (홈에 떠 있을 때만)
+  if ($('hero') && $('hero').style.display!=='none') initHeroDemo();
 }
 function setVMode(v){
   if (v===vMode) return;
@@ -1716,7 +1715,7 @@ function collapseSearch(){
   $('sumpill').style.display='flex';
   $('sumdest').textContent = dest ? dest.name : '';
   $('sumwhen').textContent = vMode==='hotel'
-    ? 'Hotels · evenings & nights'   // 주차 시간창은 호텔과 무관 — 거짓 정보 대신 모드 사실
+    ? 'Hotels'   // 주차 시간창은 호텔과 무관 — 무관 정보 대신 모드 사실
     : whenSumText().replace(/ \([^)]*\)$/,'');   // 접힘 pill은 한 줄 — "(3 hrs)"는 Edit에서 보이니 생략
 }
 function expandSearch(){
@@ -2052,9 +2051,26 @@ function spotSnapshot(lat,lng){
 var heroMap=null, heroLens='risk';
 function initHeroDemo(){
   var box=$('herodemo'); if(!box) return;
-  if (vMode==='hotel' || typeof maplibregl==='undefined' || !riskGeojson){ box.style.display='none'; if(heroMap){try{heroMap.remove();}catch(e){} heroMap=null;} return; }
+  if (typeof maplibregl==='undefined' || !riskGeojson){ box.style.display='none'; if(heroMap){try{heroMap.remove();}catch(e){} heroMap=null;} return; }
+  if (vMode==='hotel'){   // 호텔 데모 = walk 음영 + 호텔 점 (데이터 로드 후 빌드; 없으면 데모 생략)
+    loadHotelData().then(function(){
+      if (vMode!=='hotel') return;
+      if (!walkGeojson){ box.style.display='none'; return; }
+      buildHeroDemo(true);
+    });
+    return;
+  }
+  buildHeroDemo(false);
+}
+function buildHeroDemo(hotel){
+  var box=$('herodemo');
   box.style.display='';
   box.__built=true;
+  // 칩 라벨 = 모드의 진실 (주차 데모에 호텔 라벨 금지, 역도 마찬가지)
+  var GRAD='<span class="sw" style="background:linear-gradient(90deg,#22C55E,#EAB308,#EF4444)"></span>';
+  var DOT='<span class="sw" style="background:#faf9f6;border:1.5px solid #191713;border-radius:50%;width:10px;height:10px"></span>';
+  $('hdRisk').innerHTML = GRAD + (hotel ? 'Redder blocks = more robberies &amp; assaults, 12 mo' : 'Redder blocks = more break-ins &amp; thefts, 12 mo');
+  $('hdDots').innerHTML = DOT + (hotel ? 'White dots = hotels' : 'White dots = bookable parking');
   if (heroMap){ try{ heroMap.remove(); }catch(e){} heroMap=null; }
   heroLens='risk'; var tb=$('hdTent'); if(tb) tb.classList.remove('on');
   heroMap = new maplibregl.Map({ container:'heromap', style:'https://tiles.openfreemap.org/styles/liberty',
@@ -2068,8 +2084,8 @@ function initHeroDemo(){
     var layers=heroMap.getStyle().layers, firstRoad, i;
     for (i=0;i<layers.length;i++){ if(/^(tunnel_|road_)/.test(layers[i].id)){ firstRoad=layers[i].id; break; } }
     if (heroMap.getLayer('building')) heroMap.setPaintProperty('building','fill-opacity',0.28);
-    heroMap.addSource('hrisk',{type:'geojson',data:riskGeojson});
-    heroMap.addLayer({id:'hrisk-fill',type:'fill',source:'hrisk',paint:{'fill-color':todExprCell(),'fill-opacity':0.55}},firstRoad);
+    heroMap.addSource('hrisk',{type:'geojson',data: hotel ? walkGeojson : riskGeojson});
+    heroMap.addLayer({id:'hrisk-fill',type:'fill',source:'hrisk',paint:{'fill-color': hotel ? walkFillExpr() : todExprCell(),'fill-opacity':0.55}},firstRoad);
     if (streetGeojson){
       var ss=streetGeojson.shadeStops||[25,60,150];
       heroMap.addSource('hstreet',{type:'geojson',data:streetGeojson});
@@ -2077,7 +2093,9 @@ function initHeroDemo(){
         'fill-color':['step',['get','n'],'#cfe0f2',ss[1],'#8fb4dd',ss[2],'#4a7fb5',ss[2]*3,'#123c6e'],
         'fill-opacity':['step',['get','n'],0,ss[0],0.5,ss[1],0.62,ss[2],0.75]}},firstRoad);
     }
-    heroMap.addSource('hpark',{type:'geojson',data:parkingFC()});
+    heroMap.addSource('hpark',{type:'geojson',data: hotel
+      ? {type:'FeatureCollection',features:(CITY_HOTELS||[]).map(function(h){ return {type:'Feature',geometry:{type:'Point',coordinates:[h.lng,h.lat]},properties:{}}; })}
+      : parkingFC()});
     heroMap.addLayer({id:'hpark-dot',type:'circle',source:'hpark',paint:{
       'circle-radius':['interpolate',['linear'],['zoom'],11,2,14,4.5],
       'circle-color':todExprDot(),'circle-stroke-color':'#191713','circle-stroke-width':1}});
