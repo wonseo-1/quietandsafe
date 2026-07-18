@@ -1516,7 +1516,7 @@ function hotelList(){
     var h=CITY_HOTELS[i], d=hav(dest,h);
     if (d>1200) continue;
     var c=nearestWalkCell(h);
-    out.push({ name:h.name, lat:h.lat, lng:h.lng, dist:d, cell:c, c12:hotelN(c) });
+    out.push({ name:h.name, named:true, lat:h.lat, lng:h.lng, dist:d, cell:c, c12:hotelN(c) });   // named — mapUrl이 호텔명으로 검색 (없으면 'parking' 폴백을 타버림)
   }
   out.sort(function(a,b){ return (a.c12-b.c12) || (a.dist-b.dist); });
   return out;
@@ -1574,7 +1574,7 @@ function ensureWalkLayers(){
       'circle-color':'#faf9f6','circle-stroke-color':'#191713','circle-stroke-width':1.4}});
     map.on('click','hotel-dot',function(e){
       var f=e.features[0], co=f.geometry.coordinates.slice();
-      var hh={name:f.properties.name, lat:co[1], lng:co[0]};
+      var hh={name:f.properties.name, named:true, lat:co[1], lng:co[0]};
       var c=nearestWalkCell(hh), h={name:hh.name, lat:hh.lat, lng:hh.lng, c12:hotelN(c)};
       showInfo(co,'<b>'+esc(h.name)+'</b><br>'+hotelLine(h)+
         (dest?'<br>'+walkMin(hav(dest,hh))+' min walk':'')+
