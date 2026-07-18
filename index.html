@@ -1165,8 +1165,9 @@ function renderRentalHome(){
     '<a class="lugcta" href="'+RENTAL.urlFor(CITY.name)+RENTAL.aff+'" target="_blank" rel="noopener nofollow sponsored">Compare ↗</a></div></div>';
 }
 var LUG_PROVIDERS = {
-  bounce: { label:'Bounce', aff:'', priceFrom:'from $2.25/day',   // 공표 정찰가 (2026-07-11 실측) — 분기 링크점검 때 갱신
-            search:function(q){ return 'https://usebounce.com/s?query='+q; } }
+  bounce: { label:'Bounce', aff:'ref=QUIETANDSAFE56383283&utm_medium=link&utm_source=affiliates',   // 제휴 승인 2026-07-18 (go.bounce.com 302 실측: /s?ref=)
+            priceFrom:'from $2.25/day',   // 공표 정찰가 (2026-07-11 실측) — 분기 링크점검 때 갱신
+            search:function(q){ return 'https://bounce.com/s?query='+q; } }   // usebounce.com은 308 → bounce.com (홉 제거)
   // Radical 은퇴 (2026-07-11 유저 결정: 검색 연결 자체가 부실). Bounce 단일 — 제휴 승인 시 aff 한 줄.
 };
 function affUrl(u, provider){
