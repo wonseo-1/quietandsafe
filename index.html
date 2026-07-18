@@ -222,12 +222,8 @@ body.mapmode .results{position:fixed;left:0;right:0;bottom:0;top:100vh;z-index:8
   border-radius:18px 18px 0 0;box-shadow:0 -8px 30px rgba(25,23,19,.25);overflow-y:auto;overscroll-behavior:contain;
   padding:0 16px calc(24px + env(safe-area-inset-bottom));transition:top .28s ease}
 body.mapmode.sheetopen .results{top:9vh}
-/* mapblock(z80)이 시트의 자식이라 시트 배경을 덮는다 → 커튼(::before, z81)으로 가리고 내용물은 z82로 승급 */
-body.mapmode.sheetopen .results::before{content:'';position:fixed;left:0;right:0;top:9vh;bottom:0;background:var(--paper);border-radius:18px 18px 0 0;z-index:81}
-body.mapmode.sheetopen .results>*:not(.mapblock){position:relative;z-index:82}
 body.mapmode.sheetopen .mapfab{display:none}   /* 시트가 열리면 손잡이는 시트 상단 것으로 교대 */
-body.mapmode .results .mapblock{position:fixed}   /* 지도는 시트 아래 고정층 그대로 */
-body.mapmode.sheetopen .sheettop{display:flex;position:sticky;top:0;z-index:83;width:100%;flex-direction:column;gap:5px;align-items:center;
+body.mapmode.sheetopen .sheettop{display:flex;position:sticky;top:0;z-index:5;width:100%;flex-direction:column;gap:5px;align-items:center;
   background:var(--paper);border:0;border-radius:18px 18px 0 0;padding:10px 0 8px;cursor:pointer;font:inherit;font-size:12.5px;font-weight:600;color:var(--ink-3)}
 body.mapmode.sheetopen .sheettop .grab{width:38px;height:4px;border-radius:2px;background:var(--line-2)}
 body.mapmode .maplegend{position:absolute;left:10px;bottom:76px;right:auto;max-width:78%;background:rgba(250,249,246,.94);border:1px solid var(--line);border-radius:8px;padding:5px 9px;font-size:11px;z-index:5}
@@ -412,6 +408,7 @@ body.mapmode .maplegend{position:absolute;left:10px;bottom:76px;right:auto;max-w
     <div class="rhead" id="rhead">Safe parking near</div>
     <h2 class="rtitle"><em id="destname"></em></h2>
 
+    <div id="mapanchor" style="display:none"></div>
     <div class="mapblock" id="mapblock">
       <div id="map"></div>
       <button type="button" class="searcharea" id="searchArea">Search this area</button>
@@ -1323,6 +1320,13 @@ function setMapMode(on){
   mapMode=!!on;
   document.body.classList.toggle('mapmode', mapMode);
   if (typeof setSheet==='function') setSheet(false);
+  // iOS Safari: overflow 스크롤 컨테이너(시트) 안의 fixed 자식은 뷰포트 기준을 잃는다 (실기기 2026-07-18:
+  // 지도가 시트와 함께 화면 밖으로 증발). 지도는 mapmode 동안 body 직속으로 이주, 해제 시 앵커 뒤로 복귀.
+  var mb=$('mapblock'), anc=$('mapanchor');
+  if (mb && anc){
+    if (mapMode && mb.parentNode!==document.body) document.body.appendChild(mb);
+    else if (!mapMode && mb.previousElementSibling!==anc) anc.parentNode.insertBefore(mb, anc.nextSibling);
+  }
   $('mapfab').innerHTML = mapMode ? fabSheetHtml() : FAB_MAP;
   hideMini();
   if (mapMode && infoPopup){ try{ infoPopup.remove(); }catch(e){} infoPopup=null; }
