@@ -1017,13 +1017,15 @@ function renderArea(){
   }
   // 산문 리드 1문장 + 조용한 메타 한 줄 (2026-07-14 유저 지적: "사실. 사실. 사실." 4연속 문단 = 생성문 리듬,
   // 한정어 중복·서식 뒤죽박죽). 한정어는 한 번씩만: '~3 blocks'와 '12 mo'는 리드에, 창·출처는 메타 끝에 1회.
+  // 조각 문법 (2026-07-18 카카오맵·에어비앤비 실측: 완결문장 0개, 조각은 ·, 위계는 굵기·회색만).
+  // 한정어(~3 blocks·시간대·past 12 mo)는 전부 보존 — 문장을 조각으로 재배열했을 뿐.
   var count = a.nTod
-    ? '<b>'+a.nTod+(a.nTod===1?' break-in or theft':' break-ins & thefts')+'</b> within ~3 blocks '+TOD_PHRASE[a.todUsed]+', past 12 months'+
+    ? '<b>'+a.nTod+(a.nTod===1?' break-in or theft':' break-ins & thefts')+'</b> · ~3 blocks · '+TOD_PHRASE[a.todUsed]+' · <span style="white-space:nowrap">past 12 mo</span>'+
       (function(){ var t=a.lvl>=1?pctileTop(a.maxC12):null;
-        return t!=null?' — <span style="white-space:nowrap">top '+t+'%</span> of '+esc(CITY.name)+' blocks.':'.'; })()
-    : 'No break-ins or thefts logged within ~3 blocks '+TOD_PHRASE[a.todUsed]+' in the past 12 months.';
+        return t!=null?' · <span style="white-space:nowrap">top '+t+'%</span> of '+esc(CITY.name)+' blocks':''; })()
+    : 'None logged · ~3 blocks · '+TOD_PHRASE[a.todUsed]+' · <span style="white-space:nowrap">past 12 mo</span>';
   var peak = (a.peak&&a.nTod&&a.peak!==TOD_PHRASE[a.todUsed].replace('in the ','').replace('overnight','night'))
-    ? ' Most break-ins happen in the '+esc(a.peak)+'.' : '';
+    ? ' · peak: '+esc(a.peak)+'s' : '';
   var meta = [];
   (function(){ var u=unsolvedNearby(); if (u>0&&a.lvl>=1) meta.push('<b>'+u+'</b> cases unsolved'); })();
   (function(){ var v=stolenNearby(); if (v>0) meta.push('<b>'+v+'</b> cars stolen'); })();
@@ -1138,12 +1140,12 @@ function renderCards(){
     (function(){   // 정렬 힌트는 실제 정렬 상태(browseSort)를 따라간다 — Closest로 바꿨는데 'Safest first'라고 말하면 거짓
       var a = window.__lastArea;
       var srt = browseSort==='close'
-        ? 'Closest first. Tap Safest to sort by block risk.'
-        : 'Safest first. Tap Closest to sort by walk time.';
+        ? 'Closest first · tap Safest for block risk'
+        : 'Safest first · tap Closest for walk time';
       if (!a || !a.cells) return '<div class="bhint">No crime data for this city yet. Badges show which spots are staffed or covered.</div>';
       return a.lvl>=1
         ? '<div class="bhint">'+srt+'</div>'
-        : '<div class="bhint">Quiet area. '+srt+'</div>';
+        : '<div class="bhint">Quiet area · '+srt+'</div>';
     })()+
     '<div class="bseg" id="bseg">'+BSORTS.map(function(s){ return '<button type="button" data-sort="'+s.key+'" class="'+(browseSort===s.key?'on':'')+'">'+s.label+'</button>'; }).join('')+'</div>'+
     '<div class="bchips" id="bchips">'+BFILTERS.map(function(f){
@@ -1243,6 +1245,7 @@ function winLabel(){
 function render(){
   if (!dest) return;
   $('hero').style.display='none'; $('pops').style.display='none'; $('herodemo').style.display='none';
+  if ($('sitefoot')) $('sitefoot').style.display='none';
   $('results').classList.add('show');
   $('rhead').textContent='Safe parking near';   // 호텔 모드에서 돌아올 때 복원
   $('destname').textContent = dest.name;
@@ -1254,8 +1257,8 @@ function render(){
   var wz = worstZone();
   $('avoidwrap').innerHTML = !wz ? '' :
     '<div class="avoidstrip"><b>Skip street parking around '+esc(wz.cell.hood||'here')+' '+TOD_PHRASE[wz.b]+'</b>'+
-    '<p>'+wz.n+' break-ins & thefts within a block, past 12 months'+(wz.cell.peakDay?' — <span style="white-space:nowrap">worst on '+esc(wz.cell.peakDay)+'s</span>':'')+   // 시간대는 제목이 이미 말함 (R6: 한정어 1회)
-    '. Pick a garage from the list instead.</p></div>';
+    '<p><b>'+wz.n+'</b> break-ins & thefts · within a block · <span style="white-space:nowrap">past 12 mo</span>'+
+    (wz.cell.peakDay?' · <span style="white-space:nowrap">worst: '+esc(wz.cell.peakDay)+'s</span>':'')+'</p></div>';
 
   var list = renderCards();
   renderLugStrip();
@@ -1525,8 +1528,8 @@ function hotelList(){
 function hotelLine(h){   // 사실 문장 1개 + 한정어 각 1회 (COPY R1·R2) — 단복수·명사 생략 금지
   var noun = function(n){ return n===1 ? '1 robbery or assault' : n+' robberies & assaults'; };
   return h.c12
-    ? noun(h.c12)+' within a block, <span style="white-space:nowrap">past 12 months</span>'
-    : 'No robberies or assaults recorded on this block, past 12 months';
+    ? '<b>'+noun(h.c12)+'</b> · within a block · <span style="white-space:nowrap">past 12 mo</span>'
+    : 'None recorded · this block · <span style="white-space:nowrap">past 12 mo</span>';
 }
 function drawHotelPins(picks){
   for (var i=0;i<__marks.length;i++){ try{ __marks[i].remove(); }catch(e){} }
@@ -1597,6 +1600,7 @@ function applyModeLayers(){   // 면 음영은 한 번에 하나 + 점은 모드
 function renderHotels(){
   if (!dest) return;
   $('hero').style.display='none'; $('pops').style.display='none'; $('herodemo').style.display='none';
+  if ($('sitefoot')) $('sitefoot').style.display='none';
   $('results').classList.add('show');
   $('rhead').textContent='Where to stay near';
   $('destname').textContent=dest.name;
@@ -2208,7 +2212,7 @@ function loadCity(key){
     loadCity(this.value).then(function(){
       dest=null; $('q').value=''; $('results').classList.remove('show'); setMapMode(false);
       expandSearch();
-      $('hero').style.display=''; $('pops').style.display=''; hideErr(); initHeroDemo();
+      $('hero').style.display=''; $('pops').style.display=''; if ($('sitefoot')) $('sitefoot').style.display=''; hideErr(); initHeroDemo();
       try{ history.replaceState(null,'',location.pathname); }catch(e){}
       window.scrollTo({top:0});
     });
