@@ -216,6 +216,20 @@ body.mapmode .mapfab .grab{width:38px;height:4px;border-radius:2px;background:va
 body.mapmode .mapfab .sheettxt{color:var(--ink-2);font-weight:500}
 body.mapmode .mapfab .sheettxt b{color:var(--ink);font-weight:700}
 body.mapmode #map{height:100%;border-radius:0;border:0}
+/* 바텀시트: 지도(z80) 위로 목록이 올라온다. transform 금지 — fixed 자식(mapblock)의 기준이 깨진다 → top 애니 */
+.sheettop{display:none}
+body.mapmode .results{position:fixed;left:0;right:0;bottom:0;top:100vh;z-index:85;background:var(--paper);
+  border-radius:18px 18px 0 0;box-shadow:0 -8px 30px rgba(25,23,19,.25);overflow-y:auto;overscroll-behavior:contain;
+  padding:0 16px calc(24px + env(safe-area-inset-bottom));transition:top .28s ease}
+body.mapmode.sheetopen .results{top:9vh}
+/* mapblock(z80)이 시트의 자식이라 시트 배경을 덮는다 → 커튼(::before, z81)으로 가리고 내용물은 z82로 승급 */
+body.mapmode.sheetopen .results::before{content:'';position:fixed;left:0;right:0;top:9vh;bottom:0;background:var(--paper);border-radius:18px 18px 0 0;z-index:81}
+body.mapmode.sheetopen .results>*:not(.mapblock){position:relative;z-index:82}
+body.mapmode.sheetopen .mapfab{display:none}   /* 시트가 열리면 손잡이는 시트 상단 것으로 교대 */
+body.mapmode .results .mapblock{position:fixed}   /* 지도는 시트 아래 고정층 그대로 */
+body.mapmode.sheetopen .sheettop{display:flex;position:sticky;top:0;z-index:83;width:100%;flex-direction:column;gap:5px;align-items:center;
+  background:var(--paper);border:0;border-radius:18px 18px 0 0;padding:10px 0 8px;cursor:pointer;font:inherit;font-size:12.5px;font-weight:600;color:var(--ink-3)}
+body.mapmode.sheetopen .sheettop .grab{width:38px;height:4px;border-radius:2px;background:var(--line-2)}
 body.mapmode .maplegend{position:absolute;left:10px;bottom:76px;right:auto;max-width:78%;background:rgba(250,249,246,.94);border:1px solid var(--line);border-radius:8px;padding:5px 9px;font-size:11px;z-index:5}
 .minicard{display:none;position:absolute;left:10px;right:10px;bottom:76px;z-index:7;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 40px 12px 14px;box-shadow:0 8px 28px rgba(25,23,19,.22);font-size:13.5px;line-height:1.6}
 .minicard.show{display:block}
@@ -394,6 +408,7 @@ body.mapmode .maplegend{position:absolute;left:10px;bottom:76px;right:auto;max-w
 
   <!-- results — map-first: 지도가 공간 맥락의 주인공. 스크롤하면 덮이지 않고 '접힘'(띠로 남음) -->
   <section class="results" id="results">
+    <button type="button" class="sheettop" id="sheettop"><span class="grab"></span><span class="stxt">Map</span></button>
     <div class="rhead" id="rhead">Safe parking near</div>
     <h2 class="rtitle"><em id="destname"></em></h2>
 
@@ -1307,6 +1322,7 @@ function fabSheetHtml(){
 function setMapMode(on){
   mapMode=!!on;
   document.body.classList.toggle('mapmode', mapMode);
+  if (typeof setSheet==='function') setSheet(false);
   $('mapfab').innerHTML = mapMode ? fabSheetHtml() : FAB_MAP;
   hideMini();
   if (mapMode && infoPopup){ try{ infoPopup.remove(); }catch(e){} infoPopup=null; }
@@ -1323,7 +1339,16 @@ window.addEventListener('scroll', function(){
   var r=$('mapblock').getBoundingClientRect();
   fab.classList.toggle('show', r.bottom < 60);
 }, {passive:true});
-$('mapfab').addEventListener('click', function(){ setMapMode(!mapMode); });
+function setSheet(on){   // 바텀시트 (2026-07-18 유저: "카드가 올라오듯이") — 지도는 항상 밑에, 목록이 위로
+  sheetOpen=!!on;
+  document.body.classList.toggle('sheetopen', sheetOpen);
+}
+var sheetOpen=false;
+$('mapfab').addEventListener('click', function(){
+  if (mapMode && window.innerWidth<1020){ setSheet(true); return; }   // 모바일: 손잡이 = 시트 열기
+  setMapMode(!mapMode);   // 데스크톱/리스트뷰 FAB은 기존 토글
+});
+(function(){ var st=$('sheettop'); if(st) st.addEventListener('click', function(){ setSheet(false); }); })();
 
 /* ————— map (lazy, tod-aware) ————— */
 /* 팝업은 전 지도 통틀어 단일 인스턴스 — 점 팝업과 핀 팝업이 서로를 안 닫고 쌓이던 겹침 버그의 근치 */
