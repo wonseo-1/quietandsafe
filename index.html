@@ -1,0 +1,2015 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Quiet & Safe — parking backed by break-in data</title>
+<meta name="description" content="Where to park without getting your car broken into. Every garage and lot near your destination — safest first, with real police break-in records for the block. Deep crime data in 26 US cities — live parking anywhere in the US. Free, no app." />
+<link rel="canonical" href="https://quietandsafe.com/" />
+<meta property="og:url" content="https://quietandsafe.com/" />
+<meta property="og:title" content="Quiet & Safe — parking backed by break-in data" />
+<meta property="og:description" content="Every garage and lot near your destination — safest first, with real police break-in records for the block. 26 US cities deep, live parking nationwide." />
+<meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet" />
+<link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet" />
+<style>
+/* ————————————————————————————————
+   Curbsafe v3 — editorial, browsing-first.
+   Closest first; safety speaks through badges & pills.
+   Ink on paper. Color = semantics only.
+   ———————————————————————————————— */
+:root{
+  --paper:#faf9f6; --card:#ffffff; --ink:#191713; --ink-2:#5f5b52; --ink-3:#8f8a7e;
+  --line:#e7e4dc; --line-2:#d6d2c6;
+  --safe:#0c6b4d; --safe-bg:#e8f4ee;
+  --warn:#8a5a06; --warn-bg:#faf0dc;
+  --avoid:#a12b25; --avoid-bg:#faeae8;
+  --brand:#0c6b4d;   /* Quiet & Safe 브랜드 그린 — '행동'요소 전용 (CTA·링크). safe 판정색과 동족 = 이름이 곧 의미 */
+  --serif:"Fraunces",Georgia,serif;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+}
+*{box-sizing:border-box} html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}   /* 15→16: SpotHero·Zillow 실측 기준 (2026-07-17) */
+.wrap{max-width:600px;margin:0 auto;padding:0 18px 64px}
+a{color:inherit}
+
+/* header */
+header{position:sticky;top:0;z-index:30;background:rgba(250,249,246,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.hbar{max-width:600px;margin:0 auto;padding:13px 18px;display:flex;align-items:baseline;justify-content:space-between}
+.wordmark{font-family:var(--serif);font-weight:600;font-size:19px;letter-spacing:-.01em;text-decoration:none}
+.wordmark small{color:var(--ink-3);font-family:var(--sans);font-weight:400;font-size:12px;margin-left:8px;letter-spacing:.02em}
+.city{font-size:12px;color:var(--ink-2);border:1px solid var(--line-2);border-radius:999px;padding:4px 26px 4px 12px;font-family:inherit;-webkit-appearance:none;appearance:none;background:var(--card);cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%238f8a7e' fill='none' stroke-width='1.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center}
+
+/* hero (cold start) */
+.hero{padding:44px 0 8px}
+.hero h1{font-family:var(--serif);font-weight:600;font-size:40px;line-height:1.1;letter-spacing:-.015em;margin:0 0 10px}
+.hero p{color:var(--ink-2);font-size:16.5px;margin:0 0 22px;max-width:44ch}
+
+/* search — 에어비앤비 알약 문법: Where+When+CTA가 한 덩어리, 검색 후엔 요약 pill로 접힘 */
+.searchwrap{background:var(--card);border:1.5px solid var(--ink);border-radius:18px;margin-top:16px;box-shadow:0 2px 10px rgba(25,23,19,.05)}
+.searchbox{position:relative}
+.srow{display:flex;gap:0}
+.cityin{flex:none;max-width:34%;border:0;border-bottom:1px solid var(--line);border-right:1px solid var(--line);border-radius:18px 0 0 0;background:none;font:inherit;font-size:13px;font-weight:600;color:var(--ink);padding:0 24px 0 14px;cursor:pointer;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%238f8a7e' fill='none' stroke-width='1.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center}
+.sfield{flex:1;display:flex;align-items:center;gap:9px;background:none;border:0;border-bottom:1px solid var(--line);border-radius:18px 18px 0 0;padding:14px 16px}
+.sfield svg{flex:none;opacity:.45}
+.sfield input{border:0;outline:0;background:none;font:inherit;font-size:16px;width:100%;color:var(--ink)}
+.sfield input::placeholder{color:var(--ink-3)}
+.locbtn{flex:none;width:49px;border:0;border-bottom:1px solid var(--line);border-left:1px solid var(--line);background:none;border-radius:0 18px 0 0;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink-2)}
+.locbtn:active{background:var(--paper)}
+/* 접힘 요약 pill — 검색 후 헤더 자리 상주, 탭하면 다시 펼침 */
+.sumpill{display:flex;align-items:center;gap:9px;width:100%;font:inherit;text-align:left;background:var(--card);border:1px solid var(--line-2);border-radius:999px;padding:10px 16px;margin-top:12px;cursor:pointer;box-shadow:0 1px 6px rgba(25,23,19,.07)}
+.sumpill:hover{border-color:var(--ink-3)}
+.sp1{font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:45%}
+.sp2{flex:1;font-size:12.5px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.spedit{flex:none;font-size:12px;color:var(--ink-3)}
+.shint{font-size:12px;color:var(--ink-3);margin:7px 2px 0}
+.sugg{position:absolute;top:calc(100% + 6px);left:0;right:57px;background:var(--card);border:1px solid var(--line-2);border-radius:12px;box-shadow:0 8px 28px rgba(25,23,19,.10);overflow:hidden;z-index:40;display:none}
+.sugg.open{display:block}
+.sugg button{display:block;width:100%;text-align:left;border:0;background:none;font:inherit;padding:11px 14px;cursor:pointer;border-bottom:1px solid var(--line)}
+.sugg button:last-child{border-bottom:0}
+.sugg button.hover,.sugg button:hover{background:var(--paper)}
+.sugg .s1{font-size:14.5px}
+.sugg .s2{font-size:12px;color:var(--ink-3);margin-top:1px}
+
+/* popular destinations — 칩이 아니라 미니 카드: 안전 스냅샷이 미리 보임 (에어비앤비 홈 = 브라우징부터) */
+.pops{margin:24px 0 0}
+.pops h2{font-size:12.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3);margin:0 0 10px}
+.chips{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
+.chips>button{flex:0 0 150px}   /* 사진 카드 축소 — 첫 화면 주인공은 데모 지도 (2026-07-17) */
+.chips button{font:inherit;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:0;cursor:pointer;color:var(--ink);overflow:hidden}
+.chips button:hover{border-color:var(--line-2);box-shadow:0 2px 8px rgba(25,23,19,.07)}
+.dcimg{display:block;width:100%;aspect-ratio:16/10;background:var(--line) center/cover no-repeat}
+.dcbody{display:flex;flex-direction:column;gap:3px;padding:9px 12px 11px}
+.dc1{font-weight:600;font-size:15px;line-height:1.3}
+.dc2{font-size:12.5px;font-weight:600}
+.dc2.lvl0{color:var(--safe)} .dc2.lvl1{color:var(--warn)} .dc2.lvl2{color:var(--avoid)} .dc2.na{color:var(--ink-3)}
+.photocredit{grid-column:1/-1;font-size:10.5px;color:var(--ink-3);margin-top:2px}
+
+
+/* results */
+.results{display:none}
+.results.show{display:block}
+.rhead{margin:24px 0 4px;font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+.rtitle{font-family:var(--serif);font-weight:600;font-size:26px;line-height:1.15;letter-spacing:-.01em;margin:2px 0 18px}
+.rtitle em{font-style:normal;border-bottom:3px solid var(--line-2)}
+
+/* bag-storage line — 박스 아님: 조용한 한 줄 (탭 은퇴 2026-07-11) */
+/* 짐보관 크로스셀 — 프로덕트 모듈 (2026-07-12 A안, Booking 문법): 조언 문단으로 위장하지 않고
+   브랜드·공표 정찰가를 명시한 상품 카드. 카피는 건조하게 — 경구·과설명 금지 */
+.lugcard{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:13px 15px;margin:12px 0 4px}
+.lugtop{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.lugtitle{flex:1;min-width:0;font-size:14px;font-weight:600}
+.lugmeta{font-size:12.5px;font-weight:400;color:var(--ink-2);margin-top:3px}
+.lugcta{font-size:13.5px;font-weight:600;color:var(--brand);text-decoration:none;border-bottom:1px solid #bcd6cb;white-space:nowrap}
+.lugnote{font-size:12px;color:var(--ink-3);margin-top:8px}
+
+/* result cards — one uniform, browseable list (no single-verdict hero) */
+.cards{margin-top:8px}
+.pcard{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 15px;margin-bottom:10px}
+.pcard:hover{border-color:var(--line-2);box-shadow:0 2px 8px rgba(25,23,19,.05)}
+.cname{font-weight:600;font-size:15.5px;line-height:1.3}
+.fbrow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:7px}
+.fbrow .pill{margin:0}
+.cmeta{font-size:13.5px;color:var(--ink-2);margin-top:6px}
+.cmeta span+span::before{content:"·";margin:0 6px;color:var(--line-2)}
+.cchip{font-size:12px;color:var(--ink-3);margin-top:3px}
+.soldnote{display:block;font-size:11px;color:var(--warn);margin-top:6px;line-height:1.4}
+.cfoot{display:flex;gap:16px;align-items:center;margin-top:10px}
+.cmore{font-size:12px;color:var(--ink-3);padding:8px 0 4px;text-align:center}
+.pill{display:inline-block;font-size:12px;font-weight:600;padding:3px 9px;border-radius:5px;margin-top:12px}
+.pill.safe{background:var(--safe-bg);color:var(--safe)}
+.pill.warn{background:var(--warn-bg);color:var(--warn)}
+.pill.avoid{background:#f6dcd6;color:#96231c}
+.pill.na{background:var(--line);color:var(--ink-3)}
+.whybtn{font:inherit;font-size:11.5px;font-weight:600;color:var(--ink-3);background:none;border:0;border-bottom:1px dotted var(--line-2);padding:0;cursor:pointer;vertical-align:baseline}
+.whybtn:hover{color:var(--ink-2)}
+.whychain{display:none;font-size:13px;color:var(--ink-2);margin-top:9px;line-height:1.55;border-left:2px solid var(--line-2);padding-left:10px}
+.whychain .wc2{color:var(--ink-3);font-size:12px}
+.altlink{font-size:13px;font-weight:600;color:var(--brand);text-decoration:none;border-bottom:1px solid #bcd6cb}
+.walkin{font-size:11px;font-weight:600;color:var(--ink-3);letter-spacing:.03em;text-transform:uppercase}
+
+/* facility fact badges — 인쇄물 하이라이트 문법 (2026-07-12 C안): 소문자·무테두리·각진 모서리·종이 틴트.
+   대문자+자간+테두리 알약(컴포넌트 기본값 지문)은 폐기 */
+.fb{display:inline-block;font-size:11.5px;font-weight:500;color:var(--ink-2);background:#efece2;border-radius:2px;padding:2px 7px}
+
+/* area safety card */
+.areacard{display:flex;align-items:flex-start;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:13px 15px;margin:0 0 14px}
+.areadot{flex:none;width:10px;height:10px;border-radius:50%;margin-top:5px}
+.areabody{flex:1;min-width:0}
+.areahead{font-size:15.5px;font-weight:600}
+.areahead .lvlword{font-weight:600}
+.areasub{font-size:14px;color:var(--ink-2);margin-top:4px;line-height:1.55}
+.areameta{font-size:12.5px;color:var(--ink-3);margin-top:6px}
+.areameta b{color:var(--ink-2)}
+.lvl0{color:var(--safe)} .lvl1{color:var(--warn)} .lvl2{color:var(--avoid)}
+.bg0{background:var(--safe)} .bg1{background:var(--warn)} .bg2{background:var(--avoid)}
+
+/* browse bar — sort + filters, promoted above the list */
+.browsebar{padding:2px 0 10px;margin-bottom:2px}
+.bhead{font-size:12px;color:var(--ink-3);margin-bottom:9px;display:flex;align-items:center;gap:8px}
+.bhint{font-size:12px;color:var(--ink-3);margin-bottom:9px;line-height:1.5}
+.bseg{display:inline-flex;background:var(--paper);border:1px solid var(--line-2);border-radius:999px;padding:2px;margin-bottom:8px}
+.bseg button{font:inherit;font-size:12px;font-weight:600;color:var(--ink-2);background:none;border:0;border-radius:999px;padding:5px 12px;cursor:pointer}
+.bseg button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 2px rgba(25,23,19,.08)}
+.bchips{display:flex;flex-wrap:wrap;gap:7px}
+.bchip{font:inherit;font-size:12px;font-weight:600;color:var(--ink-2);background:var(--card);border:1px solid var(--line-2);border-radius:999px;padding:5px 11px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.bchip:hover:not(.off){border-color:var(--ink-3);color:var(--ink)}
+.bchip.on{background:var(--ink);color:var(--card);border-color:var(--ink)}
+.bchip .bc{font-size:11px;opacity:.7}
+.fb.warn{color:#96231c;background:#f6dcd6}
+/* 색 신호 (2026-07-12 유저 지정): 좋은 것 = 골드·그린, 안 좋은 것 = 버건디·레드 — 강렬하게 */
+.fb.ex-vault{color:#241c02;background:#d9b53f;font-weight:600}  /* 지하 = 솔리드 골드 (최상) */
+.fb.ex-covered{color:#4a3a08;background:#f3e6ba}                /* 실내 = 연한 골드 */
+.fb.ex-attend{color:#0c6b4d;background:#e0efe7}                 /* 직원 = 그린 (좋은 운영) */
+.fb.ex-valet{color:#eef7f2;background:#0c6b4d}                  /* 발렛 = 딥그린 솔리드 (운영 최상급 — 차를 인수) */
+.fb.ex-open{color:#faf9f6;background:#6e2136}                   /* 노천 = 버건디 (차 노출 경고) */
+.bchip.off{opacity:.4;cursor:default}
+
+/* secured pick */
+.securecard{margin-top:14px;background:var(--safe-bg);border-left:3px solid var(--safe);border-radius:0 12px 12px 0;padding:13px 15px}
+.securecard b{color:var(--safe);font-size:13.5px}
+.securecard p{margin:4px 0 8px;font-size:13.5px;color:var(--ink);line-height:1.5}
+.securecard .slinks{display:flex;gap:14px}
+.securecard a{font-size:13px;font-weight:600;text-decoration:none;border-bottom:1px solid var(--line-2)}
+
+/* avoid line — 박스 아님: 빨간 리드 한 줄 + 회색 본문 (박스 수프 금지) */
+.avoidstrip{margin:16px 2px 0;padding:0}
+.avoidstrip b{color:var(--avoid);font-size:13.5px}
+.avoidstrip p{margin:2px 0 0;font-size:13px;color:var(--ink-2);line-height:1.5}
+
+/* map — 일반 흐름 (sticky 접힘 은퇴 2026-07-12: 높이 애니메이션이 스크롤마다 ~300px 콘텐츠 점프를
+   만들어 지도 밑 첫 글줄을 계속 가렸다. 에어비앤비 모바일 문법 = 리스트는 그냥 흐르고,
+   지도 복귀는 하단 플로팅 Map 버튼) */
+.mapblock{position:relative;margin:2px 0 16px}
+#map{display:block;height:min(46vh,420px);border-radius:14px;border:1px solid var(--line-2);overflow:hidden}
+.maplegend{display:block;font-size:11.5px;color:var(--ink-3);margin-top:7px}
+/* 플로팅 Map 버튼 — 지도가 화면 밖으로 나가면 등장, 탭하면 지도로 복귀 */
+.mapfab{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:60;display:none;align-items:center;gap:7px;font:inherit;font-size:13.5px;font-weight:700;color:var(--paper);background:var(--ink);border:0;border-radius:999px;padding:11px 19px;box-shadow:0 4px 14px rgba(25,23,19,.32);cursor:pointer}
+.mapfab.show{display:flex}
+/* 히어로 데모 지도 — 서비스 읽는 법을 첫 화면에서 라이브로 (SpotHero의 히어로 사진 자리, 2026-07-17) */
+.herodemo{margin:18px 0 6px}
+.hd-k{font-size:12.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3);margin:0 0 8px}
+#heromap{height:240px;border-radius:14px;border:1px solid var(--line-2);overflow:hidden}
+.hd-chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px}
+/* 데모 칩 = 배지와 같은 '인쇄물 하이라이트' 문법 — 테두리 알약(기본값 지문) 금지 (2026-07-17 유저 지적) */
+.hd-chips button{font:inherit;font-size:13px;font-weight:500;color:var(--ink);background:#efece2;border:0;border-radius:4px;padding:7px 11px;cursor:pointer;display:inline-flex;align-items:center;gap:7px}
+.hd-chips button.on{background:#ddd4ee;color:#2e2454}
+.hd-chips .sw{width:14px;height:10px;border-radius:3px;display:inline-block}
+@media (min-width:1020px){ #heromap{height:300px} }
+/* 전체화면 지도 모드 — 리스트↔지도 왕복 토글 (Zillow·Airbnb 모바일 문법, 2026-07-17).
+   핀 탭 정보는 팝업 대신 하단 미니카드(showInfo 단일 경로 재지향) — 지도만 보고 예약까지. */
+body.mapmode{overflow:hidden}
+body.mapmode .mapblock{position:fixed;inset:0;z-index:80;margin:0;background:var(--paper)}
+body.mapmode .mapfab{display:flex;z-index:90}   /* 전체화면 지도(z80) 위 — 안 그러면 List 버튼이 묻혀 못 나온다 (플레이라이트 실측) */
+body.mapmode #map{height:100%;border-radius:0;border:0}
+body.mapmode .maplegend{position:absolute;left:10px;bottom:88px;right:auto;max-width:78%;background:rgba(250,249,246,.94);border:1px solid var(--line);border-radius:8px;padding:5px 9px;font-size:11px;z-index:5}
+.minicard{display:none;position:absolute;left:10px;right:10px;bottom:88px;z-index:7;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 40px 12px 14px;box-shadow:0 8px 28px rgba(25,23,19,.22);font-size:13.5px;line-height:1.6}
+.minicard.show{display:block}
+.minicard a{font-weight:600;color:var(--ink)}
+.minicard .mcx{position:absolute;top:6px;right:8px;font:inherit;font-size:17px;line-height:1;border:0;background:none;color:var(--ink-3);cursor:pointer;padding:6px}
+/* pan-to-research (에어비앤비 문법): 유저 제스처로 지도가 목적지를 벗어나면 등장 */
+.searcharea{display:none;position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:5;font:inherit;font-size:13px;font-weight:700;color:var(--ink);background:var(--card);border:1px solid var(--line-2);border-radius:999px;padding:8px 16px;cursor:pointer;box-shadow:0 2px 8px rgba(25,23,19,.18)}
+.searcharea.show{display:block}
+/* 모바일: 렌즈 라디오(좌상단)와 같은 줄이면 겹친다 (2026-07-17 실기기 캡처) — 한 줄 아래로 */
+@media (max-width:640px){ .searcharea{top:54px} }
+/* 지도 레이어 렌즈 — 면(음영)은 한 번에 하나만 (Zillow Climate Risks 실측 문법, 2026-07-13).
+   Street reports 데이터가 있는 도시에서만 노출 — 없는 도시에 빈 스위치 금지 */
+.maplens{display:none;position:absolute;top:12px;left:12px;z-index:5;background:var(--card);border:1px solid var(--line-2);border-radius:999px;padding:2px;box-shadow:0 2px 8px rgba(25,23,19,.14)}
+.maplens.show{display:inline-flex}
+.maplens button{font:inherit;font-size:12px;font-weight:600;color:var(--ink-2);background:none;border:0;border-radius:999px;padding:5px 11px;cursor:pointer}
+.maplens button.on{background:var(--ink);color:var(--card)}
+.evline{margin-top:7px}
+.evline.dim{color:var(--ink-3);font-size:13px}
+/* when: 알약 스택의 가운데 줄 (에어비앤비 문법 — 요약은 사람 말로, 피커는 탭하면) */
+.whenrow{margin:0;max-width:none}
+.whensum{width:100%;display:flex;align-items:center;gap:10px;font:inherit;text-align:left;background:none;border:0;border-bottom:1px solid var(--line);border-radius:0;padding:13px 16px;cursor:pointer}
+.whensum:hover{background:var(--paper)}
+.whenlab{font-size:11.5px;font-weight:700;color:var(--ink-3);letter-spacing:.05em;text-transform:uppercase;flex:none}
+.whenval{flex:1;font-size:14.5px;color:var(--ink);font-weight:500}
+.whenrow.on .whenval{font-weight:600}
+.whencar{color:var(--ink-3);font-size:11px}
+.whenpanel{display:none;border:0;border-bottom:1px solid var(--line);background:var(--paper);padding:12px 16px;gap:8px;flex-wrap:wrap;align-items:center}
+.whenrow.open .whenpanel{display:flex}
+.whenpanel input,.whenpanel select{font:inherit;font-size:13.5px;color:var(--ink);background:var(--paper);border:1px solid var(--line-2);border-radius:9px;padding:7px 9px}
+.gobtn{display:block;width:100%;margin:0;font:inherit;font-size:15.5px;font-weight:700;color:#fff;background:var(--brand);border:0;border-radius:0 0 16px 16px;padding:14px;cursor:pointer}
+.gobtn:hover{opacity:.92}
+.gobtn.armed{background:#1f6f45}
+.swatch{display:inline-block;width:9px;height:9px;border-radius:2px;vertical-align:-1px;margin:0 3px 0 10px}
+.lgrow{display:block;margin-top:2px}
+.dotglyph{display:inline-block;width:9px;height:9px;border-radius:50%;background:#faf9f6;border:1.5px solid var(--ink);vertical-align:-1px;margin-right:5px}
+.pinglyph{display:inline-block;width:14px;height:14px;border-radius:50%;background:var(--ink);color:#fff;font:800 9.5px/14px -apple-system,sans-serif;text-align:center;vertical-align:-2px}
+
+/* trust footer */
+.trust{margin-top:34px;padding-top:16px;border-top:1px solid var(--line);font-size:12px;color:var(--ink-3);line-height:1.7}
+.trust b{color:var(--ink-2);font-weight:600}
+
+/* states */
+.loading,.errbox{margin:26px 0;font-size:14px;color:var(--ink-2)}
+.errbox{color:var(--avoid)}
+/* 데스크톱 스플릿뷰 — 리스트 좌 + 지도 우 고정 (Airbnb 문법, 2026-07-17). 지도는 화면에 상주,
+   리스트만 스크롤 — '지도를 빨리 다시'가 데스크톱에선 질문 자체가 소멸한다. */
+@media (min-width:1020px){
+  .wrap:has(.results.show){max-width:1200px}   /* 결과 화면만 넓힘 — 홈은 좁은 칼럼 유지 */
+  .results.show{display:grid;grid-template-columns:minmax(420px,46%) minmax(0,1fr);column-gap:24px;align-items:start}   /* .show가 base display를 이기므로 동급 특이성으로 */
+  .results.show>*{grid-column:1;min-width:0}
+  .results.show>.mapblock{grid-column:2;grid-row:1/span 99;position:sticky;top:64px;margin:0}
+  .results.show>.mapblock #map{height:calc(100vh - 130px)}
+  /* 범례를 지도 위 카드로 — 지도가 뷰포트를 다 먹어서 지도 아래 줄은 영영 안 보인다 (2026-07-17 실측 y924/뷰포트850).
+     sticky bottom = 첫 화면(지도 하단이 폴드 밖)에서도 뷰포트 하단에 붙어 항상 보인다 */
+  .results.show>.mapblock .maplegend{position:sticky;bottom:10px;margin:-59px 10px 10px;width:fit-content;max-width:72%;background:rgba(250,249,246,.94);border:1px solid var(--line);border-radius:8px;padding:5px 9px;font-size:11px;z-index:5}
+  .mapfab,.mapfab.show{display:none}
+}
+@media (max-width:420px){
+  .hero h1{font-size:31px} .rtitle{font-size:23px}
+  .cityin{font-size:12px;max-width:41%;padding-left:11px;padding-right:22px;background-position:right 7px center}   /* 'San Francisco'가 안 잘리게 (2026-07-14) */
+}
+
+/* find on map — 인라인 링크 (알약 아래 힌트 줄에 흡수) */
+.mapfind{display:inline;font:inherit;font-size:12px;font-weight:600;color:var(--ink-2);background:none;border:0;border-bottom:1px dotted var(--line-2);padding:0;cursor:pointer}
+.mapfind:hover{color:var(--ink)}
+.picker{position:fixed;inset:0;z-index:90;background:var(--paper);display:none;flex-direction:column}
+.picker.open{display:flex}
+.pickhead{display:flex;align-items:center;justify-content:space-between;padding:15px 16px;border-bottom:1px solid var(--line);font-family:var(--serif);font-weight:600;font-size:16px;color:var(--ink)}
+.pickclose{font:inherit;font-size:20px;line-height:1;background:none;border:0;color:var(--ink-2);cursor:pointer;padding:2px 8px}
+.pickmapwrap{position:relative;flex:1;min-height:0}
+#pickmap{position:absolute;inset:0}
+.pickpin{position:absolute;left:50%;top:50%;transform:translate(-50%,-100%);pointer-events:none;z-index:5;color:var(--ink);filter:drop-shadow(0 3px 4px rgba(0,0,0,.28))}
+.pickpin svg{display:block}
+.pickhint{position:absolute;left:50%;top:14px;transform:translateX(-50%);z-index:6;background:var(--ink);color:var(--paper);font-size:12px;font-weight:600;padding:6px 13px;border-radius:999px;white-space:nowrap;pointer-events:none;opacity:.92}
+.pickfoot{padding:14px 16px calc(16px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:var(--paper)}
+.pickgo{width:100%;font:inherit;font-size:15px;font-weight:700;color:var(--paper);background:var(--ink);border:0;border-radius:12px;padding:15px;cursor:pointer}
+.pickgo:active{opacity:.9}
+.picksearchform{flex:1;display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line-2);border-radius:10px;padding:9px 12px;color:var(--ink-2);margin-right:10px}
+.picksearchform input{flex:1;min-width:0;border:0;outline:0;background:none;font:inherit;font-size:14px;color:var(--ink)}
+</style>
+</head>
+<body>
+
+<header><div class="hbar">
+  <a class="wordmark" href="./">Quiet <span style="color:var(--brand)">&</span> Safe<small>don’t get bipped</small></a>
+</div></header>
+
+<div class="wrap">
+
+  <!-- cold start -->
+  <section class="hero" id="hero">
+    <h1>Park where they<br>don’t break in.</h1>
+    <p>See real break-in records for every block before you park. Free, no app.</p>
+  </section>
+
+  <!-- 요약 pill: 검색 후 알약이 이걸로 접힘 — 탭하면 다시 펼침 (에어비앤비 문법) -->
+  <button type="button" class="sumpill" id="sumpill" style="display:none">
+    <span class="sp1" id="sumdest"></span><span class="sp2" id="sumwhen"></span><span class="spedit">Edit</span>
+  </button>
+
+  <!-- search pill stack: Where / When / CTA 한 덩어리 (에어비앤비 문법) -->
+  <div class="searchwrap" id="searchwrap">
+    <div class="searchbox" id="searchbox">
+      <div class="srow">
+        <select class="cityin" id="citySel" aria-label="City"></select>
+        <form class="sfield" id="sform" autocomplete="off">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <input id="q" type="text" placeholder="Where to?" enterkeyhint="search" />
+        </form>
+        <button class="locbtn" id="locbtn" title="Use my location" aria-label="Use my location">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="3.2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+        </button>
+      </div>
+      <div class="sugg" id="sugg" role="listbox"></div>
+    </div>
+    <!-- when: 날짜·시간 = 예약 파라미터. 안전 렌즈는 구간에서 자동 파생(worst-of) -->
+    <div class="whenrow" id="whenrow">
+      <button type="button" class="whensum" id="whensum">
+        <span class="whenlab">When</span>
+        <span class="whenval" id="whenval"></span>
+        <span class="whencar">▾</span>
+      </button>
+      <div class="whenpanel" id="whenpanel">
+        <input type="date" id="wdate" aria-label="Date">
+        <select id="wstart" aria-label="Start time"></select>
+        <select id="wdur" aria-label="How long">
+          <option value="60">1 hour</option><option value="120">2 hours</option>
+          <option value="180" selected>3 hours</option><option value="240">4 hours</option>
+          <option value="360">6 hours</option><option value="480">8 hours</option>
+          <option value="ON">Overnight → 8 am</option>
+        </select>
+      </div>
+    </div>
+    <button type="button" class="gobtn" id="gobtn">Find safe parking</button>
+  </div>
+  <div class="shint">Search a place, or paste a Google&nbsp;Maps link. <button type="button" class="mapfind" id="mapfind">Find it on the map</button></div>
+
+  <!-- 지도 읽는 법 — 라이브 데모 (첫 화면이 곧 사용법 소개, 2026-07-17). 칩을 누르면 해당 레이어가 반응 -->
+  <div class="herodemo" id="herodemo" style="display:none">
+    <div class="hd-k">How to read the map — live demo</div>
+    <div id="heromap"></div>
+    <div class="hd-chips">
+      <button type="button" id="hdRisk"><span class="sw" style="background:linear-gradient(90deg,#22C55E,#EAB308,#EF4444)"></span>Redder blocks = more break-ins &amp; thefts, 12 mo</button>
+      <button type="button" id="hdDots"><span class="sw" style="background:#faf9f6;border:1.5px solid #191713;border-radius:50%;width:10px;height:10px"></span>White dots = bookable parking</button>
+      <button type="button" id="hdTent"><span class="sw" style="background:#7c5fc0"></span>Tent camps lens</button>
+    </div>
+  </div>
+
+  <!-- 렌터카 모듈 — 검색 바로 아래 (카드 그리드 밑은 안 보인다, 2026-07-14 유저 지적) -->
+  <div id="rentalhome"></div>
+
+  <!-- popular (cold) — 도시 컨텍스트는 위 검색 알약의 셀렉터가 정함 -->
+  <section class="pops" id="pops">
+    <h2 id="popstitle">Popular spots</h2>
+    <div class="chips" id="chips"></div>
+  </section>
+
+  <div class="loading" id="loading" style="display:none">Checking the block records…</div>
+  <div class="errbox" id="errbox" style="display:none"></div>
+
+  <!-- results — map-first: 지도가 공간 맥락의 주인공. 스크롤하면 덮이지 않고 '접힘'(띠로 남음) -->
+  <section class="results" id="results">
+    <div class="rhead" id="rhead">Safe parking near</div>
+    <h2 class="rtitle"><em id="destname"></em></h2>
+
+    <div class="mapblock" id="mapblock">
+      <div id="map"></div>
+      <button type="button" class="searcharea" id="searchArea">Search this area</button>
+      <div class="maplens" id="maplens"></div>
+      <div class="minicard" id="minicard"></div>
+      <div class="maplegend" id="maplegend"></div>
+    </div>
+
+    <div id="areacard"></div>
+    <div id="avoidwrap"></div>
+    <div id="lugstrip"></div>
+    <div class="cards" id="cards"></div>
+    <div id="securewrap"></div>
+
+    <div class="trust" id="trust"></div>
+  </section>
+
+</div>
+
+<button type="button" class="mapfab" id="mapfab">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 3L3 5v16l6-2 6 2 6-2V3l-6 2-6-2z"/><path d="M9 3v16M15 5v16"/></svg>
+  Map
+</button>
+
+<!-- find-on-map picker -->
+<div class="picker" id="picker">
+  <div class="pickhead">
+    <form class="picksearchform" id="picksearchform" autocomplete="off">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <input id="pickq" type="text" placeholder="Search a place, or drag the map" enterkeyhint="search" />
+    </form>
+    <button class="pickclose" id="pickclose" aria-label="Close">✕</button>
+  </div>
+  <div class="pickmapwrap">
+    <div id="pickmap"></div>
+    <div class="pickhint">Drag the map to your destination</div>
+    <div class="pickpin"><svg width="30" height="40" viewBox="0 0 30 40" fill="currentColor"><path d="M15 0C6.7 0 0 6.7 0 15c0 10.5 15 25 15 25s15-14.5 15-25C30 6.7 23.3 0 15 0z"/><circle cx="15" cy="15" r="6" fill="#faf9f6"/></svg></div>
+  </div>
+  <div class="pickfoot"><button class="pickgo" id="pickgo">Find safe parking here</button></div>
+</div>
+
+<script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
+<script>
+(function(){
+'use strict';
+
+/* ————— config ————— */
+var CITIES = {
+  sf: { key:'sf', name:'San Francisco', tz:'America/Los_Angeles', center:{lat:37.7749,lng:-122.4194}, bbox:[-122.55,37.60,-122.28,37.86], fresh:true, source:'SFPD · DataSF',
+    popular:[["Fisherman's Wharf",37.8080,-122.4177],["Union Square",37.7880,-122.4075],["Pier 39",37.8087,-122.4098],["Painted Ladies",37.7763,-122.4327],["Golden Gate Bridge",37.8078,-122.4750],["Chinatown",37.7941,-122.4078],["Oracle Park",37.7786,-122.3893],["The Castro",37.7609,-122.4350]] },
+  la: { key:'la', name:'Los Angeles', tz:'America/Los_Angeles', center:{lat:34.0522,lng:-118.2437}, bbox:[-118.67,33.70,-118.15,34.34], fresh:true, source:'LAPD · data.lacity.org',
+    popular:[["Hollywood Walk of Fame",34.1016,-118.3406],["Griffith Observatory",34.1184,-118.3004],["Santa Monica Pier",34.0089,-118.4973],["Venice Beach",33.9850,-118.4695],["Grand Central Market",34.0505,-118.2489],["The Getty",34.0780,-118.4741],["Dodger Stadium",34.0739,-118.2400],["LACMA",34.0639,-118.3592]] },
+  chi: { key:'chi', name:'Chicago', tz:'America/Chicago', center:{lat:41.8781,lng:-87.6298}, bbox:[-87.95,41.62,-87.50,42.05], fresh:true, source:'CPD · data.cityofchicago.org',
+    popular:[["Millennium Park",41.8826,-87.6226],["Navy Pier",41.8917,-87.6086],["Willis Tower",41.8789,-87.6359],["Wrigley Field",41.9484,-87.6553],["Art Institute of Chicago",41.8796,-87.6237],["United Center",41.8807,-87.6742],["Field Museum",41.8663,-87.6170],["Magnificent Mile",41.8949,-87.6244]] },
+  nyc: { key:'nyc', name:'New York City', tz:'America/New_York', center:{lat:40.7580,lng:-73.9855}, bbox:[-74.26,40.49,-73.70,40.92], fresh:true, source:'NYPD · NYC Open Data',
+    popular:[["Times Square",40.7580,-73.9855],["Central Park South",40.7651,-73.9767],["Empire State Building",40.7484,-73.9857],["Brooklyn Bridge / DUMBO",40.7033,-73.9903],["Battery Park",40.7033,-74.0170],["The Met Museum",40.7794,-73.9632],["Yankee Stadium",40.8296,-73.9262],["Barclays Center",40.6826,-73.9754]] },
+  sea: { key:'sea', name:'Seattle', tz:'America/Los_Angeles', center:{lat:47.6062,lng:-122.3321}, bbox:[-122.44,47.48,-122.22,47.74], fresh:true, source:'SPD · data.seattle.gov',
+    popular:[["Pike Place Market",47.6097,-122.3422],["Space Needle",47.6205,-122.3493],["Seattle Center",47.6221,-122.3540],["Pioneer Square",47.6015,-122.3343],["Capitol Hill",47.6253,-122.3222],["T-Mobile Park",47.5914,-122.3325],["Seattle Aquarium",47.6076,-122.3430],["Fremont",47.6510,-122.3499]] },
+  lv:  { key:'lv',  name:'Las Vegas', tz:'America/Los_Angeles', center:{lat:36.1699,lng:-115.1398}, bbox:[-115.35,35.95,-114.95,36.35], fresh:true, source:'LVMPD · open data (coverage since Jan 2025)',
+    popular:[["Las Vegas Strip",36.1147,-115.1728],["Bellagio Fountains",36.1126,-115.1767],["Fremont Street Experience",36.1699,-115.1425],["Caesars Palace",36.1162,-115.1745],["The Venetian",36.1211,-115.1694],["Sphere Las Vegas",36.1212,-115.1670],["Luxor Las Vegas",36.0955,-115.1761],["T-Mobile Arena",36.1028,-115.1783]] },
+  den: { key:'den', name:'Denver', tz:'America/Denver', center:{lat:39.7392,lng:-104.9903}, bbox:[-105.11,39.60,-104.60,39.91], fresh:true, source:'Denver PD · open data',
+    popular:[["Union Station Denver",39.7534,-105.0011],["Denver Art Museum",39.7371,-104.9895],["Coors Field",39.7559,-104.9942],["Denver Botanic Gardens",39.7314,-104.9591],["16th Street Mall",39.7457,-104.9942],["Denver Zoo",39.7495,-104.9490],["Empower Field at Mile High",39.7439,-105.0201],["Larimer Square",39.7482,-104.9998]] },
+  atl: { key:'atl', name:'Atlanta', tz:'America/New_York', center:{lat:33.7490,lng:-84.3880}, bbox:[-84.5710,33.6480,-84.2892,33.8870], fresh:true, source:'Atlanta PD · open data',
+    popular:[["Georgia Aquarium",33.7634,-84.3951],["World of Coca-Cola",33.7627,-84.3928],["Centennial Olympic Park",33.7605,-84.3933],["Piedmont Park",33.7853,-84.3733],["Ponce City Market",33.7719,-84.3654],["Mercedes-Benz Stadium",33.7554,-84.4008],["Fox Theatre",33.7724,-84.3853],["High Museum of Art",33.7895,-84.3863]] },
+  clt: { key:'clt', name:'Charlotte', tz:'America/New_York', center:{lat:35.2271,lng:-80.8431}, bbox:[-81.0000,35.0500,-80.6500,35.4000], fresh:true, source:'CMPD · open data',
+    popular:[["NASCAR Hall of Fame",35.2258,-80.8433],["Bank of America Stadium",35.2258,-80.8528],["Spectrum Center",35.2251,-80.8393],["Discovery Place",35.2286,-80.8399],["Romare Bearden Park",35.2251,-80.8478],["Freedom Park",35.1935,-80.8365],["NoDa",35.2436,-80.8078],["South End",35.2144,-80.8570]] },
+  dal: { key:'dal', name:'Dallas', tz:'America/Chicago', center:{lat:32.7767,lng:-96.7970}, bbox:[-96.9990,32.6180,-96.4640,33.0240], fresh:true, source:'Dallas PD · dallasopendata.com',
+    popular:[["Reunion Tower",32.7752,-96.8089],["Dealey Plaza",32.7797,-96.8084],["Klyde Warren Park",32.7889,-96.8010],["Dallas Arboretum",32.8231,-96.7188],["Perot Museum of Nature and Science",32.7868,-96.8067],["American Airlines Center",32.7905,-96.8103],["Bishop Arts District",32.7513,-96.8290],["Deep Ellum",32.7847,-96.7833]] },
+  phl: { key:'phl', name:'Philadelphia', tz:'America/New_York', center:{lat:39.9526,lng:-75.1652}, bbox:[-75.2803,39.8670,-74.9558,40.1379], fresh:true, source:'Philadelphia PD · open data',
+    popular:[["Liberty Bell",39.9495,-75.1503],["Independence Hall",39.9489,-75.1500],["Reading Terminal Market",39.9533,-75.1590],["Philadelphia Museum of Art",39.9656,-75.1810],["Love Park",39.9539,-75.1670],["Franklin Institute",39.9581,-75.1732],["Eastern State Penitentiary",39.9678,-75.1727],["Rittenhouse Square",39.9494,-75.1719]] },
+  oak: { key:'oak', name:'Oakland', tz:'America/Los_Angeles', center:{lat:37.8044,lng:-122.2712}, bbox:[-122.3550,37.6960,-122.1140,37.8850], fresh:true, source:'Oakland PD · data.oaklandca.gov (~6-week lag)',
+    popular:[["Lake Merritt",37.8046,-122.2563],["Jack London Square",37.7946,-122.2779],["Oakland Museum of California",37.7986,-122.2597],["Fox Theater",37.8083,-122.2724],["Oakland Zoo",37.7506,-122.1477],["Oakland Chinatown",37.7965,-122.2708],["Grand Lake Theatre",37.8118,-122.2504],["RingCentral Coliseum",37.7516,-122.2005]] },
+  dc: { key:'dc', name:'Washington, D.C.', tz:'America/New_York', center:{lat:38.9072,lng:-77.0369}, bbox:[-77.1198,38.7916,-76.9094,38.9955], fresh:true, source:'MPD · DC open data',
+    popular:[["White House",38.8977,-77.0365],["Lincoln Memorial",38.8893,-77.0502],["National Air and Space Museum",38.8881,-77.0198],["Georgetown Waterfront Park",38.9027,-77.0649],["Washington Monument",38.8895,-77.0352],["Nationals Park",38.8727,-77.0075],["Union Station",38.8984,-77.0059],["Dupont Circle",38.9098,-77.0434]] },
+  nsh: { key:'nsh', name:'Nashville', tz:'America/Chicago', center:{lat:36.1627,lng:-86.7816}, bbox:[-87.05,35.95,-86.55,36.4], fresh:true, source:'MNPD · open data',
+    popular:[["Broadway Honky-Tonks",36.1605,-86.7775],["Ryman Auditorium",36.1612,-86.7785],["Country Music Hall of Fame",36.1582,-86.7761],["Bridgestone Arena",36.159,-86.7784],["Nissan Stadium",36.1665,-86.7713],["The Parthenon (Centennial Park)",36.1495,-86.8129],["Music Row",36.1521,-86.7911],["Vanderbilt University",36.1438,-86.8028]] },
+  det: { key:'det', name:'Detroit', tz:'America/New_York', center:{lat:42.3314,lng:-83.0458}, bbox:[-83.287,42.2554,-82.9105,42.475], fresh:true, source:'Detroit PD · RMS open data',
+    popular:[["Campus Martius Park",42.3316,-83.0466],["Comerica Park",42.3392,-83.0489],["Detroit Institute of Arts",42.3595,-83.0645],["Renaissance Center",42.3289,-83.0397],["Belle Isle Park",42.3424,-82.9699],["Eastern Market",42.3485,-83.04],["Greektown",42.3346,-83.0425],["Michigan Central Station",42.3287,-83.0778]] },
+  bal: { key:'bal', name:'Baltimore', tz:'America/New_York', center:{lat:39.2904,lng:-76.6122}, bbox:[-76.7286,39.2007,-76.5231,39.3754], fresh:true, source:'Baltimore PD · NIBRS open data',
+    popular:[["Inner Harbor",39.286,-76.612],["Oriole Park at Camden Yards",39.2837,-76.6216],["Fell's Point",39.2835,-76.5933],["Fort McHenry",39.2632,-76.5798],["National Aquarium",39.2848,-76.6077],["Federal Hill Park",39.2796,-76.6085],["Mount Vernon",39.2979,-76.6157],["Little Italy",39.2868,-76.6014]] },
+  cle: { key:'cle', name:'Cleveland', tz:'America/New_York', center:{lat:41.4993,lng:-81.6944}, bbox:[-81.8792,41.39,-81.533,41.604], fresh:true, source:'Cleveland PD · open data',
+    popular:[["Rock and Roll Hall of Fame",41.5085,-81.6954],["Progressive Field",41.4961,-81.6851],["Playhouse Square",41.5009,-81.6818],["West Side Market",41.4847,-81.703],["Cleveland Museum of Art",41.509,-81.6117],["Tremont",41.4805,-81.6856],["Ohio City",41.4853,-81.7099],["Edgewater Park",41.4875,-81.7493]] },
+  mem: { key:'mem', name:'Memphis', tz:'America/Chicago', center:{lat:35.1495,lng:-90.049}, bbox:[-90.1354,34.982,-89.651,35.265], fresh:true, source:'Memphis PD · open data',
+    popular:[["Beale Street",35.1382,-90.0523],["Graceland",35.0457,-90.0231],["National Civil Rights Museum",35.1346,-90.0575],["FedExForum",35.1382,-90.0508],["Memphis Zoo",35.1504,-89.9929],["Overton Square",35.1364,-89.9911],["South Main Historic District",35.1324,-90.0594],["Cooper-Young",35.1198,-89.9909]] },
+  min: { key:'min', name:'Minneapolis', tz:'America/Chicago', center:{lat:44.9778,lng:-93.265}, bbox:[-93.329,44.89,-93.193,45.051], fresh:true, source:'MPD · Minneapolis open data',
+    popular:[["Nicollet Mall",44.975,-93.275],["Target Field",44.9817,-93.2779],["Walker Art Center",44.968,-93.2888],["Lake Harriet",44.9217,-93.305],["Stone Arch Bridge",44.9805,-93.2548],["North Loop",44.9865,-93.2762],["Uptown",44.9489,-93.2987],["Northeast Arts District",45.0035,-93.2517]] },
+  ral: { key:'ral', name:'Raleigh', tz:'America/New_York', center:{lat:35.7796,lng:-78.6382}, bbox:[-78.86,35.7,-78.53,35.95], fresh:true, source:'Raleigh PD · NIBRS open data',
+    popular:[["Raleigh Convention Center",35.7735,-78.6414],["NC Museum of Natural Sciences",35.7822,-78.6395],["Pullen Park",35.7821,-78.6636],["NC State Capitol",35.7804,-78.6391],["Lenovo Center",35.8034,-78.7219],["Glenwood South",35.7854,-78.6474],["Cameron Village",35.7945,-78.6568],["Fayetteville Street",35.7781,-78.639]] },
+  cin: { key:'cin', name:'Cincinnati', tz:'America/New_York', center:{lat:39.1031,lng:-84.512}, bbox:[-84.712,39.058,-84.36,39.221], fresh:true, source:'Cincinnati PD · open data',
+    popular:[["Fountain Square",39.1015,-84.5125],["Great American Ball Park",39.0972,-84.5066],["Cincinnati Zoo",39.1447,-84.5083],["Over-the-Rhine",39.1115,-84.5144],["Newport on the Levee",39.095,-84.496],["Findlay Market",39.1153,-84.5191],["Mount Adams",39.1092,-84.4961],["Smale Riverfront Park",39.0952,-84.5102]] },
+  mil: { key:'mil', name:'Milwaukee', tz:'America/Chicago', center:{lat:43.0389,lng:-87.9065}, bbox:[-88.07,42.92,-87.86,43.19], fresh:true, source:'MPD · WIBR open data',
+    popular:[["Fiserv Forum",43.045,-87.9175],["Milwaukee Art Museum",43.0398,-87.8971],["Milwaukee Public Market",43.0353,-87.9081],["Henry Maier Festival Park",43.0309,-87.8996],["Milwaukee RiverWalk",43.0378,-87.9089],["Bay View",42.9959,-87.8968],["Brady Street",43.0536,-87.9032],["Historic Third Ward",43.0324,-87.9081]] },
+  kc: { key:'kc', name:'Kansas City', tz:'America/Chicago', center:{lat:39.0997,lng:-94.5786}, bbox:[-94.85,38.9,-94.2,39.35], fresh:true, source:'KCPD · open data',
+    popular:[["Country Club Plaza",39.042,-94.5928],["Power & Light District",39.0975,-94.5847],["National WWI Museum",39.0807,-94.5861],["Union Station Kansas City",39.0853,-94.5858],["Kauffman Stadium",39.0515,-94.4805],["18th & Vine Jazz District",39.0944,-94.5539],["Crossroads Arts District",39.0906,-94.5836],["Westport",39.0467,-94.5832]] },
+  sac: { key:'sac', name:'Sacramento', tz:'America/Los_Angeles', center:{lat:38.5816,lng:-121.4944}, bbox:[-121.575,38.435,-121.355,38.685], fresh:true, source:'Sacramento PD · open data',
+    popular:[["Old Sacramento",38.587,-121.5011],["California State Capitol",38.5767,-121.4937],["Golden 1 Center",38.5801,-121.4995],["Crocker Art Museum",38.5771,-121.5062],["Midtown Sacramento",38.5705,-121.4785],["Tower Bridge",38.5806,-121.5083],["East Sacramento",38.5681,-121.4508],["Land Park",38.5424,-121.4901]] },
+  tam: { key:'tam', name:'Tampa', tz:'America/New_York', center:{lat:27.9506,lng:-82.4572}, bbox:[-82.58,27.86,-82.3,28.1], fresh:true, source:'Tampa PD · open data (rolling 12 months)',
+    popular:[["Tampa Riverwalk",27.9406,-82.4556],["Amalie Arena",27.9427,-82.4519],["Ybor City",27.96,-82.4412],["Tampa Convention Center",27.942,-82.4566],["Busch Gardens Tampa",28.0371,-82.4213],["Hyde Park Village",27.9353,-82.4732],["Channelside",27.9419,-82.4575],["Curtis Hixon Waterfront Park",27.949,-82.4619]] },
+  aus: { key:'aus', name:"Austin", tz:'America/Chicago', nocrime:true, center:{lat:30.2711,lng:-97.7437}, bbox:[-97.887,30.121,-97.607,30.517], fresh:false, source:'', popular:[["Texas State Capitol",30.2747,-97.7405],["South Congress Avenue",30.2415,-97.7523],["Zilker Park",30.2677,-97.7669],["Rainey Street",30.2582,-97.7388],["University of Texas at Austin",30.2851,-97.7339],["The Domain",30.397,-97.7269]] },
+  hou: { key:'hou', name:"Houston", tz:'America/Chicago', nocrime:true, center:{lat:29.7589,lng:-95.3677}, bbox:[-95.584,29.431,-94.977,29.879], fresh:false, source:'', popular:[["Space Center Houston",29.5513,-95.0974],["Houston Zoo",29.7133,-95.3916],["Minute Maid Park",29.7572,-95.3552],["The Galleria",29.738,-95.4643],["Museum of Fine Arts Houston",29.7251,-95.3895],["Discovery Green",29.7529,-95.3596]] },
+  sat: { key:'sat', name:"San Antonio", tz:'America/Chicago', nocrime:true, center:{lat:29.4246,lng:-98.4951}, bbox:[-98.62,29.299,-98.352,29.584], fresh:false, source:'', popular:[["The Alamo",29.4235,-98.4875],["San Antonio River Walk",29.4384,-98.4821],["Tower of the Americas",29.4191,-98.4836],["San Antonio Zoo",29.4638,-98.4724],["Market Square",29.4252,-98.4996]] },
+  phx: { key:'phx', name:"Phoenix", tz:'America/Phoenix', nocrime:true, center:{lat:33.4484,lng:-112.0741}, bbox:[-112.194,33.326,-111.82,33.635], fresh:false, source:'', popular:[["Phoenix Zoo",33.4496,-111.9464],["Desert Botanical Garden",33.4644,-111.94],["Chase Field",33.4455,-112.0667],["Heard Museum",33.4716,-112.0722],["Camelback Mountain",33.5147,-111.9617],["Roosevelt Row",33.4593,-112.0687]] },
+  tus: { key:'tus', name:"Tucson", tz:'America/Phoenix', nocrime:true, center:{lat:32.2229,lng:-110.9748}, bbox:[-111.127,31.987,-110.721,32.371], fresh:false, source:'', popular:[["University of Arizona",32.2357,-110.9517],["Fourth Avenue",32.2288,-110.9658],["Pima Air and Space Museum",32.1379,-110.8671],["Sabino Canyon",32.2506,-110.841],["Mission San Xavier del Bac",32.1073,-111.0075],["Reid Park Zoo",32.2088,-110.9202]] },
+  mia: { key:'mia', name:"Miami", tz:'America/New_York', nocrime:true, center:{lat:25.7742,lng:-80.1936}, bbox:[-80.354,25.625,-80.01,25.921], fresh:false, source:'', popular:[["South Beach",25.7744,-80.1332],["Wynwood Walls",25.8011,-80.1997],["Bayside Marketplace",25.7782,-80.1871],["Little Havana",25.7682,-80.2335],["Vizcaya Museum and Gardens",25.7447,-80.2116],["Ocean Drive",25.7815,-80.1304]] },
+  orl: { key:'orl', name:"Orlando", tz:'America/New_York', nocrime:true, center:{lat:28.5421,lng:-81.379}, bbox:[-81.654,28.233,-81.25,28.664], fresh:false, source:'', popular:[["Walt Disney World",28.3531,-81.5336],["Universal Studios Florida",28.4772,-81.4697],["ICON Park",28.447,-81.4732],["SeaWorld Orlando",28.411,-81.4619],["Lake Eola Park",28.544,-81.3704],["Disney Springs",28.3785,-81.5088]] },
+  bos: { key:'bos', name:"Boston", tz:'America/New_York', center:{lat:42.3588,lng:-71.0578}, bbox:[-71.217,42.22,-70.934,42.493], fresh:true, source:'BPD · data.boston.gov', popular:[["Fenway Park",42.3465,-71.0971],["Boston Common",42.355,-71.0661],["Faneuil Hall",42.36,-71.0562],["North End",42.3651,-71.0545],["Museum of Fine Arts Boston",42.3395,-71.0939],["Harvard Square",42.373,-71.0627]] },   // 26번째 범죄도시 (2026-07-12) — Harvard Sq는 캠브리지 관할이라 dataless 정직
+  nol: { key:'nol', name:"New Orleans", tz:'America/Chicago', nocrime:true, center:{lat:29.9561,lng:-90.0734}, bbox:[-90.198,29.822,-89.941,30.118], fresh:false, source:'', popular:[["French Quarter",29.9595,-90.0655],["Bourbon Street",29.9539,-90.0699],["Jackson Square",29.9575,-90.0629],["Garden District",29.9462,-90.0784],["Frenchmen Street",29.9981,-90.0605],["National WWII Museum",29.9421,-90.0708]] },
+  por: { key:'por', name:"Portland", tz:'America/Los_Angeles', nocrime:true, center:{lat:45.5202,lng:-122.6742}, bbox:[-122.828,45.393,-122.503,45.649], fresh:false, source:'', popular:[["Powells City of Books",45.5233,-122.6816],["Portland Japanese Garden",45.5188,-122.7081],["Pearl District",45.529,-122.6816],["Pioneer Courthouse Square",45.5189,-122.6793],["Washington Park",45.5155,-122.7057],["Hawthorne Boulevard",45.5133,-122.6229]] },
+  hon: { key:'hon', name:"Honolulu", tz:'Pacific/Honolulu', nocrime:true, center:{lat:21.3045,lng:-157.8557}, bbox:[-158.058,21.14,-157.574,21.488], fresh:false, source:'', popular:[["Waikiki Beach",21.2795,-157.831],["Diamond Head",21.2598,-157.8117],["Pearl Harbor National Memorial",21.3675,-157.9384],["Ala Moana Center",21.2915,-157.8438],["Hanauma Bay",21.2696,-157.6938],["Iolani Palace",21.3068,-157.8588]] },
+  sj: { key:'sj', name:"San Jose", tz:'America/Los_Angeles', nocrime:true, center:{lat:37.3362,lng:-121.8906}, bbox:[-122.071,37.198,-121.697,37.465], fresh:false, source:'', popular:[["Winchester Mystery House",37.3183,-121.951],["Santana Row",37.321,-121.9486],["SAP Center",37.3329,-121.9012],["San Jose State University",37.3361,-121.8172],["Japantown",37.3453,-121.8974],["Childrens Discovery Museum",37.3267,-121.8918]] },
+  sd: { key:'sd', name:"San Diego", tz:'America/Los_Angeles', nocrime:true, center:{lat:32.7174,lng:-117.1628}, bbox:[-117.393,32.592,-117.026,32.97], fresh:false, source:'', popular:[["San Diego Zoo",32.736,-117.1507],["Balboa Park",32.7317,-117.1465],["Gaslamp Quarter",32.7115,-117.1601],["USS Midway Museum",32.7138,-117.1752],["La Jolla Cove",32.8505,-117.273],["Old Town San Diego",32.7543,-117.1969]] },
+  abq: { key:'abq', name:"Albuquerque", tz:'America/Denver', nocrime:true, center:{lat:35.0841,lng:-106.651}, bbox:[-106.788,34.958,-106.359,35.311], fresh:false, source:'', popular:[["Old Town Albuquerque",35.0976,-106.6683],["ABQ BioPark Zoo",35.0782,-106.6627],["Sandia Peak Tramway",35.1907,-106.4795],["Nob Hill",35.0779,-106.6043],["University of New Mexico",35.0866,-106.6202],["Indian Pueblo Cultural Center",35.1103,-106.6588]] },
+  slc: { key:'slc', name:"Salt Lake City", tz:'America/Denver', nocrime:true, center:{lat:40.7596,lng:-111.8868}, bbox:[-112.024,40.626,-111.701,40.897], fresh:false, source:'', popular:[["Temple Square",40.7704,-111.8925],["City Creek Center",40.7686,-111.8903],["Utah State Capitol",40.7774,-111.8882],["Liberty Park",40.7455,-111.874],["Red Butte Garden",40.7693,-111.8206],["The Gateway",40.7678,-111.9038]] },
+  pit: { key:'pit', name:"Pittsburgh", tz:'America/New_York', nocrime:true, center:{lat:40.4407,lng:-80.0026}, bbox:[-80.13,40.311,-79.83,40.574], fresh:false, source:'', popular:[["PNC Park",40.4469,-80.0056],["Point State Park",40.4415,-80.0101],["Andy Warhol Museum",40.4484,-80.0025],["Carnegie Museum of Natural History",40.4431,-79.9499],["Strip District",40.454,-79.9842],["Mount Washington",40.4309,-80.0103]] },
+  col: { key:'col', name:"Columbus", tz:'America/New_York', nocrime:true, center:{lat:39.9623,lng:-83.0007}, bbox:[-83.14,39.826,-82.794,40.171], fresh:false, source:'', popular:[["Ohio Stadium",40.0016,-83.0197],["Short North",39.98,-83.0041],["German Village",39.9464,-82.9928],["COSI",39.9597,-83.0067],["Ohio Statehouse",39.9612,-82.9984],["Easton Town Center",40.051,-82.9145]] },
+  ind: { key:'ind', name:"Indianapolis", tz:'America/New_York', nocrime:true, center:{lat:39.7683,lng:-86.1584}, bbox:[-86.355,39.639,-86.028,39.932], fresh:false, source:'', popular:[["Indianapolis Motor Speedway",39.7962,-86.2348],["Monument Circle",39.7685,-86.158],["White River State Park",39.7677,-86.1762],["Massachusetts Avenue",39.7758,-86.1483],["Lucas Oil Stadium",39.7591,-86.1638],["Childrens Museum of Indianapolis",39.8116,-86.1573]] },
+  stl: { key:'stl', name:"St. Louis", tz:'America/Chicago', nocrime:true, center:{lat:38.6254,lng:-90.19}, bbox:[-90.415,38.485,-90.065,38.776], fresh:false, source:'', popular:[["Gateway Arch",38.6246,-90.185],["Forest Park",38.6382,-90.2847],["Busch Stadium",38.6226,-90.1939],["City Museum",38.6337,-90.2004],["Soulard",38.6045,-90.2093],["Delmar Loop",38.6557,-90.2945]] },
+  lou: { key:'lou', name:"Louisville", tz:'America/New_York', nocrime:true, center:{lat:38.2542,lng:-85.7594}, bbox:[-85.891,38.082,-85.609,38.384], fresh:false, source:'', popular:[["Churchill Downs",38.2023,-85.7708],["Louisville Slugger Museum",38.2569,-85.7637],["NuLu",38.2527,-85.7425],["Muhammad Ali Center",38.2583,-85.76],["Waterfront Park",38.2643,-85.7289]] },
+  vb: { key:'vb', name:"Virginia Beach", tz:'America/New_York', nocrime:true, center:{lat:36.8497,lng:-75.9761}, bbox:[-76.271,36.626,-75.824,37.026], fresh:false, source:'', popular:[["Virginia Beach Boardwalk",36.8436,-75.9713],["Virginia Aquarium",36.8211,-75.9837],["First Landing State Park",36.9062,-76.0136],["Town Center of Virginia Beach",36.8445,-76.1507],["Sandbridge Beach",36.746,-75.9441],["Neptune Statue",36.8596,-75.9773]] },
+  tul: { key:'tul', name:"Tulsa", tz:'America/Chicago', nocrime:true, center:{lat:36.1563,lng:-95.9928}, bbox:[-96.116,36,-95.788,36.331], fresh:false, source:'', popular:[["Gathering Place",36.1196,-95.9856],["Philbrook Museum of Art",36.1238,-95.9702],["Blue Dome District",36.1556,-95.9869],["BOK Center",36.1527,-95.9964],["Tulsa Zoo",36.2113,-95.9076],["Cherry Street",36.1406,-95.9745]] },
+  fre: { key:'fre', name:"Fresno", tz:'America/Los_Angeles', nocrime:true, center:{lat:36.7394,lng:-119.7848}, bbox:[-120.002,36.619,-119.617,36.987], fresh:false, source:'', popular:[["Fresno Chaffee Zoo",36.7521,-119.8232],["Tower District",36.7682,-119.8039],["Forestiere Underground Gardens",36.8076,-119.8818],["Woodward Park",36.8675,-119.7855],["Fresno State",36.821,-119.7373],["River Park",36.838,-119.7879]] },
+  anc: { key:'anc', name:"Anchorage", tz:'America/Anchorage', nocrime:true, center:{lat:61.2163,lng:-149.8949}, bbox:[-150.16,60.97,-149.548,61.353], fresh:false, source:'', popular:[["Anchorage Museum",61.216,-149.8847],["Tony Knowles Coastal Trail",61.2206,-149.898],["Flattop Mountain",61.0896,-149.6684],["Earthquake Park",61.1981,-149.9718],["Kincaid Park",61.1553,-150.0402],["Alaska Native Heritage Center",61.2327,-149.7163]] }
+};
+function cityFor(lat,lng){ for(var k in CITIES){ var b=CITIES[k].bbox; if(lng>=b[0]&&lng<=b[2]&&lat>=b[1]&&lat<=b[3]) return CITIES[k]; } return null; }
+var CITY = CITIES.sf;   // 현재 활성 도시
+var WALK_M_PER_MIN = 80;
+var RADIUS = 900, RADIUS_WIDE = 1500;
+var INDOOR = { underground:1, 'multi-storey':1 };
+var RAMP = [0,'#22C55E',5,'#84cc16',15,'#EAB308',30,'#F59E0B',60,'#EF4444',120,'#991b1b'];
+// time-block scale (12-mo counts per block are much smaller than 24-mo totals)
+var RAMP_B = [0,'#22C55E',1,'#84cc16',3,'#EAB308',6,'#F59E0B',10,'#EF4444',18,'#991b1b'];
+/* popular spots: per-city in CITIES[key].popular */
+// Affiliate slot: swap for SpotHero affiliate deep link (Admitad/FlexOffers) when approved.
+// starts/ends verified live 2026-07-08: SpotHero prefills the time pickers + reprices for that window.
+function fmtDT(x){
+  var p2=function(n){ return (n<10?'0':'')+n; };
+  return x.getFullYear()+'-'+p2(x.getMonth()+1)+'-'+p2(x.getDate())+'T'+p2(x.getHours())+':'+p2(x.getMinutes());
+}
+// booking window = the SELECTED time block's next occurrence, in the destination's timezone.
+// If we're already inside the block, start = next half-hour (not the block's opening hour).
+function todWindow(){
+  if (win){ var w=winDates(); return { starts:fmtDT(w.start), ends:fmtDT(w.end) }; }   // 정확창 = 예약 파라미터 그대로
+  var tz = CITY.tz || 'America/Los_Angeles';
+  var now = new Date(new Date().toLocaleString('en-US',{timeZone:tz}));
+  var H = { morning:[5,12], afternoon:[12,17], evening:[17,22], night:[22,29] }[tod];  // 29 → 5am next day
+  for (var off=-1; off<=1; off++){
+    var base=new Date(now); base.setHours(0,0,0,0); base.setDate(base.getDate()+off);
+    var s=new Date(base); s.setHours(H[0],0,0,0);
+    var e=new Date(base); e.setHours(H[1],0,0,0);
+    if (e<=now) continue;
+    if (s<now){ s=new Date(now); s.setMinutes(now.getMinutes()<30?30:60,0,0); if (s>=e) continue; }
+    return { starts:fmtDT(s), ends:fmtDT(e) };
+  }
+  return null;
+}
+/* ————— facility layer (data/facilities-<city>.json — SpotHero harvest, weekly) —————
+   Phase gate: amenities/rating drive INTERNAL ranking + fact badges only until the
+   partnership is approved. Numbers (stars, counts, prices) render only behind this flag. */
+var SHOW_PARTNER_DATA = false;   // Phase B (제휴 승인 후) → true
+// nearest harvested facility within 80 m; matching class (garage vs lot) wins ties
+function facilityFor(p){
+  var best=null, bs=1e9, ind=!!INDOOR[p.ptype];
+  for (var i=0;i<FACILITIES.length;i++){
+    var f=FACILITIES[i], d=hav(f,p);
+    if (d>80) continue;
+    var score = d + ((f.ftype==='garage')===ind ? 0 : 40);
+    if (score<bs){ bs=score; best=f; }
+  }
+  return best;
+}
+// rating floor (실측 기반, two-layer-evidence §3): enough reviews and clearly bad → never the verdict
+function ratingFloorFail(fac){
+  return !!(fac && fac.rating && fac.rating.count>=30 && fac.rating.avg!=null && fac.rating.avg<3.8);
+}
+/* ————— live facility layer (Supabase 프록시 → SpotHero, 목적지 검색 시 on-demand) —————
+   정적 주간 하베스트 = 폴백 베이스라인. 목적지를 라이브로 조회해 FACILITIES에 병합 →
+   facilityFor/bookFac가 그 지점의 정확한 최신 시설(spot-id)을 찾음. 실패해도 정적으로 동작. */
+var LIVE_ENABLED = true;
+var LIVE_PROXY = 'https://itvobstnjbdtqkppundc.supabase.co/functions/v1/spothero-proxy';
+var RESOLVE_URL = 'https://itvobstnjbdtqkppundc.supabase.co/functions/v1/resolve-maps-url';   // 단축 구글맵 링크 해석 (v1, 2026-07-17)
+var LIVE_KEY = 'sb_publishable_k01j0uMNX6UB6SiKTKJ9Sw_fMgmFVF1';
+var FAC_BY_ID = {}, liveReqId = 0;
+function winKey(){ var w=todWindow(); return w ? w.starts+'|'+w.ends : 'default'; }
+function mergeLive(facs){
+  // id-aware 병합: 정적 하베스트와 같은 시설이면 중복 push 대신 라이브 필드(available 등)를 제자리 갱신.
+  // 시설 객체는 seeded 후보의 p.fac로 공유 참조라, 여기 갱신이 랭킹에 바로 반영된다.
+  var added=0, upd=0, wk=winKey();
+  for (var i=0;i<facs.length;i++){
+    var f=facs[i]; if(!f||!f.id) continue;
+    f.lat=+f.lat; f.lng=+f.lng; if(!isFinite(f.lat)||!isFinite(f.lng)) continue;
+    var ex = FAC_BY_ID[String(f.id)];
+    if (ex){
+      ex.available=f.available; ex.availWin=wk; upd++;
+      if (f.rating && f.rating.avg!=null) ex.rating=f.rating;
+      continue;
+    }
+    f.availWin=wk; FAC_BY_ID[String(f.id)]=f; FACILITIES.push(f); added++;
+  }
+  return {added:added, upd:upd};
+}
+/* available 비대칭 원칙: 유저가 준 '진짜 창'(win)에 대해서만 sold-out을 후순위 근거로 쓴다.
+   블록 통짜 창의 false는 유저의 실제 구간에선 참일 수 있어 강등 금지. true도 '자리 보장'으론 절대 표기 안 함. */
+function soldOutForWin(p){
+  return !!(win && p.fac && p.fac.availWin===winKey() && p.fac.available===false);
+}
+function upgradeName(p){   // 무명 lot 표시 개선: 매칭 시설 실제명 > 유형·동네 서술 (bare 'Parking lot' 제거)
+  if (p.named) return;
+  if (p.fac && p.fac.title){ p.name = p.fac.title; p.named = true; return; }
+  p.name = (INDOOR[p.ptype] ? 'Unnamed garage' : 'Unnamed lot') + (p.cell && p.cell.hood ? ' · ' + p.cell.hood : '');
+}
+function rejoinNear(lat,lng){   // dest 반경 안 주차점만 재조인
+  var d0={lat:lat,lng:lng};
+  for (var i=0;i<PARKING.length;i++){ var p=PARKING[i]; if (p.sh) continue; if (hav(d0,p)<=RADIUS_WIDE){ p.fac=(p.fee==='no'?null:facilityFor(p)); upgradeName(p); } }
+}
+/* ————— SpotHero-first: 시설 = 1급 후보 —————
+   짝짓기(조인) 없이 시설 자체가 후보로 랭킹에 들어감 → 이름/spot-id가 원래 자기 것(오매핑 원천 불가).
+   OSM은 공백지역·무료 노상 커버 전담. 같은 차고의 OSM 쌍둥이는 숨겨 이중노출 방지. */
+function facSpot(f){
+  var p = { name: f.title, named: true, lat:+f.lat, lng:+f.lng,
+            ptype: f.ftype==='garage' ? 'multi-storey' : 'surface',
+            fee: 'yes', fac: f, sh: true };
+  p.cell = nearestCell(p);
+  return p;
+}
+function seedFacilities(){
+  var added=0;
+  for (var i=0;i<FACILITIES.length;i++){
+    var f=FACILITIES[i];
+    if (f.__seeded || !isFinite(+f.lat) || !isFinite(+f.lng)) continue;
+    f.__seeded = true; FAC_BY_ID[String(f.id)]=f;
+    var p=facSpot(f);
+    for (var j=0;j<PARKING.length;j++){       // OSM 쌍둥이 억제 (유료/미상만 — 명시적 무료는 별개 실체)
+      var q=PARKING[j];
+      if (q.sh || q.dup || q.fee==='no') continue;
+      if ((q.fac && String(q.fac.id)===String(f.id)) || hav(p,q)<40) q.dup=true;
+    }
+    PARKING.push(p); added++;
+  }
+  return added;
+}
+function enhanceLive(lat,lng){   // 목적지 라이브 조회 → 병합 → 재조인 → 재렌더 (progressive)
+  if (!LIVE_ENABLED) return;
+  var my=++liveReqId, w=todWindow();
+  var u=LIVE_PROXY+'?lat='+lat.toFixed(5)+'&lon='+lng.toFixed(5)+(w?'&starts='+w.starts+'&ends='+w.ends:'');
+  fetch(u,{headers:{apikey:LIVE_KEY,Authorization:'Bearer '+LIVE_KEY}})
+    .then(function(r){ return r.ok?r.json():null; })
+    .then(function(j){
+      if(my!==liveReqId||!dest||dest.lat!==lat||dest.lng!==lng) return;
+      var wasLoading=liveLoading; liveLoading=false;
+      if(!j||!j.facilities){ if (wasLoading) render(); return; }   // 실패/빈 응답: Tier B 로딩문구만 정리, 정적 결과 유지
+      var r = mergeLive(j.facilities);
+      if (r.added>0) seedFacilities();
+      if (r.added>0 || r.upd>0 || wasLoading){ rejoinNear(lat,lng); render(); }   // availability 갱신도 재렌더 (sold-out 반영)
+    })
+    .catch(function(){
+      if (my!==liveReqId||!dest||dest.lat!==lat||dest.lng!==lng) return;
+      if (liveLoading){ liveLoading=false; render(); }   // Tier B: 실패해도 "Searching…" 상태에서는 벗어나야 함
+    });
+}
+// 예약 링크 전용 시설 해석 (이름 대조 + 확신 게이트).
+// 80m 안전조인(p.fac)이 놓쳤을 때만 동작. 이름이 확실히 맞으면 붙이고, 아니면 초근접만,
+// 멀고 이름도 안 맞으면 붙이지 않음 → 엉뚱한 차고에 spot-id 붙는 오매핑 방지(정직한 근처검색 폴백).
+function facTokens(s){
+  return (s||'').toLowerCase().replace(/[^a-z0-9 ]/g,' ').split(/\s+/)
+    .filter(function(t){ return t.length>2 && !/^(the|and|lot|garage|valet|parking|street|hotel|inc|san|francisco|los|angeles|ave|blvd)$/.test(t); });
+}
+function bookFac(p){
+  if (p.fee==='no') return null;                 // 확실한 무료 = SpotHero 유료시설과 다른 실체 (둔갑 금지)
+  if (p.fac) return p.fac;                        // 80m 안전조인이 이미 잡음
+  var pt = p.named ? facTokens(p.name) : [];
+  var needAll = pt.length>0 && pt.length<=3;      // 짧은 이름 → 전 토큰 일치 요구
+  var best=null, bestScore=-1;
+  for (var i=0;i<FACILITIES.length;i++){
+    var f=FACILITIES[i], d=hav(f,p);
+    if (d>250) continue;
+    var ft=facTokens(f.title), ov=0;
+    for (var k=0;k<pt.length;k++) if (ft.indexOf(pt[k])>=0) ov++;
+    var confident = pt.length ? (needAll ? ov===pt.length : ov>=Math.ceil(pt.length*0.6)) : false;
+    var score;
+    if (confident) score = 100000 - d;            // 이름 확신 → 거리보다 우선
+    else if (d<=40) score = 1000 - d;             // 이름 불확실 → 초근접(≤40m)만
+    else continue;                                 // 멀고 이름도 안 맞음 → 스킵(오매핑 방지)
+    if (score>bestScore){ bestScore=score; best=f; }
+  }
+  return best;
+}
+function bookUrl(p){
+  var w = todWindow(), fac = bookFac(p), sid = fac && fac.id;
+  return 'https://spothero.com/search?latitude=' + p.lat + '&longitude=' + p.lng +
+         '&search_string=' + encodeURIComponent(p.named ? p.name + ', ' + CITY.name : CITY.name) +
+         (w ? '&starts='+w.starts+'&ends='+w.ends : '') +
+         (sid ? '&view=dl&spot-id='+sid : '');
+}
+var dirUrl = function(p){ return 'https://www.google.com/maps/dir/?api=1&destination=' + p.lat + ',' + p.lng; };
+// 구글맵 = 좌표 핀 (검증 2026-07-08: 이름 검색은 도시 전체 검색 리스트로 흩어져 엉뚱한 동명 차고가
+// 1등에 뜸. 좌표 핀은 항상 정확히 그 지점 + 경로 버튼 — 결정론.)
+function mapUrl(p){
+  // 좌표-앵커 검색: @lat,lng,zoom이 뷰포트를 그 지점에 고정 → 동명 흩어짐 없이 바로 그 자리.
+  // 이름 있으면 그 이름으로, 무명 walk-in이면 'parking' 검색 → 구글 POI(이름·사진·시간)가 뜸.
+  if (p.named) return 'https://www.google.com/maps/search/' + encodeURIComponent(p.name) + '/@' + p.lat + ',' + p.lng + ',17z';
+  return 'https://www.google.com/maps/search/parking/@' + p.lat + ',' + p.lng + ',18z';
+}
+// SpotHero(유료 차고 예약)는 '돈 내고 안전 사는 게 정답일 때'만 전면.
+// 안전+무료 자리엔 안 띄움 — 그냥 세우면 되니까.
+function needsGarage(p){ return p.lvl > 0 || p.paid; }
+
+/* ————— time-of-day blocks —————
+   Safety is judged for the block you'll PARK IN, not "right now".
+   Per-cell counts live under bk12/bk24, keyed morning|afternoon|evening|night. */
+function bucketOf(h){ return (h>=5&&h<12)?'morning' : (h>=12&&h<17)?'afternoon' : (h>=17&&h<22)?'evening' : 'night'; }
+var TOD_CLOCK  = { morning:'5 am–noon', afternoon:'noon–5 pm', evening:'5–10 pm', night:'10 pm–5 am' };
+var TOD_PHRASE = { morning:'in the morning', afternoon:'in the afternoon', evening:'in the evening', night:'overnight' };
+var TOD_PILL   = { morning:'this morning', afternoon:'this afternoon', evening:'this evening', night:'overnight' };
+
+/* ————— state ————— */
+var PARKING = [], CELLS = [], META = {}, riskGeojson = null, FACILITIES = [];
+var streetGeojson = null, STREET = [], mapLens = 'risk';   // Street reports 렌즈 (시민 311 신고 · SF PoC)
+var URL_LENS = null, URL_Z = 0;   // 공유 링크의 렌즈·줌 복원 (z가 있으면 fitBounds 생략 — 고정 프레임)
+var dest = null, tod = 'evening', map = null, mapReady = false;   // tod = selected time block; real default set in boot()
+/* Tier B — nationwide mode: outside SF/LA (but inside the US) we still show live parking+protection,
+   just with no crime layer (dataless). tierB=true routes setDest away from the SF/LA-only error. */
+var tierB = false;
+var US_BBOX = [-125, 24, -66.5, 49.5];   // lng-min, lat-min, lng-max, lat-max — CONUS approx
+function inUS(lat,lng){
+  if (lat>=US_BBOX[1] && lat<=US_BBOX[3] && lng>=US_BBOX[0] && lng<=US_BBOX[2]) return true;   // 본토
+  if (lat>=18.5 && lat<=22.8 && lng>=-160.6 && lng<=-154.5) return true;                        // 하와이
+  if (lat>=51 && lat<=71.7 && lng>=-170 && lng<=-129) return true;                              // 알래스카
+  return false;
+}
+var liveLoading = false;   // Tier B first-paint: true while enhanceLive's first response for this dest is in flight
+/* win = 정확한 주차 구간 {date:'YYYY-MM-DD', startMin, durMin} · null = 시간블록(탭) 모드.
+   판정 원칙: 차는 '세워둔 구간 내내' 위험에 노출된다 → 구간이 걸치는 블록들의 worst-of로 판정,
+   예약(딥링크/available)은 그 구간 그대로. 탭 모드는 기존 동작과 100% 동일. */
+var win = null;
+function winDates(){
+  if (!win) return null;
+  var base = new Date(win.date+'T00:00:00');
+  var s = new Date(base.getTime() + win.startMin*60000);
+  return { start:s, end:new Date(s.getTime() + win.durMin*60000) };
+}
+function blockOfHour(h){ return (h>=5&&h<12)?'morning' : (h>=12&&h<17)?'afternoon' : (h>=17&&h<22)?'evening' : 'night'; }
+function blocksNow(){   // 구간이 걸치는 블록들 (시작 순서 유지) · 탭 모드 = [tod]
+  var w = winDates(); if (!w) return [tod];
+  var out=[], seen={};
+  for (var t=new Date(w.start); t<w.end && out.length<4; t=new Date(t.getTime()+30*60000)){
+    var b=blockOfHour(t.getHours());
+    if (!seen[b]){ seen[b]=1; out.push(b); }
+  }
+  return out.length?out:[tod];
+}
+function worstBucket(cell){   // 이 셀 기준, 구간이 걸치는 블록 중 최다 카운트 블록
+  var bs=blocksNow(), best={n:-1,b:bs[0]};
+  for (var i=0;i<bs.length;i++){ var n=cell&&cell.bk12?(cell.bk12[bs[i]]||0):0; if(n>best.n) best={n:n,b:bs[i]}; }
+  if (best.n<0) best.n=0;
+  return best;
+}
+function tphr(p){ return TOD_PHRASE[(p&&p.todUsed)||tod]; }   // per-spot 판정 블록 문구
+function tpil(p){ return TOD_PILL[(p&&p.todUsed)||tod]; }
+function winWeekday(){ return win ? new Date(win.date+'T12:00:00').toLocaleDateString('en-US',{weekday:'long'}) : null; }
+
+/* ————— utils ————— */
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+function hav(a,b){
+  var R=6371000, dLa=(b.lat-a.lat)*Math.PI/180, dLn=(b.lng-a.lng)*Math.PI/180,
+      l1=a.lat*Math.PI/180, l2=b.lat*Math.PI/180,
+      h=Math.sin(dLa/2)*Math.sin(dLa/2)+Math.cos(l1)*Math.cos(l2)*Math.sin(dLn/2)*Math.sin(dLn/2);
+  return 2*R*Math.asin(Math.sqrt(h));
+}
+function walkMin(m){ return Math.max(1, Math.ceil(m / WALK_M_PER_MIN)); }
+
+/* ————— safety model (v2 — time-block based) —————
+   Risk lives on the street zone (H3 cell). Protection lives in the facility.
+   zone = break-ins in the SELECTED time block (tod), last 12 mo, in that cell:
+     bZone(n): 0 low (<2) / 1 moderate (<6) / 2 high (6+)   [SF-calibrated, p95=5]
+   indoor+paid garage: safe; caution only when late (evening/overnight) in a high zone
+   indoor unpaid: caution in high zones (moderate too, when late)
+   surface/street: inherits zone, +1 when late if zone>low
+   NOTE: bk12/bk24 exist on CELLS only — never on parking points. Read via p.cell. */
+function bucketN(cell){ return cell && cell.bk12 ? (cell.bk12[tod]||0) : 0; }  // last 12 mo, selected block
+function bZone(n){ return n<2?0 : n<6?1 : 2; }
+/* facility tier v3 (two-layer-evidence §3):
+   0=S staffed∧covered · 1=A staffed∨covered · 2=B bookable open lot · 3=C OSM-only.
+   staffed = SpotHero attendant/valet (OSM supervised as fallback) · covered = SpotHero covered ∨ OSM indoor type. */
+var TIER_L = ['S','A','B','C'];
+function assess(p){
+  // 구간 판정: 차는 '세워둔 내내' 노출 → 걸치는 블록들의 worst-of.
+  // 보호 규칙 v2 (직원 상주 승격): 차량털이=몇 초짜리 노상 기회범죄 → '지켜보는 사람'이 핵심 억제력.
+  //   S(직원+실내) = 블록 무관 안전 · 직원만/실내만 = hot(z2) 제외 안전 (심야 직원 퇴근 가능성·노상 노출은 hot에서만 보수적으로)
+  var wb = worstBucket(p.cell), n = wb.n, z = bZone(n),
+      indoor = !!INDOOR[p.ptype], paid = p.fee==='yes',
+      bs = blocksNow(),
+      late = bs.indexOf('evening')>=0 || bs.indexOf('night')>=0, lvl;
+  var fac = p.fac || null, am = (fac && fac.amenities) || [];
+  var valet = am.indexOf('valet')>=0;
+  var staffed = valet || am.indexOf('attendant')>=0 || p.supervised==='yes';
+  var covered = am.indexOf('covered')>=0 || indoor;
+  if (staffed && covered) lvl = 0;
+  else if (staffed || indoor) lvl = (z===2) ? 1 : 0;
+  else { lvl = z; if (late && z>0) lvl = Math.min(2, lvl+1); }
+  // 발렛 = 순위 무관, 칩으로 사실 표기만 (2026-07-17 최종: 노천 발렛이 길에 세울 수 있어 승격 근거 불충분).
+  // valet는 staffed에 포함돼 기존 S/A 사다리로만 평가된다.
+  var tier = (staffed&&covered) ? 0 : (staffed||covered) ? 1 : fac ? 2 : 3;
+  return { lvl:lvl, z:z, n:n, todUsed:wb.b, indoor:indoor, paid:paid, late:late,
+           dataless: !p.cell,   // 범죄셀 조인 실패(전국 Tier B 포함) — "조용" 주장 금지, 뱃지 순 정렬
+           tier:tier, staffed:staffed, valet:valet, covered:covered, floorFail:ratingFloorFail(fac) };
+}
+/* grid index over cells (~445m bins) → nearest-cell join is O(1); LA's 5,326 cells stay free */
+var CELLIDX = {};
+function binKey(lat,lng){ return Math.round(lat/0.004)+','+Math.round(lng/0.004); }
+function buildCellIndex(){
+  CELLIDX={};
+  for (var i=0;i<CELLS.length;i++){ var k=binKey(CELLS[i].lat,CELLS[i].lng); (CELLIDX[k]||(CELLIDX[k]=[])).push(CELLS[i]); }
+}
+function nearestCell(p){
+  var best=null, bd=1e9, ky=Math.round(p.lat/0.004), kx=Math.round(p.lng/0.004);
+  for (var dy=-1;dy<=1;dy++) for (var dx=-1;dx<=1;dx++){
+    var bin=CELLIDX[(ky+dy)+','+(kx+dx)]; if(!bin) continue;
+    for (var i=0;i<bin.length;i++){ var d=hav(p,bin[i]); if(d<bd){bd=d;best=bin[i];} }
+  }
+  return bd<400 ? best : null;
+}
+/* 정렬 v7 (브라우징-first, 2026-07-11 사용자 결정): 기본은 무조건 가까운 순.
+   안전은 순서를 바꾸지 않는다 — 뱃지(Attendant/Indoor/Underground)와 pill(Active/Hot)이 말한다.
+   유일한 강등: 유저의 실제 시간창에 sold-out인 시설 (예약 못 하는 곳은 답이 아님, 비대칭 원칙 유지). */
+function rankCmp(a,b){
+  return ((soldOutForWin(a)?1:0)-(soldOutForWin(b)?1:0)) || (a.dist-b.dist);
+}
+/* 안전 우선 정렬 (구 v6) — 'Safest' 정렬 토글 전용으로 유지 */
+function safeCmp(a,b){
+  var ad=a.dataless?1:0, bd=b.dataless?1:0;
+  if (ad!==bd) return ad-bd;                                    // 데이터 있는 스팟 우선
+  if (ad){                                                       // 둘 다 dataless: sold-out 강등 → 뱃지(티어) → 거리
+    return ((soldOutForWin(a)?1:0)-(soldOutForWin(b)?1:0))       // 예약 못 하는 곳은 답이 아님 — dataless에도 동일 원칙
+        || (a.tier-b.tier) || (a.dist-b.dist);
+  }
+  return (a.lvl-b.lvl)
+      || ((soldOutForWin(a)?1:0)-(soldOutForWin(b)?1:0))         // 그 시간창 sold-out은 뒤로
+      || (a.dist-b.dist)                                         // 동급 안전이면 무조건 가까운 순
+      || ((a.floorFail?1:0)-(b.floorFail?1:0))                   // 평점바닥 = 제외 아닌 후순위+경고뱃지
+      || (a.tier-b.tier);
+}
+function rank(){   // 지도 핀용 상위 후보 = 카드 리스트와 같은 정렬의 앞 8개
+  return browseFiltered().slice(0,8);
+}
+function worstZone(){   // 구간이 걸치는 블록들 기준 최악 셀 (어느 블록이었는지 b도 반환)
+  var worst=null, wb=-1, wblk=null, i, c, r;
+  for (i=0;i<CELLS.length;i++){
+    c=CELLS[i]; if (hav(dest,c)>700) continue;
+    r = worstBucket(c);
+    if (r.n>wb){ wb=r.n; worst=c; wblk=r.b; }
+  }
+  return (worst && wb>=6) ? {cell:worst, n:wb, b:wblk} : null;   // 6+ = high (bZone)
+}
+/* neighborhood summary around the destination (~3 blocks), for the selected time window */
+function areaStats(){
+  // 구간 모드: 걸치는 블록별로 집계 → 최악 블록을 동네 렌즈로 (lvl 우선, 동률 시 카운트)
+  var bs=blocksNow(), acc={}, peaks={}, hood=null, hd=1e9, cells=0, maxC12=0, i, c, d, bi, b, v;
+  for (bi=0;bi<bs.length;bi++) acc[bs[bi]]={n:0,lvl:0};
+  for (i=0;i<CELLS.length;i++){
+    c=CELLS[i]; d=hav(dest,c); if (d>550) continue;
+    cells++;
+    for (bi=0;bi<bs.length;bi++){ b=bs[bi]; v = c.bk12 ? (c.bk12[b]||0) : 0;
+      acc[b].n+=v; if (bZone(v)>acc[b].lvl) acc[b].lvl=bZone(v); }
+    if ((c.c12||0)>maxC12) maxC12=c.c12||0;
+    if (c.peakTime) peaks[c.peakTime]=(peaks[c.peakTime]||0)+(c.c12||1);
+    if (d<hd && c.hood){ hd=d; hood=c.hood; }
+  }
+  var best=bs[0];
+  for (bi=1;bi<bs.length;bi++){ b=bs[bi];
+    if (acc[b].lvl>acc[best].lvl || (acc[b].lvl===acc[best].lvl && acc[b].n>acc[best].n)) best=b; }
+  var peak=null, pv=-1; for (var k in peaks){ if(peaks[k]>pv){pv=peaks[k];peak=k;} }
+  return { cells:cells, nTod:acc[best].n, lvl:acc[best].lvl, peak:peak, hood:hood, maxC12:maxC12, todUsed:best };
+}
+/* ② 퍼센타일 앵커 — "34건"이 큰지 작은지 도시 분포로 번역. 사건 있는 블록들 기준(0건 블록은 셀이 없음) */
+var C12SORT = [];
+function pctileTop(c12){
+  if (!C12SORT.length || !c12) return null;
+  var lo=0, hi=C12SORT.length;
+  while (lo<hi){ var mid=(lo+hi)>>1; if (C12SORT[mid] < c12) lo=mid+1; else hi=mid; }
+  return Math.max(1, Math.round(100*(1 - lo/C12SORT.length)));
+}
+
+/* ————— copy (editorial voice) ————— */
+function typeLabel(p){
+  // covered 판정은 exposureBadge와 동일식 — 뱃지 'Indoor garage' 옆에 메타가 'Open-air lot'이라고 말하는 모순 금지
+  var am = (p.fac&&p.fac.amenities)||[];
+  return p.ptype==='underground' ? 'Indoor · underground'
+       : p.ptype==='multi-storey' ? 'Indoor · parking structure'
+       : p.ptype==='rooftop' ? 'Rooftop lot'
+       : (am.indexOf('covered')>=0 || p.covered) ? 'Covered lot'
+       : 'Open-air lot';
+}
+/* facility fact badges. Phase A = facts only (Staffed/Indoor, amenities/OSM 근거);
+   rating numbers stay behind SHOW_PARTNER_DATA until the partnership is approved. */
+function fmtRC(n){ return n>=1000 ? (Math.round(n/100)/10)+'K' : String(n); }
+/* 노출도 사다리 — "내 차가 얼마나 보이나"를 카드당 뱃지 1개·색으로 (금=안 보임/안전 → 검정=노출).
+   차량털이=지나가다 보이면 깨는 기회범죄 → 안 보일수록 안전. 4단계 전부 뱃지가 붙어(노천도 침묵 안 함). */
+function exposureBadge(p){
+  var am = (p.fac&&p.fac.amenities)||[];
+  var valet = am.indexOf('valet')>=0;
+  var staffed = valet || am.indexOf('attendant')>=0 || p.supervised==='yes';
+  var covered = am.indexOf('covered')>=0 || p.covered || !!INDOOR[p.ptype];
+  // 2축 분리 (2026-07-12 유저 결정): 커버리지(구조)와 직원(운영)은 다른 축 — 합치지 않고 별도 뱃지.
+  // 커버리지 뱃지 = 항상 1개 (Underground 금 / Indoor 연금 / Open-air 검정) · Attended = 있으면 별도 베이지 칩.
+  var b;
+  if (p.ptype==='underground')  b = '<span class="fb ex-vault">Underground</span>';     // 거리서 안 보임 (최상)
+  else if (INDOOR[p.ptype])     b = '<span class="fb ex-covered">Indoor garage</span>'; // 진짜 건물 안
+  else if (covered)             b = '<span class="fb ex-covered">Covered</span>';       // 지붕만 (canopy lot) — garage라고 부르면 거짓
+  else                          b = '<span class="fb ex-open">Open-air</span>';         // 그대로 노출 — 직원 있어도 차는 보인다
+  if (valet) b += '<span class="fb ex-valet">Valet</span>';   // 운영축 최상급 — Attended를 대체 (칩 1개 유지)
+  else if (staffed) b += '<span class="fb ex-attend">Attended</span>';
+  return b;
+}
+function badgeHtml(p){
+  var b = exposureBadge(p);   // 노출도 = 항상 1개
+  if (p.floorFail || ratingFloorFail(p.fac)) b += '<span class="fb warn">⚠ Low ratings</span>';
+  if (SHOW_PARTNER_DATA && p.fac && p.fac.rating && p.fac.rating.avg!=null)
+    b += '<span class="fb">'+p.fac.rating.avg+'★ ('+fmtRC(p.fac.rating.count)+') · via SpotHero</span>';
+  return b;
+}
+/* pill = 블록 범죄 원판, 무조건 표시 (2026-07-12 유저 결정: 보호 승격이 'Hot block'을 지워버리면
+   위험한 동네의 실내 차고가 "Safe indoors"로만 보인다 — Anchorage 사례. 보호는 뱃지가 말하고,
+   블록 열기는 pill이 말한다. 둘의 긴장은 숨기지 않고 여행자에게 그대로 보여준다.) */
+function pillText(p){
+  if (p.dataless) return 'No crime data yet';   // 범죄셀 없음 = "조용하다" 주장 금지 (G0-1)
+  if (p.z===0) return 'Quiet block '+tpil(p);
+  if (p.z===1) return 'Active block';
+  return 'Hot block';
+}
+function pillClass(p){ return p.dataless ? 'na' : ['safe','warn','avoid'][p.z]; }
+/* ① 최근 사건 1줄 — 통계("34건")가 아니라 장면("월 6pm, 잠긴 차, 미검거")이 위험을 체감시킨다 */
+function humanIncident(r){
+  var d = r.desc||'';
+  if (/BFMV|Burglary From Motor/i.test(d)) d = 'burglary from a vehicle';
+  else if (/Locked Vehicle/i.test(d)) d = 'theft from a locked vehicle';
+  else if (/TFMV|Theft From Motor|From Unlocked/i.test(d)) d = 'theft from a vehicle';
+  else d = d.toLowerCase().replace(/[,.]/g,'')
+    .replace(/[<>]?\s*\$\s*\d[\d,]*/g,'')   // 법정 절도액 구간(">$950") 제거 — 통계 노이즈, 여행자에겐 무의미
+    .replace(/\s+/g,' ').trim().slice(0,42);
+  var when = r.day||'';
+  if (r.d){ var m=r.d.match(/^\d{4}-(\d{2})-(\d{2})/);
+    if (m) when = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m[1]]+' '+(+m[2])+(r.day?' ('+r.day+')':''); }
+  var t = r.time && r.time!=='00:00' ? (function(hm){ var h=+hm.slice(0,2); return ' '+((h%12)||12)+(h<12?' am':' pm'); })(r.time) : '';
+  var res = r.res==='arrest' ? 'arrest made' : r.res==='unsolved' ? 'unsolved' : (r.res||'');
+  return when+t+' — '+d+(res?', '+res:'');
+}
+function countChip(x){   // x = 숫자(레거시) 또는 assessed 후보객체(per-spot 렌즈)
+  var n = (x && typeof x==='object') ? x.n : x;
+  var pil = (x && typeof x==='object') ? tpil(x) : TOD_PILL[tod];
+  return (n||0)+(n===1?' break-in or theft':' break-ins & thefts')+' near here · '+pil+' · past 12 mo';
+}
+/* per-card "why?" chain — re-reads assess() fields + cell.hood, no new math */
+function whyChain(p){
+  var src = (CITY.source||'').split('·')[0].trim() || 'police records';   // 도시별 실제 출처 — SFPD 하드코딩은 23개 도시에서 거짓이었다
+  var hood = p.cell && p.cell.hood ? ' ('+esc(p.cell.hood)+')' : '';
+  var fac = typeLabel(p);   // 뱃지·메타와 동일 판정 — 커버드 lot을 'Open-air'라 부르던 모순 제거
+  var facNote = p.indoor ? ' — indoor keeps the car off the street count'
+              : (p.late && p.z>0 ? ' — open-air is escalated late' : '');
+  if (p.dataless){
+    return '① Crime layer: not yet available for this city<br>'+
+      '② Facility: '+fac+(p.valet?' · valet':p.staffed?' · staffed':'')+(p.paid?' · paid':'')+facNote+'<br>'+
+      '③ ⇒ '+pillText(p);
+  }
+  var judged = (win && blocksNow().length>1)
+    ? '<div class="wc2">your stay spans '+blocksNow().join(' + ')+' — judged by its riskiest stretch: '+p.todUsed+'</div>' : '';
+  return '① This block'+hood+' · '+tphr(p)+' · last 12 mo: '+p.n+' reported break-in'+(p.n===1?'':'s')+(p.cell&&p.cell.sv12?' & thefts':'')+' — '+src+judged+
+    (p.cell&&p.cell.sv12?'<div class="wc2">includes '+p.cell.sv12+' stolen-car case'+(p.cell.sv12===1?'':'s')+' on this block · all hours, past 12 mo</div>':'')+
+    '<div class="wc2">thresholds: &lt;2 quiet · &lt;6 active · 6+ hot (6+ ≈ top ~4% of SF blocks)</div>'+
+    '② Facility: '+fac+(p.valet?' · valet':p.staffed?' · staffed':'')+(p.paid?' · paid':'')+facNote+'<br>'+
+    '③ ⇒ '+pillText(p);
+}
+/* 카드 확장 패널 = why-chain + 최근 사건 장면 + 노상/시설 분리(LA) — 에세이 벽 금지, 정형 라인만 */
+function whyPanel(p){
+  var h = whyChain(p);
+  if (p.cell && p.cell.recent && p.cell.recent.length)
+    h += '<div class="wc2">Most recent on this block: '+esc(humanIncident(p.cell.recent[0]))+'.</div>';
+  if (p.cell && p.cell.st12!=null && (p.cell.st12+p.cell.fc12)>0)
+    h += '<div class="wc2">This block over 12 months, all hours: '+p.cell.st12+' on the street · '+p.cell.fc12+' inside parking facilities.</div>';
+  return h;
+}
+
+/* ————— render ————— */
+var AREA_WORD = ['Quiet','Some street activity','High break-in & theft activity'];   // 240 통합 (2026-07-17)
+// 근처 최신 사건 중 미검거(unsolved) 수 — "잡힌 사람 없음"은 여행자에게 실질 경고 신호
+function unsolvedNearby(){
+  var n=0, i, j, c;
+  for (i=0;i<CELLS.length;i++){
+    c=CELLS[i]; if (hav(dest,c)>550 || !c.recent) continue;
+    for (j=0;j<c.recent.length;j++) if (c.recent[j].res==='unsolved') n++;
+  }
+  return n;
+}
+/* 차량 도난 근접 집계 — 셀 sv12(12mo, 전체 시간대) 합. 헤드라인은 합산 지표, 분해는 메타·왜?에서만 */
+function stolenNearby(){
+  if (!dest) return 0;
+  var n=0,i; for (i=0;i<CELLS.length;i++){ if (hav(dest,CELLS[i])<=550) n+=(CELLS[i].sv12||0); }
+  return n;
+}
+/* Street reports 근접 집계 — 캠프 '신고' 수일 뿐 위험 판정이 아니다 (라벨도 그렇게만 말한다) */
+function streetNearby(){
+  if (!STREET.length || !dest) return 0;
+  var n=0,i; for (i=0;i<STREET.length;i++){ if (hav(dest,STREET[i])<=550) n+=STREET[i].n; }
+  return n;
+}
+function renderArea(){
+  var a = areaStats();
+  if (!a.cells){
+    $('areacard').innerHTML = '<div class="areacard"><span class="areadot" style="background:var(--line-2)"></span>'+
+      '<div class="areabody"><div class="areahead">'+esc(dest.name)+' area</div>'+
+      // 정직성 (감사 M6·T9 수리): '곧 나온다' 약속 금지. 데이터 부재의 두 경우를 구분해 사실만 —
+      // ①범죄 미커버 도시: 없다고만 ②커버 도시의 셀 0: 기록이 없다는 사실 + 관할 한계(산타모니카≠LAPD)를 함께.
+      '<div class="areasub">'+(
+        (tierB || CITY.nocrime || !CITY.source)
+          ? 'No crime data for this city. Spots are ranked by facility protection.'
+          : 'No break-ins or thefts in '+esc((CITY.source||'').split('·')[0].trim())+' records within ~3 blocks in the last 12 months. '+
+            '('+esc((CITY.source||'').split('·')[0].trim())+' covers '+esc(CITY.name)+' city limits only.) Spots are ranked by facility protection.'
+      )+'</div></div></div>';
+    return a;
+  }
+  // 산문 리드 1문장 + 조용한 메타 한 줄 (2026-07-14 유저 지적: "사실. 사실. 사실." 4연속 문단 = 생성문 리듬,
+  // 한정어 중복·서식 뒤죽박죽). 한정어는 한 번씩만: '~3 blocks'와 '12 mo'는 리드에, 창·출처는 메타 끝에 1회.
+  var count = a.nTod
+    ? '<b>'+a.nTod+(a.nTod===1?' break-in or theft':' break-ins & thefts')+'</b> within ~3 blocks '+TOD_PHRASE[a.todUsed]+', past 12 months'+
+      (function(){ var t=a.lvl>=1?pctileTop(a.maxC12):null;
+        return t!=null?' — <span style="white-space:nowrap">top '+t+'%</span> of '+esc(CITY.name)+' blocks.':'.'; })()
+    : 'No break-ins or thefts logged within ~3 blocks '+TOD_PHRASE[a.todUsed]+' in the past 12 months.';
+  var peak = (a.peak&&a.nTod&&a.peak!==TOD_PHRASE[a.todUsed].replace('in the ','').replace('overnight','night'))
+    ? ' Most break-ins happen in the '+esc(a.peak)+'.' : '';
+  var meta = [];
+  (function(){ var u=unsolvedNearby(); if (u>0&&a.lvl>=1) meta.push('<b>'+u+'</b> cases unsolved'); })();
+  (function(){ var v=stolenNearby(); if (v>0) meta.push('<b>'+v+'</b> cars stolen'); })();
+  (function(){ var s=streetNearby(); if (s>0) meta.push('<b>'+s+'</b> tent-camp reports (311)'); })();
+  $('areacard').innerHTML =
+    '<div class="areacard"><span class="areadot bg'+a.lvl+'"></span>'+
+    '<div class="areabody">'+
+      '<div class="areahead">'+esc(a.hood||dest.name)+' — <span class="lvlword lvl'+a.lvl+'">'+AREA_WORD[a.lvl]+' <span style="white-space:nowrap">'+TOD_PHRASE[a.todUsed]+'</span></span></div>'+
+      '<div class="areasub">'+count+peak+'</div>'+
+      (meta.length?'<div class="areameta">'+meta.join(' · ')+' · nearby, past 12 mo</div>':'')+
+    '</div></div>';
+  return a;
+}
+function allNearby(radiusM){
+  var lim = radiusM||1000, out=[], i, j, p, d;
+  for (i=0;i<PARKING.length;i++){
+    p=PARKING[i]; if (p.dup) continue; d=hav(dest,p); if (d>lim) continue;
+    var o=Object.assign({},p); o.dist=d; Object.assign(o,assess(o)); out.push(o);
+  }
+  out.sort(function(a,b){ return a.dist-b.dist; });
+  var ded=[];
+  for (i=0;i<out.length;i++){
+    var dup=false;
+    for (j=0;j<ded.length;j++){ if (!out[i].named && hav(out[i],ded[j])<40){ dup=true; break; } }
+    if (!dup) ded.push(out[i]);
+  }
+  return ded;
+}
+/* ————— 후보 탐색: 가까운 순 리스트 + 개수박힌 필터 (에어비앤비 문법: 리스트가 곧 답) ————— */
+var browseSort='safe', browseFilter=null, browseRadius=1000;   // 기본 = 안전순 (2026-07-12 유저 결정) · 도보 12분
+var browseWidened=false;   // 후보 4개 미만이면 도보 20분까지 넓힘 (dead-end 방지)
+function radiusLabel(){ return browseWidened ? 'a 20-min walk' : 'a 12-min walk'; }
+var BFILTERS=[
+  {key:'indoor',    label:'Covered',   test:function(o){ return o.covered; }},   // canopy lot 포함이라 'Indoor'는 과장
+  {key:'attendant', label:'Attendant', test:function(o){ return o.staffed; }},
+  {key:'underground',label:'Underground',test:function(o){ return o.ptype==='underground'; }}
+];
+var BSORTS=[
+  {key:'safe',  label:'Safest',  cmp:function(a,b){ return safeCmp(a,b); }},
+  {key:'close', label:'Closest', cmp:function(a,b){ return rankCmp(a,b); }}
+  // 'Most protected' 은퇴 (2026-07-11 프론트 검수): 고객이 Safest와 구분 못 함 — 선택지는 적을수록 명확
+];
+function bfilterTest(k){ for(var i=0;i<BFILTERS.length;i++) if(BFILTERS[i].key===k) return BFILTERS[i].test; return function(){return true;}; }
+function bsortCmp(k){ for(var i=0;i<BSORTS.length;i++) if(BSORTS[i].key===k) return BSORTS[i].cmp; return BSORTS[0].cmp; }
+function browsePool(){
+  browseWidened=false;
+  var full = allNearby(browseRadius);
+  if (full.length<4){
+    var w = allNearby(RADIUS_WIDE);
+    if (w.length>full.length){ full=w; browseWidened=true; }
+  }
+  return full;
+}
+function browseFiltered(){   // 카드·지도 핀이 공유하는 최종 리스트 (필터 + 현재 정렬)
+  var full = browsePool();
+  return (browseFilter ? full.filter(bfilterTest(browseFilter)) : full).slice().sort(bsortCmp(browseSort));
+}
+function cardHtml(p){
+  var sold = soldOutForWin(p), badges = badgeHtml(p);
+  return '<div class="pcard">'+
+    '<div class="cname">'+esc(p.name)+'</div>'+
+    '<div class="fbrow">'+badges+'<span class="pill '+pillClass(p)+'">'+pillText(p)+'</span></div>'+
+    '<div class="cmeta"><span>'+typeLabel(p)+(p.paid?' · paid':'')+'</span><span>'+walkMin(p.dist)+' min walk</span>'+
+      (p.cell&&p.cell.hood?'<span>'+esc(p.cell.hood)+'</span>':'')+
+      // 정확창 견적 — 프록시 v2가 quote total(cents)을 이미 실어줌. 표시는 Phase 게이트 뒤(제휴 승인 시 플래그만).
+      (SHOW_PARTNER_DATA&&p.fac&&p.fac.price_cents!=null?'<span>$'+(p.fac.price_cents/100).toFixed(2)+' · your window</span>':'')+'</div>'+
+    (p.dataless?'':'<div class="cchip">'+countChip(p)+'</div>')+
+    (sold?'<span class="soldnote">may be sold out for your exact time. Booking page will confirm.</span>':'')+
+    '<div class="cfoot">'+
+      (bookFac(p)?'<a class="altlink" href="'+bookUrl(p)+'" target="_blank" rel="noopener">Book ↗</a>'
+        : (needsGarage(p)?'<span class="walkin">walk-in</span>':''))+
+      '<a class="altlink" href="'+mapUrl(p)+'" target="_blank" rel="noopener">Maps</a>'+
+      '<button type="button" class="whybtn">details</button>'+
+    '</div>'+
+    '<div class="whychain">'+whyPanel(p)+'</div>'+
+  '</div>';
+}
+function renderCards(){
+  var MAXR=24, full = browsePool(), empties=[];
+
+  if (!full.length){   // 빈손 — 정직한 빈 상태 + 시 전체 최근접 예약차고 안내 (dead-end 금지)
+    if (tierB && liveLoading){   // Tier B 첫 라이브 응답 대기 중 — 빈 결과 단정 금지
+      $('cards').innerHTML = '<p style="margin:0;color:var(--ink-2)">Searching nearby garages…</p>';
+      $('securewrap').innerHTML='';
+      return [];
+    }
+    $('cards').innerHTML = '<p style="margin:0;color:var(--ink-2)">No bookable garage within a 20-minute walk of this exact spot.</p>';
+    var nb=null, nbd=1e9;
+    for (var ni=0; ni<PARKING.length; ni++){ var np=PARKING[ni];
+      if (!np.sh || np.dup || ratingFloorFail(np.fac)) continue;
+      var nd=hav(dest,np); if (nd<nbd){ nbd=nd; nb=Object.assign({},np); nb.dist=nd; } }
+    if (nb){ Object.assign(nb, assess(nb));
+      empties.push(nb);   // 공백지에서도 지도가 휑하지 않게 — 최근접 예약차고 핀 1개 (기획검수 P1)
+      $('securewrap').innerHTML = '<div class="securecard"><b>Nearest bookable garage</b>'+
+        '<p>'+esc(nb.name)+' — '+typeLabel(nb).toLowerCase()+', '+
+        (nb.dist>1400 ? (nb.dist/1609).toFixed(1)+' mi away' : walkMin(nb.dist)+' min walk')+'. '+countChip(nb)+'.</p>'+
+        '<div class="slinks"><a href="'+bookUrl(nb)+'" target="_blank" rel="noopener">Book it ↗</a>'+
+        '<a href="'+mapUrl(nb)+'" target="_blank" rel="noopener">Open in Maps</a></div></div>';
+    } else if (tierB){
+      $('securewrap').innerHTML = '<div class="securecard"><p style="margin:0">SpotHero has no bookable garages right here. Try the map: pan to a nearby area, then tap <b>Search this area</b>.</p></div>';
+    } else $('securewrap').innerHTML='';
+    return empties;
+  }
+
+  // 필터별 개수는 '현재 반경'의 후보에서 — 칩에 박아 dead-end를 사전 차단
+  var counts={}; for (var fi=0;fi<BFILTERS.length;fi++){ counts[BFILTERS[fi].key]=full.filter(BFILTERS[fi].test).length; }
+  if (browseFilter && !counts[browseFilter]) browseFilter=null;   // 0되면 자동 해제
+  var list = (browseFilter ? full.filter(bfilterTest(browseFilter)) : full).slice().sort(bsortCmp(browseSort));
+
+  var bar = '<div class="browsebar">'+
+    '<div class="bhead">'+full.length+' spot'+(full.length===1?'':'s')+' within '+radiusLabel()+'</div>'+
+    (function(){   // 정렬 힌트는 실제 정렬 상태(browseSort)를 따라간다 — Closest로 바꿨는데 'Safest first'라고 말하면 거짓
+      var a = window.__lastArea;
+      var srt = browseSort==='close'
+        ? 'Closest first. Tap Safest to sort by block risk.'
+        : 'Safest first. Tap Closest to sort by walk time.';
+      if (!a || !a.cells) return '<div class="bhint">No crime data for this city yet. Badges show which spots are staffed or covered.</div>';
+      return a.lvl>=1
+        ? '<div class="bhint">'+srt+'</div>'
+        : '<div class="bhint">Quiet area. '+srt+'</div>';
+    })()+
+    '<div class="bseg" id="bseg">'+BSORTS.map(function(s){ return '<button type="button" data-sort="'+s.key+'" class="'+(browseSort===s.key?'on':'')+'">'+s.label+'</button>'; }).join('')+'</div>'+
+    '<div class="bchips" id="bchips">'+BFILTERS.map(function(f){
+      var c=counts[f.key], on=browseFilter===f.key;
+      return '<button type="button" data-filter="'+f.key+'" class="bchip'+(on?' on':'')+(c?'':' off')+'"'+(c?'':' disabled')+'>'+f.label+' <span class="bc">'+c+'</span></button>';
+    }).join('')+'</div>'+
+  '</div>';
+
+  var rows = list.length ? list.slice(0,MAXR).map(cardHtml).join('')
+      + (list.length>MAXR ? '<div class="cmore">+'+(list.length-MAXR)+' more on the map</div>' : '')
+    : '<div class="cmore">No spots match that filter within '+radiusLabel()+'. Try clearing it.</div>';
+
+  $('cards').innerHTML = bar + rows;
+  $('securewrap').innerHTML='';
+  return list;
+}
+/* ————— bag storage (짐보관) — 별도 모드, 전국 균일 (제품 결정 2026-07-11) —————
+   전국 서비스에 부분 핀(SF 13곳)은 커버리지가 아니라 장식 — 큐레이션 핀 전면 은퇴.
+   짐보관 = 어디서 검색하든 똑같이: 조언 + 프로바이더 연결 카드 2장 (목적지 쿼리 포함).
+   수익은 어차피 클릭-아웃(제휴 쿠키) — 핀이든 카드든 동일. 지도핀(Radical 도시 수집기)은
+   트래픽으로 수요가 증명되면 승격 (docs/AFFILIATE-COVERAGE.md 백로그).
+   ① 모든 아웃링크는 레지스트리 통과 — 제휴 승인 시 aff 한 줄이면 전 링크 수익화.
+   ② priceFrom·coverage = 프로바이더 공표/실측값 (2026-07-11 검증, 분기 점검 때 갱신). */
+/* 렌터카 제휴 — LUG_PROVIDERS와 동일 온보딩(가입 시 aff 한 줄 + 딥링크 교체). 단일 소스:
+   SEO 페이지 생성기(gen-pages)도 jsdom 부트로 이 객체를 읽는다 (__curbsafe.rental).
+   ★ 최종 프로바이더 = DiscoverCars (2026-07-14 유저 확정). 단 DC의 검색 URL은 세션 GUID+암호화
+   페이로드라(실브라우저 실측) 공개 패턴으로 도시 딥링크를 조립할 수 없음 — 제휴 대시보드의 링크
+   생성기가 유일한 경로. 그래서 가입 전까지만 조립 가능한 Kayak 도시검색을 임시 사용. */
+var RENTAL = {
+  label: 'Discover Cars', aff: '',
+  // 가입 전: 홈으로 (도시 딥링크는 제휴 대시보드 생성기로만 조립 가능 — 가입 후 이 함수 교체)
+  urlFor: function(city){ return 'https://www.discovercars.com/'; }
+};
+/* 호텔 제휴 — 같은 패턴. Booking 딥링크는 도시 검색이 공개 URL이라 지금부터 기능함 (aff는 &aid= 추가) */
+var HOTELS = {
+  label: 'Booking.com', aff: '',
+  urlFor: function(city){ return 'https://www.booking.com/searchresults.html?ss=' + encodeURIComponent(city); }
+};
+function renderRentalHome(){
+  var el = $('rentalhome'); if (!el) return;
+  // 렌터카는 '여행 전' 결정 — 홈(도시 컨텍스트)에 노출 (2026-07-14 유저 지정: 맨 앞에도).
+  el.innerHTML = '<div class="lugcard"><div class="lugtop">'+
+    '<div class="lugtitle">Renting a car for this trip?'+
+      '<div class="lugmeta">'+esc(CITY.name)+' pickup rates · <span style="white-space:nowrap">'+esc(RENTAL.label)+'</span></div></div>'+
+    '<a class="lugcta" href="'+RENTAL.urlFor(CITY.name)+RENTAL.aff+'" target="_blank" rel="noopener nofollow sponsored">Compare ↗</a></div></div>';
+}
+var LUG_PROVIDERS = {
+  bounce: { label:'Bounce', aff:'', priceFrom:'from $2.25/day',   // 공표 정찰가 (2026-07-11 실측) — 분기 링크점검 때 갱신
+            search:function(q){ return 'https://usebounce.com/s?query='+q; } }
+  // Radical 은퇴 (2026-07-11 유저 결정: 검색 연결 자체가 부실). Bounce 단일 — 제휴 승인 시 aff 한 줄.
+};
+function affUrl(u, provider){
+  var p = LUG_PROVIDERS[provider];
+  if (p && p.aff) u += (u.indexOf('?')>=0 ? '&' : '?') + p.aff;
+  return u;
+}
+/* 지명 충돌 해결: "Union Square"는 SF에도 NYC에도 있다 — 도시명을 붙여서 넘긴다.
+   dest.city = Tier A면 커버도시명, Tier B면 지오코딩(photon)이 준 도시명. */
+function lugQuery(){
+  if (!dest) return '';
+  var q = dest.name;
+  if (dest.city && q.toLowerCase().indexOf(dest.city.toLowerCase()) < 0) q += ', ' + dest.city;
+  return encodeURIComponent(q);
+}
+function renderLugStrip(){
+  var dn = esc(dest ? dest.name : 'your destination');
+  var p = LUG_PROVIDERS.bounce;
+  $('lugstrip').innerHTML =
+    '<div class="lugcard"><div class="lugtop">'+
+      '<div class="lugtitle">Bag storage near '+dn+
+        '<div class="lugmeta">'+p.label+' · '+p.priceFrom+'</div></div>'+
+      '<a class="lugcta" href="'+affUrl(p.search(lugQuery()), 'bounce')+'" target="_blank" rel="noopener">Browse spots ↗</a></div>'+
+    '<div class="lugnote">Leave nothing visible in the car — rental papers included.</div></div>';
+}
+
+/* 카드 리스트 상호작용 — 위임 한 번 (why 토글 · 정렬 · 필터) */
+$('cards').addEventListener('click',function(e){
+  var t=e.target, b;
+  if (t.closest && (b=t.closest('.whybtn'))){
+    var card=b.closest('.pcard'), w=card&&card.querySelector('.whychain');
+    if (w) w.style.display = (w.style.display==='block'?'none':'block');
+    return;
+  }
+  if (t.closest && (b=t.closest('#bseg button'))){ browseSort=b.getAttribute('data-sort'); render(); return; }
+  if (t.closest && (b=t.closest('#bchips button'))){
+    if (b.disabled) return;
+    var k=b.getAttribute('data-filter'); browseFilter=(browseFilter===k?null:k); render();
+  }
+});
+function winLabel(){
+  var w=winDates(); if (!w) return '';
+  var f=function(d){ var h=d.getHours(),m=d.getMinutes(); return ((h%12)||12)+(m?':'+(m<10?'0':'')+m:'')+(h<12?' am':' pm'); };
+  var day=w.start.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+  return day+' · '+f(w.start)+' – '+f(w.end);
+}
+function render(){
+  if (!dest) return;
+  $('hero').style.display='none'; $('pops').style.display='none'; $('herodemo').style.display='none';
+  $('results').classList.add('show');
+  $('destname').textContent = dest.name;
+  var as = renderArea();
+  window.__lastArea = as;   // browsebar 힌트가 지역 성격(조용/위험/데이터없음)을 읽음
+  lensBlock = (win && as && as.todUsed) ? as.todUsed : tod;   // 지도 색칠 렌즈 동기화
+
+  // 지역 경고는 리스트 위 — "어디를 피할지"를 먼저, 그다음 리스트에서 고른다
+  var wz = worstZone();
+  $('avoidwrap').innerHTML = !wz ? '' :
+    '<div class="avoidstrip"><b>Skip street parking around '+esc(wz.cell.hood||'here')+' '+TOD_PHRASE[wz.b]+'</b>'+
+    '<p>'+wz.n+' break-ins & thefts within a block, past 12 months'+(wz.cell.peakDay?' — <span style="white-space:nowrap">worst on '+esc(wz.cell.peakDay)+'s</span>':'')+   // 시간대는 제목이 이미 말함 (R6: 한정어 1회)
+    '. Pick a garage from the list instead.</p></div>';
+
+  var list = renderCards();
+  renderLugStrip();
+
+  // 정직성: '우리가 언제 빌드했나'(generated_at)가 아니라 '기록이 실제로 언제까지 있나'를 보여준다.
+  // 소스가 조용히 죽어도 빌드 날짜는 매일 갱신돼 — 그건 신선한 척이다. 기준 = 월 5건 이상인 마지막 달.
+  var total = 0, lastM = '', spanM = 0;
+  (function(){
+    var ms = Object.keys(META.monthly||{}).sort();
+    for (var i=0;i<ms.length;i++) total += META.monthly[ms[i]];
+    for (var j=ms.length-1;j>=0;j--){ if ((META.monthly[ms[j]]||0) >= 5){ lastM = ms[j]; break; } }
+    // 실제 데이터 범위(첫달→끝달) — '24 months' 하드코딩은 Tampa(롤링 12개월 소스)에서 거짓이었다
+    if (ms.length){ var a1=ms[0].split('-'), b1=ms[ms.length-1].split('-');
+      spanM = (+b1[0]-+a1[0])*12 + (+b1[1]-+a1[1]) + 1; }
+  })();
+  var updated = lastM ? new Date(lastM+'-15T12:00:00').toLocaleDateString('en-US',{month:'short',year:'numeric'}) : '';
+  $('trust').innerHTML = tierB
+    ? '<b>How this works.</b> Live parking + protection facts (attendant / covered) via SpotHero — no crime layer for this city yet. '+
+      'Bookings via SpotHero or Bounce (bag storage) may earn us a commission. <a href="map.html">Explore the full data map →</a>'
+    : '<b>How this works.</b> Every reported car break-in & theft ('+CITY.source+', '+total.toLocaleString()+' incidents over '+spanM+' months) is mapped to block-zones and joined to '+PARKING.length+' bookable parking facilities (SpotHero). Checked daily'+(updated?' · police records through <b>'+updated+'</b>':'')+'. '+
+      'Locations are block-anonymized: this describes <b>area</b> risk, not a guarantee about any spot. Bookings via SpotHero or Bounce (bag storage) may earn us a commission. '+
+      '<a href="map.html">Explore the full data map →</a>';
+
+  // map-first: 지도는 항상 상단에 — 리스트 순서 그대로 번호 핀이 찍힌다
+  renderLegend();
+  if (typeof maplibregl!=='undefined'){ if (!map) initMap(); else { map.resize(); drawMapFocus(list.slice(0,8)); repaintMap(); } }
+}
+/* 지도가 화면 밖으로 나가면 플로팅 Map 버튼 — 탭하면 전체화면 지도 모드 (스크롤 복귀 아님) */
+var mapMode=false;
+var FAB_MAP='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 3L3 5v16l6-2 6 2 6-2V3l-6 2-6-2z"/><path d="M9 3v16M15 5v16"/></svg> Map';
+var FAB_LIST='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 6h16M4 12h16M4 18h16"/></svg> List';
+function setMapMode(on){
+  mapMode=!!on;
+  document.body.classList.toggle('mapmode', mapMode);
+  $('mapfab').innerHTML = mapMode ? FAB_LIST : FAB_MAP;
+  hideMini();
+  if (mapMode && infoPopup){ try{ infoPopup.remove(); }catch(e){} infoPopup=null; }
+  if (map && mapReady) setTimeout(function(){ try{ map.resize(); }catch(e){} }, 60);
+}
+function hideMini(){ var m=$('minicard'); if(m){ m.classList.remove('show'); } }
+$('minicard').addEventListener('click', function(e){
+  if (e.target.closest && e.target.closest('.mcx')) hideMini();
+});
+window.addEventListener('scroll', function(){
+  var fab=$('mapfab');
+  if (mapMode){ fab.classList.add('show'); return; }
+  if (!$('results').classList.contains('show')){ fab.classList.remove('show'); return; }
+  var r=$('mapblock').getBoundingClientRect();
+  fab.classList.toggle('show', r.bottom < 60);
+}, {passive:true});
+$('mapfab').addEventListener('click', function(){ setMapMode(!mapMode); });
+
+/* ————— map (lazy, tod-aware) ————— */
+/* 팝업은 전 지도 통틀어 단일 인스턴스 — 점 팝업과 핀 팝업이 서로를 안 닫고 쌓이던 겹침 버그의 근치 */
+var infoPopup = null;
+function showInfo(lngLat, html){
+  if (mapMode){   // 지도 모드: 같은 정보를 팝업 대신 하단 미니카드로 (정보 경로 단일 유지)
+    $('minicard').innerHTML = '<button type="button" class="mcx" aria-label="Close">×</button>'+html;
+    $('minicard').classList.add('show');
+    return;
+  }
+  if (infoPopup){ try{ infoPopup.remove(); }catch(e){} infoPopup = null; }
+  infoPopup = new maplibregl.Popup({offset:12, maxWidth:'272px'}).setLngLat(lngLat).setHTML(html).addTo(map);
+}
+function mapBadges(ptype, covered, staffed, valet){   // 지도 팝업도 카드와 같은 뱃지 언어 (2축·컬러)
+  var b = ptype==='underground' ? '<span class="fb ex-vault">Underground</span>'
+        : INDOOR[ptype] ? '<span class="fb ex-covered">Indoor garage</span>'
+        : covered ? '<span class="fb ex-covered">Covered</span>'
+        : '<span class="fb ex-open">Open-air</span>';
+  if (valet) b += ' <span class="fb ex-valet">Valet</span>';
+  else if (staffed) b += ' <span class="fb ex-attend">Attended</span>';
+  return b;
+}
+var lensBlock = 'evening';   // 지도 색칠 렌즈: 탭 모드=tod, 구간 모드=동네 최악 블록 (render에서 갱신)
+function todExprCell(){ return ['interpolate',['linear'],['coalesce',['get',lensBlock,['get','bk12']],0]].concat(RAMP_B); }
+function todExprDot(){
+  // 점 = 주차 위치만 (2026-07-17): 위험은 면 음영 한 채널이 말한다. 점까지 위험색이면
+  // "범죄 발생 지점"으로 오독됨(유저 실지적) — 종이 채움 + 잉크 테두리로 채널 분리.
+  // (na 회색 분기도 은퇴: 색 주장 자체가 없어져 G0-1 위반 소지 소멸)
+  return '#faf9f6';
+}
+function repaintMap(){
+  if (!mapReady) return;
+  if (map.getLayer('risk-fill')) map.setPaintProperty('risk-fill','fill-color',todExprCell());
+  map.setPaintProperty('parking-dot','circle-color',todExprDot());
+}
+function legendDotRow(){
+  // 2행 = 점의 정체 (2026-07-17 유저: "주차장이 많다는 건지 범죄가 많다는 건지 확실하지가 않아")
+  return '<span class="lgrow"><span class="dotglyph"></span>parking spots — tap any · <span class="pinglyph">1</span> our picks, safest first</span>';
+}
+function renderLegend(){
+  if (tierB){
+    $('maplegend').innerHTML = 'No crime layer for this city yet.'+
+      '<span class="lgrow"><span class="dotglyph"></span>bookable parking — tap any</span>';
+    return;
+  }
+  if (mapLens==='street' && streetGeojson){
+    // 정직성: '위험'이 아니라 '신고 수'. 출처·창·표시임계를 범례에 박는다 (Zillow가 First Street®를 박듯).
+    var ss = streetGeojson.shadeStops || [25,60,150];
+    $('maplegend').innerHTML = 'Area color = Tent-camp reports, past 12 mo · '+esc(streetGeojson.source||'311')+':'+
+      '<span class="swatch" style="background:#ddd4ee"></span>'+ss[0]+
+      '<span class="swatch" style="background:#ab97d9"></span>'+ss[1]+
+      '<span class="swatch" style="background:#7c5fc0"></span>'+ss[2]+'+'+
+      '&nbsp;· under '+ss[0]+' not shaded · civilian reports, not a crime measure'+
+      legendDotRow();
+    return;
+  }
+  $('maplegend').innerHTML = 'Area color = Break-ins & thefts '+TOD_PILL[lensBlock]+', past 12 mo:'+
+    '<span class="swatch" style="background:#22C55E"></span>0'+
+    '<span class="swatch" style="background:#EAB308"></span>3'+
+    '<span class="swatch" style="background:#EF4444"></span>10+'+
+    legendDotRow();
+}
+function parkingFC(){
+  return {type:'FeatureCollection',features:PARKING.filter(function(p){ return !p.dup; }).map(function(p){
+    var bk=(p.cell&&p.cell.bk12)||{}, am=(p.fac&&p.fac.amenities)||[];
+    return {type:'Feature',geometry:{type:'Point',coordinates:[p.lng,p.lat]},properties:{
+      name:p.name, ptype:p.ptype||'', fee:p.fee||'', named:p.named?1:0, na:p.cell?0:1,
+      staffed:(am.indexOf('attendant')>=0||am.indexOf('valet')>=0||p.supervised==='yes')?1:0,
+      va:(am.indexOf('valet')>=0)?1:0,
+      covered:(am.indexOf('covered')>=0||INDOOR[p.ptype])?1:0,
+      b_morning:bk.morning||0, b_afternoon:bk.afternoon||0, b_evening:bk.evening||0, b_night:bk.night||0 }};
+  })};
+}
+function initMap(){
+  map = new maplibregl.Map({
+    container:'map',
+    // 실험 (2026-07-13): voyager → OpenFreeMap liberty — 지하철역 상시 + 상호명 POI(줌15+)로
+    // '내가 어딘지' 파악 가능하게. 톤이 안 맞으면 원복: basemaps.cartocdn.com/gl/voyager-gl-style/style.json
+    style:'https://tiles.openfreemap.org/styles/liberty',
+    center:[dest.lng,dest.lat], zoom:URL_Z||14.2, attributionControl:false
+  });
+  map.addControl(new maplibregl.AttributionControl({compact:true}));   // v3에선 Map 옵션 객체가 안 먹어 — 모바일서 두 줄 판때기로 퍼지던 원인
+  map.addControl(new maplibregl.NavigationControl({showCompass:false}),'top-right');
+  // UX 북극성 "내가 어디고, 위험한가" — 파란 내위치 점 (탭 한 번). 권한 거부 시 조용히 무시.
+  if (navigator.geolocation) map.addControl(new maplibregl.GeolocateControl({positionOptions:{enableHighAccuracy:true},showUserLocation:true}),'top-right');
+  map.on('load',function(){
+    var firstSymbol, firstRoad; var layers=map.getStyle().layers;
+    for (var i=0;i<layers.length;i++){ if(layers[i].type==='symbol'){ firstSymbol=layers[i].id; break; } }
+    // 음영은 '도로선 아래'에 — 도로 위에 칠하면 도로 위계(간선/골목)가 틴트로 뭉개진다 (2026-07-13 유저 지적).
+    for (var r=0;r<layers.length;r++){ if(/^(tunnel_|road_)/.test(layers[r].id)){ firstRoad=layers[r].id; break; } }
+    var under = firstRoad || firstSymbol;
+    // liberty는 건물(idx 83)이 도로보다도 위 — 음영(도로 아래)을 건물이 덮어서 도심에선 안 보인다.
+    // 건물을 반투명으로 눌러 음영이 비치게 하고, 3D 돌출은 끔 (음영 가독이 건물 디테일보다 우선).
+    if (map.getLayer('building')) map.setPaintProperty('building','fill-opacity',0.28);
+    if (map.getLayer('building-3d')) map.setLayoutProperty('building-3d','visibility','none');
+    if (riskGeojson){   // Tier B: 범죄셀 없음 → risk 소스/레이어 자체를 건너뜀 (G0-3 progressive)
+      map.addSource('risk',{type:'geojson',data:riskGeojson});
+      map.addLayer({id:'risk-fill',type:'fill',source:'risk',paint:{'fill-color':todExprCell(),'fill-opacity':0.55}},under);
+      map.addLayer({id:'risk-line',type:'line',source:'risk',paint:{'line-color':'rgba(25,23,19,0.10)','line-width':0.4}},under);
+    }
+    if (streetGeojson){   // Tent camps 렌즈(시민 311 신고) — 면 음영은 한 번에 하나라 기본 숨김, 렌즈로 전환
+      // '의미 있는 밀집만' 칠한다 — 저강도까지 칠하면 파랑 벽지 (2026-07-14 실물 2회 확인).
+      // 임계는 도시 밀도 적응값(수집기가 계산해 파일에 박음 — SF 고정 25는 필라델피아(최다 20)에선 빈 화면).
+      var ss = streetGeojson.shadeStops || [25,60,150];
+      map.addSource('street',{type:'geojson',data:streetGeojson});
+      map.addLayer({id:'street-fill',type:'fill',source:'street',layout:{visibility:'none'},paint:{
+        'fill-color':['step',['get','n'],'#ddd4ee',ss[1],'#ab97d9',ss[2],'#7c5fc0',ss[2]*3,'#45317e'],   // 인디고 — liberty 건물 청회색과 분리 (2026-07-17)
+        'fill-opacity':['step',['get','n'],0,ss[0],0.5,ss[1],0.62,ss[2],0.75]}},under);
+      map.addLayer({id:'street-line',type:'line',source:'street',layout:{visibility:'none'},paint:{'line-color':'rgba(25,23,19,0.10)','line-width':0.4}},under);
+    }
+    map.addSource('parking',{type:'geojson',data:parkingFC()});
+    map.addLayer({id:'parking-dot',type:'circle',source:'parking',paint:{
+      'circle-radius':['interpolate',['linear'],['zoom'],11,2.5,14,5.5,16,8],
+      'circle-color':todExprDot(),
+      'circle-stroke-color':'#191713','circle-stroke-width':1.4}});
+    // every dot is inspectable — free browse, not just our picks
+    map.on('click','parking-dot',function(e){
+      var f=e.features[0], pr=f.properties, co=f.geometry.coordinates.slice();
+      var na=+pr.na===1;
+      var fake={ ptype:pr.ptype, fee:pr.fee, cell: na?null:{bk12:{morning:+pr.b_morning,afternoon:+pr.b_afternoon,evening:+pr.b_evening,night:+pr.b_night}} };
+      var a=assess(fake), pobj={named:+pr.named===1, name:pr.name, lat:co[1], lng:co[0]};
+      showInfo(co,
+        '<b>'+esc(pr.name)+'</b><br>'+mapBadges(pr.ptype, +pr.covered===1, +pr.staffed===1, +pr.va===1)+
+        '<br>'+typeLabel(pr)+(pr.fee==='yes'?' · paid':'')+(dest?' · '+walkMin(hav(dest,pobj))+' min walk':'')+
+        '<br>'+(a.dataless ? pillText(a) : a.n+' break-ins & thefts '+tpil(a)+' · past 12 mo')+
+        '<br><a href="'+mapUrl(pobj)+'" target="_blank" rel="noopener">Open in Maps</a>'+
+        ((needsGarage(a)&&bookFac(pobj))?' · <a href="'+bookUrl(pobj)+'" target="_blank" rel="noopener">Book garage</a>':''));
+    });
+    map.on('mouseenter','parking-dot',function(){ map.getCanvas().style.cursor='pointer'; });
+    map.on('mouseleave','parking-dot',function(){ map.getCanvas().style.cursor=''; });
+    // W3 pan-to-research: 유저 제스처(originalEvent)로 중심이 dest에서 400m+ 벗어나면 버튼 노출.
+    // fitBounds 등 programmatic 이동은 originalEvent 부재 + suppressMove(타이머 리셋)로 이중 제외.
+    map.on('movestart', function(){ hideMini(); });
+    map.on('moveend', function(e){
+      if (!e.originalEvent || suppressMove || !dest) return;
+      var c = map.getCenter();
+      if (hav({lat:c.lat,lng:c.lng}, dest) > 400) $('searchArea').classList.add('show');
+    });
+    mapReady=true; drawMapFocus(rank()); renderLegend(); renderLens();
+    if (URL_LENS==='street' && streetGeojson) setLens('street');   // 공유 링크의 렌즈 복원
+  });
+}
+/* Street reports 렌즈 — 면(음영)은 한 번에 하나 (Zillow Climate Risks 라디오 문법).
+   데이터 있는 도시에서만 노출. 주차 점·번호 핀은 렌즈와 무관하게 항상 위. */
+function renderLens(){
+  var el=$('maplens'); if(!el) return;
+  if (!streetGeojson || tierB){ el.classList.remove('show'); el.innerHTML=''; return; }
+  el.innerHTML =   // 누구나 아는 단어로 — 'Encampments'는 비원어민 여행자가 모른다 (2026-07-14 유저 지적)
+    '<button type="button" data-l="risk" class="'+(mapLens==='risk'?'on':'')+'">Break-ins</button>'+
+    '<button type="button" data-l="street" class="'+(mapLens==='street'?'on':'')+'">Tent camps</button>';
+  el.classList.add('show');
+}
+function setLens(l){
+  if (l===mapLens || !map || !mapReady) return;
+  mapLens=l;
+  var vis=function(id,on){ if(map.getLayer(id)) map.setLayoutProperty(id,'visibility',on?'visible':'none'); };
+  vis('risk-fill',l==='risk'); vis('risk-line',l==='risk');
+  vis('street-fill',l==='street'); vis('street-line',l==='street');
+  renderLens(); renderLegend();
+}
+$('maplens').addEventListener('click',function(e){
+  var b=e.target.closest?e.target.closest('button'):null;
+  if (b) setLens(b.getAttribute('data-l'));
+});
+var suppressMove=false, suppressTimer=null;
+$('searchArea').addEventListener('click',function(){
+  if (!map || !mapReady) return;
+  var c = map.getCenter();
+  $('searchArea').classList.remove('show');
+  setDest('Map area', c.lat, c.lng);   // Tier A/B 라우팅 포함 전부 setDest가 처리 · When(시간창)은 유지
+});
+function pinEl(label){
+  // 균일한 잉크색 핀 — "1위 초록핀" 은퇴 (단일 정답 사상 폐기: 순서=거리일 뿐, 우열 아님)
+  var el=document.createElement('div');
+  el.style.cssText='width:26px;height:26px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);display:flex;align-items:center;justify-content:center;color:#fff;border:2px solid #fff;box-shadow:0 2px 5px rgba(0,0,0,.35);background:#191713';
+  var s=document.createElement('span'); s.style.cssText='transform:rotate(45deg);font:800 12px/1 -apple-system,sans-serif'; s.textContent=label; el.appendChild(s);
+  return el;
+}
+var __marks=[];
+function drawMapFocus(picks){
+  if (!mapReady) return;
+  __marks.forEach(function(m){ m.remove(); }); __marks=[];
+  // destination (blue) — 팝업 역시 단일 showInfo 경유
+  (function(){
+    var dm = new maplibregl.Marker({color:'#3B82F6'}).setLngLat([dest.lng,dest.lat]).addTo(map);
+    var del = dm.getElement ? dm.getElement() : null;
+    if (del) del.addEventListener('click', function(ev){ ev.stopPropagation(); showInfo([dest.lng,dest.lat], '<b>'+esc(dest.name)+'</b>'); });
+    __marks.push(dm);
+  })();
+  if (infoPopup){ try{ infoPopup.remove(); }catch(e){} infoPopup=null; }   // 핀 갈아끼울 때 고아 팝업 정리
+  // numbered pins = list order — 팝업은 점과 동일한 단일 showInfo (겹침 불가)
+  picks.forEach(function(p,i){
+    var el = pinEl(String(i+1));
+    el.addEventListener('click', function(ev){
+      ev.stopPropagation();
+      showInfo([p.lng,p.lat],
+        '<b>'+esc(p.name)+'</b><br>'+mapBadges(p.ptype, !!p.covered, !!p.staffed, !!(p.fac&&p.fac.amenities&&p.fac.amenities.indexOf('valet')>=0))+
+        '<br>'+walkMin(p.dist)+' min walk · '+(p.dataless?'no crime data yet':p.n+' break-ins & thefts '+tpil(p)+' · past 12 mo')+
+        '<br><a href="'+mapUrl(p)+'" target="_blank" rel="noopener">Open in Maps</a>'+
+        (bookFac(p)?' · <a href="'+bookUrl(p)+'" target="_blank" rel="noopener">Book garage</a>':''));
+    });
+    __marks.push(new maplibregl.Marker({element:el, anchor:'bottom'}).setLngLat([p.lng,p.lat]).addTo(map));
+  });
+  var b = new maplibregl.LngLatBounds([dest.lng,dest.lat],[dest.lng,dest.lat]);
+  picks.forEach(function(p){ b.extend([p.lng,p.lat]); });
+  // programmatic 이동 — Search this area 미노출. 카메라 무변경이면 moveend가 아예 안 와서
+  // 이벤트 기반 리셋은 영구 잠김 → 타이머(애니메이션 400ms + 여유)로 확실히 해제.
+  suppressMove=true;
+  clearTimeout(suppressTimer);
+  suppressTimer=setTimeout(function(){ suppressMove=false; }, 700);
+  $('searchArea').classList.remove('show');
+  if (!URL_Z) map.fitBounds(b,{padding:60,maxZoom:15.8,duration:400});   // z 고정 링크는 프레임 유지
+}
+/* ————— destination input ————— */
+// dest 확정 후 공통 흐름(Tier A/B 양쪽에서 호출): URL 갱신 + render + 라이브 조회
+/* 검색 알약 접힘/펼침 (에어비앤비 문법: 검색 후 화면은 결과의 것) */
+function collapseSearch(){
+  $('searchwrap').style.display='none';
+  var sh=document.querySelector('.shint'); if (sh) sh.style.display='none';
+  $('sumpill').style.display='flex';
+  $('sumdest').textContent = dest ? dest.name : '';
+  $('sumwhen').textContent = whenSumText().replace(/ \([^)]*\)$/,'');   // 접힘 pill은 한 줄 — "(3 hrs)"는 Edit에서 보이니 생략
+}
+function expandSearch(){
+  $('searchwrap').style.display='';
+  var sh=document.querySelector('.shint'); if (sh) sh.style.display='';
+  $('sumpill').style.display='none';
+}
+$('sumpill').addEventListener('click', expandSearch);
+function commitDest(name,lat,lng,city){
+  dest={name:name,lat:lat,lng:lng,city:city||''};
+  liveLoading = tierB;   // Tier B만 "첫 응답 대기" 로딩문구 필요 (Tier A는 정적 데이터가 즉시 있음)
+  $('q').value=name; closeSugg();
+  try{ history.replaceState(null,'','?q='+encodeURIComponent(name)+'&ll='+lat.toFixed(5)+','+lng.toFixed(5)
+    +(win?'&at='+win.date+'T'+(win.startMin/60|0)+':'+(win.startMin%60<10?'0':'')+win.startMin%60+'&dur='+win.durMin:'')
+    +(mapLens==='street'?'&lens=street':'')); }catch(e){}   // 렌즈 상태 보존 — 주소 재작성이 lens를 벗기던 잔버그 (2026-07-14)
+  collapseSearch();
+  render(); window.scrollTo({top:0,behavior:'smooth'});
+  enhanceLive(lat,lng);   // 라이브 조회로 정확 매칭 업그레이드 (progressive, 실패 시 정적 유지)
+}
+// Tier B 진입: SF/LA 밖이지만 미국 본토 안 — 정적 데이터 없이 라이브(주차+보호뱃지)만으로 동작
+function enterTierB(name,lat,lng,city){
+  tierB = true;
+  CITY = { key:'us', name:'United States', tz:'', fresh:false, source:'', bbox:US_BBOX, center:{lat:lat,lng:lng}, popular:[] };
+  PARKING=[]; FACILITIES=[]; FAC_BY_ID={}; CELLS=[]; META={}; riskGeojson=null; C12SORT=[];
+  streetGeojson=null; STREET=[]; mapLens='risk';
+  buildCellIndex();
+  if (map){ try{ map.remove(); }catch(e){} map=null; mapReady=false; }
+  if (pickmap){ try{ pickmap.remove(); }catch(e){} pickmap=null; pickReady=false; }
+  if ($('citySel')) $('citySel').value='';
+  renderChips();
+  commitDest(name,lat,lng,city);
+}
+function setDest(name,lat,lng,city){
+  var c = cityFor(lat,lng);
+  if (!c){
+    if (!inUS(lat,lng)){ showErr('Quiet & Safe covers the United States only. Crime data in 26 cities, live parking nationwide.'); return; }
+    hideErr();
+    browseFilter=null; browseRadius=1000;   // 새 목적지 → 탐색 상태 초기화 (정렬은 유지)
+    enterTierB(name,lat,lng,city);          // Tier B: 도시명은 지오코딩이 준 것(있으면) — Bounce 지명충돌 방지
+    return;
+  }
+  hideErr();
+  browseFilter=null; browseRadius=1000;   // 새 목적지 → 탐색 상태 초기화 (정렬은 유지)
+  if (c.key !== CITY.key){   // 다른 도시(또는 Tier B에서 복귀) → 그 도시 데이터 로드 후
+    $('loading').style.display='block';
+    loadCity(c.key).then(function(){ $('loading').style.display='none'; commitDest(name,lat,lng,c.name); })
+      .catch(function(){ $('loading').style.display='none'; showErr('Couldn’t load '+c.name+' data.'); });
+  } else commitDest(name,lat,lng,c.name);   // Tier A: 커버 도시명이 곧 disambiguator
+}
+function showErr(t){ $('errbox').textContent=t; $('errbox').style.display='block'; $('loading').style.display='none'; }
+function hideErr(){ $('errbox').style.display='none'; }
+
+/* google maps link / raw coord parsing */
+function parseMapsUrl(s){
+  var m;
+  if ((m=s.match(/^\s*(-?\d{1,2}\.\d+)\s*,\s*(-?\d{1,3}\.\d+)\s*$/))) return {lat:+m[1],lng:+m[2],name:'Dropped pin'};
+  if (!/^https?:\/\//i.test(s)) return null;
+  if (/maps\.app\.goo\.gl|goo\.gl\/maps/i.test(s)) return {short:true};
+  if ((m=s.match(/@(-?\d{1,2}\.\d+),(-?\d{1,3}\.\d+)/)))   return {lat:+m[1],lng:+m[2],name:'Dropped pin'};
+  if ((m=s.match(/!3d(-?\d{1,2}\.\d+)!4d(-?\d{1,3}\.\d+)/))) return {lat:+m[1],lng:+m[2],name:'Dropped pin'};
+  if ((m=s.match(/[?&]q=(-?\d{1,2}\.\d+),(-?\d{1,3}\.\d+)/))) return {lat:+m[1],lng:+m[2],name:'Dropped pin'};
+  if ((m=s.match(/\/place\/([^/@?]+)/))) return {query:decodeURIComponent(m[1]).replace(/\+/g,' ')};
+  return {};
+}
+
+/* photon geocoding (free, keyless) */
+var suggTimer=null, suggItems=[], suggIdx=-1;
+function photon(q,limit,bias){
+  // 이중 질의 설계 (2026-07-17): 편향 단독은 "Union Square" NYC를 묻고(실측 10/10 SF),
+  // 무편향 단독은 "Marriott"에서 선택 도시 지점이 묻힌다(실측 상위 = 카디프·포틀랜드).
+  // → 자동완성은 [도시내 편향 히트] + [무편향 전국] 병합·중복제거. 둘 다 생존.
+  var u='https://photon.komoot.io/api/?q='+encodeURIComponent(q)+'&limit='+limit;
+  if (bias) u+='&lat='+bias.lat+'&lon='+bias.lng;
+  return fetch(u).then(function(r){return r.json();});
+}
+function reverseName(lat,lng,cb){
+  // 좌표만 온 링크(핀 드랍·단축링크)에 실제 장소명 붙이기 — 실패하면 'Dropped pin' 유지 (조용한 폴백)
+  fetch('https://photon.komoot.io/reverse?lat='+lat+'&lon='+lng)
+    .then(function(r){ return r.json(); })
+    .then(function(d){ var f=d.features&&d.features[0]; cb(f?labelOf(f):null); })
+    .catch(function(){ cb(null); });
+}
+function inCityBox(f){
+  var b=CITY&&CITY.bbox; if(!b) return false;
+  var c=f.geometry.coordinates;
+  return c[0]>=b[0]&&c[0]<=b[2]&&c[1]>=b[1]&&c[1]<=b[3];
+}
+function labelOf(f){
+  var p=f.properties||{};
+  return { name: p.name || [p.street,p.housenumber].filter(Boolean).join(' ') || 'Unnamed',
+           sub: [p.street&&p.name?p.street:null, p.district, p.city, p.state].filter(Boolean).join(', '),
+           city: p.city || '' };
+}
+function search(q){
+  $('loading').style.display='block'; hideErr();
+  var parsed=parseMapsUrl(q);
+  if (parsed){
+    if (parsed.short){
+      // 단축링크는 CORS 때문에 브라우저가 못 푼다 → 엣지 리졸버가 최종 URL을 대신 따라옴 (실링크 검증 2026-07-17)
+      fetch(RESOLVE_URL+'?u='+encodeURIComponent(q.trim()), {headers:{apikey:LIVE_KEY,Authorization:'Bearer '+LIVE_KEY}})
+        .then(function(r){ return r.json(); })
+        .then(function(j){
+          $('loading').style.display='none';
+          var p2 = j && j.url ? parseMapsUrl(j.url) : null;
+          if (p2 && p2.lat){ reverseName(p2.lat, p2.lng, function(lb){ setDest(lb?lb.name:p2.name, p2.lat, p2.lng, lb?lb.city:''); }); return; }
+          if (p2 && p2.query){ search(p2.query); return; }   // /place/이름 형태 → 텍스트 검색 재진입
+          showErr('Couldn’t read that short link. Paste the full URL from your browser, or type the place name.');
+        })
+        .catch(function(){ $('loading').style.display='none';
+          showErr('Couldn’t read that short link. Paste the full URL from your browser, or type the place name.'); });
+      return;
+    }
+    if (parsed.lat){ $('loading').style.display='none';
+      reverseName(parsed.lat, parsed.lng, function(lb){ setDest(lb?lb.name:parsed.name, parsed.lat, parsed.lng, lb?lb.city:''); }); return; }
+    if (parsed.query) q=parsed.query;
+  }
+  // 자동완성과 같은 이중질의 — 엔터 직행도 "Marriott"가 카디프로 튀지 않게 (도시내 > 미국내 > 전역 1위)
+  Promise.all([photon(q,5,CITY&&CITY.center), photon(q,5)]).then(function(ds){
+    $('loading').style.display='none';
+    var local=((ds[0]&&ds[0].features)||[]).filter(inCityBox)[0];
+    var plain=(ds[1]&&ds[1].features)||[], us=null;
+    for (var i=0;i<plain.length;i++){ var c=plain[i].geometry.coordinates; if (inUS(c[1],c[0])){ us=plain[i]; break; } }
+    var f=local||us||plain[0];
+    if (!f){ showErr('Couldn’t find that. Try a landmark or address.'); return; }
+    var lb=labelOf(f);
+    setDest(lb.name, f.geometry.coordinates[1], f.geometry.coordinates[0], lb.city);
+  }).catch(function(){ showErr('Search is unreachable right now. Try again in a moment.'); });
+}
+
+/* autocomplete */
+$('q').addEventListener('input',function(){
+  var q=this.value.trim();
+  clearTimeout(suggTimer);
+  if (q.length<3 || /^https?:/i.test(q)){ closeSugg(); return; }
+  suggTimer=setTimeout(function(){
+    Promise.all([
+      photon(q,10,CITY&&CITY.center),   // 선택 도시 편향 — 브랜드·상호 검색용
+      photon(q,10)                       // 전국 중립 — 동명 지명 공정성 (NYC Union Square 생존)
+    ]).then(function(ds){
+      // 편향분은 도시 안 히트만, 최대 3개 — 표시 상한(6)을 다 먹으면 무편향분(타도시 동명)이 다시 묻힌다
+      var biased=(ds[0].features||[]).filter(inCityBox).slice(0,3);
+      var d={features: biased.concat(ds[1].features||[])};
+      var seen={};
+      suggItems=(d.features||[]).filter(function(f){
+        var c=f.geometry.coordinates;
+        if (!inUS(c[1],c[0])) return false;          // 전국 서비스 — 커버도시로 제안을 죽이지 않는다 (P0)
+        var l=labelOf(f), k=(l.name+'|'+l.city).toLowerCase();
+        if (seen[k]) return false; seen[k]=1;        // 같은 이름·같은 도시 중복 제거 — 다도시 동명은 전부 노출
+        return true;
+      }).slice(0,6);
+      var el=$('sugg');
+      if (!suggItems.length){ closeSugg(); return; }
+      el.innerHTML=suggItems.map(function(f,i){
+        var l=labelOf(f), c=f.geometry.coordinates;
+        var covered = !!cityFor(c[1],c[0]);   // 비커버면 정직하게: 라이브 주차만, 범죄 데이터 없음
+        var sub = (l.sub||'') + (covered ? '' : ((l.sub?' · ':'')+'live parking only'));
+        return '<button type="button" data-i="'+i+'"><div class="s1">'+esc(l.name)+'</div>'+(sub?'<div class="s2">'+esc(sub)+'</div>':'')+'</button>';
+      }).join('');
+      el.classList.add('open'); suggIdx=-1;
+      el.querySelectorAll('button').forEach(function(b){
+        b.addEventListener('click',function(){ pickSugg(+this.dataset.i); });
+      });
+    }).catch(function(){});
+  },260);
+});
+function pickSugg(i){
+  var f=suggItems[i]; if(!f) return;
+  var lb=labelOf(f);
+  pendDest(lb.name, f.geometry.coordinates[1], f.geometry.coordinates[0], lb.city);
+}
+function closeSugg(){ $('sugg').classList.remove('open'); suggIdx=-1; }
+$('q').addEventListener('keydown',function(e){
+  var el=$('sugg'), open=el.classList.contains('open'), btns=el.querySelectorAll('button');
+  if (e.key==='ArrowDown'&&open){ e.preventDefault(); suggIdx=Math.min(btns.length-1,suggIdx+1); mark(btns); }
+  else if (e.key==='ArrowUp'&&open){ e.preventDefault(); suggIdx=Math.max(0,suggIdx-1); mark(btns); }
+  else if (e.key==='Enter'&&open&&suggIdx>=0){ e.preventDefault(); pickSugg(suggIdx); }
+  else if (e.key==='Escape'){ closeSugg(); }
+});
+function mark(btns){ btns.forEach(function(b,i){ b.classList.toggle('hover',i===suggIdx); }); }
+document.addEventListener('click',function(e){ if(!$('searchbox').contains(e.target)) closeSugg(); });
+
+/* A안 확정: 시간이 중요 — 칩·제안·내위치·픽커는 Where만 채우고(pend), 실행은 CTA/엔터만 한다 */
+var pending=null;
+function pendDest(name,lat,lng,city){
+  pending={name:name,lat:lat,lng:lng,city:city||''};
+  $('q').value=name; closeSugg();
+  var g=$('gobtn'); if(g){ g.classList.add('armed'); g.textContent='Find safe parking near '+(name.length>22?name.slice(0,22)+'…':name); }
+}
+function go(){
+  if (pending){ setDest(pending.name,pending.lat,pending.lng,pending.city); return; }
+  var q=$('q').value.trim();
+  if (dest && q===dest.name){ collapseSearch(); render(); return; }   // 목적지 그대로 → 재접기(When 변경만 반영)
+  if (q) search(q); else $('q').focus();
+}
+$('sform').addEventListener('submit',function(e){ e.preventDefault(); go(); });
+if ($('gobtn')) $('gobtn').addEventListener('click', go);
+$('q').addEventListener('input', function(){ pending=null; var g=$('gobtn'); if(g){ g.classList.remove('armed'); g.textContent='Find safe parking'; } });
+$('locbtn').addEventListener('click',function(){
+  if (!navigator.geolocation){ showErr('Location isn’t available in this browser.'); return; }
+  $('loading').style.display='block';
+  navigator.geolocation.getCurrentPosition(function(pos){
+    $('loading').style.display='none';
+    pendDest('Your location',pos.coords.latitude,pos.coords.longitude);
+  },function(){ $('loading').style.display='none'; showErr('Couldn’t get your location.'); },{enableHighAccuracy:true,timeout:8000});
+});
+
+/* ————— find on map (pin picker) ————— */
+var pickmap=null, pickReady=false;
+function initPicker(){
+  var c = dest ? [dest.lng,dest.lat] : [CITY.center.lng,CITY.center.lat];
+  pickmap = new maplibregl.Map({ container:'pickmap', style:'https://tiles.openfreemap.org/styles/liberty', center:c, zoom:13, attributionControl:false });   // 메인 지도와 동일 (liberty)
+  pickmap.addControl(new maplibregl.AttributionControl({compact:true}));
+  pickmap.addControl(new maplibregl.NavigationControl({showCompass:false}),'top-right');
+  if (navigator.geolocation) pickmap.addControl(new maplibregl.GeolocateControl({positionOptions:{enableHighAccuracy:true}}),'top-right');
+  pickmap.on('load',function(){
+    var layers=pickmap.getStyle().layers, firstSymbol, firstRoad, i, r;
+    for (i=0;i<layers.length;i++){ if(layers[i].type==='symbol'){ firstSymbol=layers[i].id; break; } }
+    for (r=0;r<layers.length;r++){ if(/^(tunnel_|road_)/.test(layers[r].id)){ firstRoad=layers[r].id; break; } }
+    if (riskGeojson){
+      pickmap.addSource('prisk',{type:'geojson',data:riskGeojson});
+      pickmap.addLayer({id:'prisk-fill',type:'fill',source:'prisk',paint:{'fill-color':['interpolate',['linear'],['get','c24']].concat(RAMP),'fill-opacity':0.32}},firstRoad||firstSymbol);
+    }
+    pickReady=true; pickmap.resize();
+  });
+}
+function openPicker(){ $('picker').classList.add('open'); if(!pickmap) initPicker(); else pickmap.resize(); }
+function closePicker(){ $('picker').classList.remove('open'); }
+$('mapfind').addEventListener('click',openPicker);
+$('pickclose').addEventListener('click',closePicker);
+$('pickgo').addEventListener('click',function(){
+  if(!pickmap) return;
+  var c=pickmap.getCenter();
+  closePicker();
+  pendDest('Dropped pin', c.lat, c.lng);   // Where만 채움 — 실행은 CTA (시간 확인 유도, A안)
+});
+$('picksearchform').addEventListener('submit',function(e){
+  e.preventDefault();
+  var q=$('pickq').value.trim(); if(!q||!pickmap) return;
+  photon(q,1).then(function(d){
+    var f=d.features&&d.features[0]; if(!f) return;
+    pickmap.flyTo({ center:[f.geometry.coordinates[0], f.geometry.coordinates[1]], zoom:15, duration:600 });
+  }).catch(function(){});
+});
+
+/* ————— when: 날짜·시간 컨트롤 (예약 파라미터 · 렌즈는 worst-of 자동 파생) ————— */
+function initWhen(){
+  var d=new Date(), p2=function(n){return (n<10?'0':'')+n;};
+  $('wdate').value = d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate());
+  $('wdate').min = $('wdate').value;
+  var s=$('wstart'), h, m;
+  for (h=0;h<24;h++) for (m=0;m<60;m+=30){
+    var v=h*60+m, lab=((h%12)||12)+':'+p2(m)+(h<12?' AM':' PM');
+    var o=document.createElement('option'); o.value=v; o.textContent=lab; s.appendChild(o);
+  }
+  var next=(Math.floor((d.getHours()*60+d.getMinutes())/30)+1)*30; if(next>=1440) next=1410;
+  s.value=next;
+  ['wdate','wstart','wdur'].forEach(function(id){ $(id).addEventListener('change', applyWhen); });
+  $('whensum').addEventListener('click', function(){ $('whenrow').classList.toggle('open'); });
+  paintWhen();
+}
+function winFromControls(){
+  var startMin=+$('wstart').value, dv=$('wdur').value;
+  return { date:$('wdate').value, startMin:startMin, durMin: dv==='ON' ? (1440-startMin)+8*60 : +dv };
+}
+function whenSumText(){
+  var dv=$('wdate').value, sm=+$('wstart').value, du=$('wdur').value;
+  var d=new Date(dv+'T12:00:00');
+  var day=isNaN(d)?dv:d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+  var h=(sm/60)|0, mm=sm%60, t=((h%12)||12)+(mm?':'+(mm<10?'0':'')+mm:'')+(h<12?' AM':' PM');
+  var endMin = du==='ON' ? 8*60 : (sm + +du) % 1440;
+  var eh=(endMin/60)|0, em=endMin%60, te=((eh%12)||12)+(em?':'+(em<10?'0':'')+em:'')+(eh<12?' AM':' PM');
+  var dl=du==='ON'?'overnight':((+du/60)+(+du===60?' hr':' hrs'));
+  return day+' · '+t+' – '+te+' ('+dl+')';
+}
+// 모바일: 시간구간+길이는 한 덩어리로 줄바꿈 — "(3 hrs)"만 다음 줄로 떨어지는 과부 줄 방지 (2026-07-14 유저 지적)
+function whenSumHtml(){
+  var full=whenSumText(), i=full.indexOf(' · ');
+  return esc(full.slice(0,i))+' · <span style="white-space:nowrap">'+esc(full.slice(i+3))+'</span>';
+}
+function applyWhen(){
+  win = winFromControls();
+  paintWhen();
+  if (dest){ render(); enhanceLive(dest.lat,dest.lng); }   // 정확창으로 라이브 재조회
+}
+function paintWhen(){
+  $('whenrow').classList.toggle('on', !!win);
+  $('whenval').innerHTML = whenSumHtml();
+}
+initWhen();
+
+/* 목적지 사진 — 에어비앤비 문법: 지역마다 사진. 소스 = Wikipedia 썸네일(자유 라이선스, CORS 개방).
+   49도시 사진을 손 큐레이션하면 그게 또 슬롭 — "이름, 도시" 문서 썸네일로 런타임 자동 매칭,
+   실패하면 조용히 텍스트 카드 유지 (jsdom·오프라인에서도 안전). */
+var WIKI_THUMBS = {};   // '이름|도시' → url ('' = 없음 확정)
+function wikiThumb(name, cityName, el){
+  var k = name + '|' + cityName;
+  if (WIKI_THUMBS[k] !== undefined){
+    if (WIKI_THUMBS[k] && el) el.style.backgroundImage = 'url("' + WIKI_THUMBS[k] + '")';
+    return;
+  }
+  var tryTitle = function(t){
+    return fetch('https://en.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(t))
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(j){ return (j && j.type !== 'disambiguation' && j.thumbnail && j.thumbnail.source) ? j.thumbnail.source : null; })
+      .catch(function(){ return null; });
+  };
+  tryTitle(name + ', ' + cityName)
+    .then(function(u){ return u || tryTitle(name); })
+    .then(function(u){
+      WIKI_THUMBS[k] = u || '';
+      if (u && el && el.isConnected) el.style.backgroundImage = 'url("' + u + '")';
+    });
+}
+/* popular destinations (active city) — 사진 카드: 사진 + 이름 + 안전 스냅샷 (홈 = 브라우징부터) */
+var AREA_WORD_SHORT = ['Quiet area','Some activity','High break-in area'];
+function spotSnapshot(lat,lng){
+  var pt={lat:lat,lng:lng}, worst=-1, cells=0, i, c, r;
+  for (i=0;i<CELLS.length;i++){
+    c=CELLS[i]; if (hav(pt,c)>550) continue;
+    cells++; r=worstBucket(c); var z=bZone(r.n); if (z>worst) worst=z;
+  }
+  return { cells:cells, lvl:worst<0?0:worst };
+}
+/* 히어로 데모 지도 — 실데이터(선택 도시)로 '읽는 법'을 보여준다. 상호작용:
+   칩1 = 음영 플래시 · 칩2 = 점 확대 플래시 · 칩3 = Tent camps 렌즈 토글 (실제 기능 미리보기) */
+var heroMap=null, heroLens='risk';
+function initHeroDemo(){
+  var box=$('herodemo'); if(!box) return;
+  if (typeof maplibregl==='undefined' || !riskGeojson){ box.style.display='none'; if(heroMap){try{heroMap.remove();}catch(e){} heroMap=null;} return; }
+  box.style.display='';
+  if (heroMap){ try{ heroMap.remove(); }catch(e){} heroMap=null; }
+  heroLens='risk'; var tb=$('hdTent'); if(tb) tb.classList.remove('on');
+  heroMap = new maplibregl.Map({ container:'heromap', style:'https://tiles.openfreemap.org/styles/liberty',
+    center:[CITY.center.lng,CITY.center.lat], zoom:12.4, attributionControl:false, dragRotate:false });
+  heroMap.addControl(new maplibregl.AttributionControl({compact:true}));
+  heroMap.on('load', function(){ try{   // compact가 작은 지도에서 펼침 상태로 시작하는 것 접기
+    var at=$('heromap').querySelector('.maplibregl-ctrl-attrib'); if(at) at.classList.remove('maplibregl-compact-show');
+  }catch(e){} });
+  if (heroMap.scrollZoom) heroMap.scrollZoom.disable();   // 페이지 스크롤 보호 (팬·핀치는 유지) — 테스트 스텁엔 없음
+  heroMap.on('load', function(){
+    var layers=heroMap.getStyle().layers, firstRoad, i;
+    for (i=0;i<layers.length;i++){ if(/^(tunnel_|road_)/.test(layers[i].id)){ firstRoad=layers[i].id; break; } }
+    if (heroMap.getLayer('building')) heroMap.setPaintProperty('building','fill-opacity',0.28);
+    heroMap.addSource('hrisk',{type:'geojson',data:riskGeojson});
+    heroMap.addLayer({id:'hrisk-fill',type:'fill',source:'hrisk',paint:{'fill-color':todExprCell(),'fill-opacity':0.55}},firstRoad);
+    if (streetGeojson){
+      var ss=streetGeojson.shadeStops||[25,60,150];
+      heroMap.addSource('hstreet',{type:'geojson',data:streetGeojson});
+      heroMap.addLayer({id:'hstreet-fill',type:'fill',source:'hstreet',layout:{visibility:'none'},paint:{
+        'fill-color':['step',['get','n'],'#cfe0f2',ss[1],'#8fb4dd',ss[2],'#4a7fb5',ss[2]*3,'#123c6e'],
+        'fill-opacity':['step',['get','n'],0,ss[0],0.5,ss[1],0.62,ss[2],0.75]}},firstRoad);
+    }
+    heroMap.addSource('hpark',{type:'geojson',data:parkingFC()});
+    heroMap.addLayer({id:'hpark-dot',type:'circle',source:'hpark',paint:{
+      'circle-radius':['interpolate',['linear'],['zoom'],11,2,14,4.5],
+      'circle-color':todExprDot(),'circle-stroke-color':'#191713','circle-stroke-width':1}});
+  });
+  var flash=function(layer,prop,hi,lo){ if(!heroMap.getLayer(layer)) return;
+    heroMap.setPaintProperty(layer,prop,hi); setTimeout(function(){ try{heroMap.setPaintProperty(layer,prop,lo);}catch(e){} },650); };
+  $('hdRisk').onclick=function(){ flash('hrisk-fill','fill-opacity',0.85,0.55); };
+  $('hdDots').onclick=function(){ if(heroMap.getLayer('hpark-dot')){ flash('hpark-dot','circle-radius',9,['interpolate',['linear'],['zoom'],11,2,14,4.5]); } };
+  $('hdTent').onclick=function(){
+    if (!heroMap.getLayer('hstreet-fill')) return;
+    heroLens = heroLens==='risk' ? 'street' : 'risk';
+    heroMap.setLayoutProperty('hstreet-fill','visibility',heroLens==='street'?'visible':'none');
+    heroMap.setLayoutProperty('hrisk-fill','visibility',heroLens==='street'?'none':'visible');
+    this.classList.toggle('on',heroLens==='street');
+  };
+}
+function renderChips(){
+  var pt=$('popstitle'); if (pt) pt.textContent = 'Popular in ' + CITY.name;
+  initHeroDemo();       // 데모 지도도 도시 데이터로 (nocrime 도시는 스스로 숨음)
+  renderRentalHome();   // 도시 바뀔 때 렌터카 모듈도 같이
+  $('chips').innerHTML = CITY.popular.map(function(s,i){
+    var st = spotSnapshot(s[1],s[2]);
+    var tag = st.cells ? '<span class="dc2 lvl'+st.lvl+'">'+AREA_WORD_SHORT[st.lvl]+'</span>'
+                       : '<span class="dc2 na">Live parking</span>';
+    return '<button data-i="'+i+'"><span class="dcimg"></span>'+
+      '<span class="dcbody"><span class="dc1">'+esc(s[0])+'</span>'+tag+'</span></button>';
+  }).join('');
+  var pc = document.createElement('div');
+  pc.className='photocredit'; pc.textContent='Photos from Wikipedia';
+  $('chips').appendChild(pc);
+  $('chips').querySelectorAll('button').forEach(function(b){
+    b.addEventListener('click',function(){ var s=CITY.popular[+this.dataset.i]; pendDest(s[0],s[1],s[2],CITY.name); });
+    var sp = CITY.popular[+b.dataset.i];
+    wikiThumb(sp[0], CITY.name, b.querySelector('.dcimg'));
+  });
+}
+
+/* load a city's data (risk + parking) → reset maps, chips, header */
+function loadCity(key){
+  tierB = false;   // 실제 커버 도시(정적 데이터) 로드 = Tier B 해제의 단일 지점 (citySel 복귀 경로 포함)
+  CITY = CITIES[key];
+  if (CITY.nocrime){
+    // 파킹-온리 도시 (2026-07-12 유저 결정: "전국 도시 다 넣어, 범죄지도 없더라도").
+    // 정적 파일 없음 — 라이브 SpotHero만. 화면은 Tier B 문법 그대로 (dataless pill·정직한 범례·푸터).
+    tierB = true;
+    PARKING=[]; FACILITIES=[]; FAC_BY_ID={}; CELLS=[]; META={}; riskGeojson=null; C12SORT=[];
+    streetGeojson=null; STREET=[]; mapLens='risk';
+    buildCellIndex();
+    if (map){ try{ map.remove(); }catch(e){} map=null; mapReady=false; }
+    if (pickmap){ try{ pickmap.remove(); }catch(e){} pickmap=null; pickReady=false; }
+    if ($('citySel')) $('citySel').value = CITY.key;
+    renderChips();
+    return Promise.resolve();
+  }
+  // 후보 = SpotHero 단독 (bookable-only, 2026-07-11 확정). OSM·시공식 데이터 배제 —
+  // 커버리지 확장은 타 주차예약 서비스 연동으로만. 전국 확장형: SpotHero 라이브는 좌표 기반이라 도시 무관.
+  return Promise.all([
+    fetch('data/risk-'+key+'.geojson',{cache:'no-store'}).then(function(r){return r.json();}),
+    fetch('data/facilities-'+key+'.json',{cache:'no-store'})
+      .then(function(r){ return r.ok ? r.json() : {facilities:[]}; })
+      .catch(function(){ return {facilities:[]}; }),   // 시설 레이어는 있으면 강화, 없어도 동작
+    fetch('data/street-'+key+'.geojson',{cache:'no-store'})
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .catch(function(){ return null; })   // Street reports(311) — 있으면 렌즈 노출, 없으면 UI 자체가 안 뜸
+  ]).then(function(res){
+    var risk=res[0];
+    riskGeojson=risk; META={generated_at:risk.generated_at, monthly:risk.monthly};
+    streetGeojson=res[2]||null; mapLens='risk';
+    STREET = streetGeojson ? streetGeojson.features.map(function(f){
+      var r=f.geometry.coordinates[0],x=0,y=0,i;
+      for(i=0;i<r.length;i++){ x+=r[i][0]; y+=r[i][1]; }
+      return { lng:x/r.length, lat:y/r.length, n:f.properties.n };
+    }) : [];
+    FACILITIES=(res[1]&&res[1].facilities)||[]; FAC_BY_ID={};
+    PARKING=[];   // SpotHero 단독 — seedFacilities()가 전량 채움
+    CELLS=risk.features.map(function(f){
+      var ring=f.geometry.coordinates[0],x=0,y=0;
+      for (var i=0;i<ring.length;i++){ x+=ring[i][0]; y+=ring[i][1]; }
+      var o=Object.assign({},f.properties); o.lng=x/ring.length; o.lat=y/ring.length; return o;
+    });
+    buildCellIndex();
+    C12SORT = CELLS.map(function(c){ return c.c12||0; }).sort(function(a,b){ return a-b; });   // ② 퍼센타일 분포
+    for (var pi=0; pi<PARKING.length; pi++){   // one-time joins: grid index makes this ~free
+      var pp=PARKING[pi];
+      pp.named = !!(pp.name && pp.name!=='Parking lot');
+      pp.cell = nearestCell(pp);
+      pp.fac = (pp.fee==='no' ? null : facilityFor(pp));   // 시설 조인 (확실 무료는 조인 안 함 — 유료시설 둔갑 방지)
+      upgradeName(pp);            // 무명 lot → 매칭 실제명/유형·동네 (bare 'Parking lot' 제거)
+    }
+    seedFacilities();             // SpotHero-first: 시설 전량을 1급 후보로 승격 (+OSM 쌍둥이 억제)
+    if (map){ try{ map.remove(); }catch(e){} map=null; mapReady=false; }
+    if (pickmap){ try{ pickmap.remove(); }catch(e){} pickmap=null; pickReady=false; }
+    if ($('citySel')) $('citySel').value = CITY.key;
+    renderChips();
+  });
+}
+
+/* city switcher — populate + switch (cold-start for the chosen city) */
+(function(){
+  var sel=$('citySel'); if(!sel) return;
+  var ks = Object.keys(CITIES).sort(function(a,b){ return CITIES[a].name.localeCompare(CITIES[b].name); });
+  var opt = function(k){ return '<option value="'+k+'">'+esc(CITIES[k].name)+'</option>'; };
+  var covered=[], parkOnly=[];
+  for (var i=0;i<ks.length;i++){ (CITIES[ks[i]].nocrime ? parkOnly : covered).push(ks[i]); }
+  sel.innerHTML =
+    '<optgroup label="Crime map + live parking">'+covered.map(opt).join('')+'</optgroup>'+
+    '<optgroup label="Live parking only">'+parkOnly.map(opt).join('')+'</optgroup>';
+  sel.addEventListener('change',function(){
+    loadCity(this.value).then(function(){
+      dest=null; $('q').value=''; $('results').classList.remove('show'); setMapMode(false);
+      expandSearch();
+      $('hero').style.display=''; $('pops').style.display=''; hideErr(); initHeroDemo();
+      try{ history.replaceState(null,'',location.pathname); }catch(e){}
+      window.scrollTo({top:0});
+    });
+  });
+})();
+
+/* ————— boot: pick initial city (URL/coords) → load → honor params ————— */
+(function boot(){
+  var sp=new URLSearchParams(location.search), ll=sp.get('ll'), q=sp.get('q'), cp=sp.get('city');
+  URL_LENS=sp.get('lens'); URL_Z=+sp.get('z')||0;   // 공유/디버그: 렌즈 상태·고정 줌 복원
+  var reLL=/^-?\d+\.?\d*,-?\d+\.?\d*$/, initKey='sf';
+  if (ll && reLL.test(ll)){ var c0=ll.split(','); var cf=cityFor(+c0[0],+c0[1]); if(cf) initKey=cf.key; }
+  else if (cp && CITIES[cp]) initKey=cp;
+  var at=sp.get('at'), dur=+sp.get('dur');   // 공유 링크의 정확창 복원
+  if (at && dur){
+    var am=at.match(/^(\d{4}-\d{2}-\d{2})T(\d{1,2}):(\d{2})$/);
+    if (am){ win={date:am[1], startMin:+am[2]*60+ +am[3], durMin:dur};
+      $('wdate').value=am[1]; $('wstart').value=String(win.startMin);
+      var dsel=$('wdur'), hasD=false; for(var di=0;di<dsel.options.length;di++){ if(dsel.options[di].value===String(dur)) hasD=true; } dsel.value = hasD?String(dur):'ON';
+      paintWhen(); }
+  }
+  if (!win){ win = winFromControls(); paintWhen(); }   // When = 항상 살아있는 기본값(지금부터 3h) — 시간이 1급 입력
+  loadCity(initKey).then(function(){
+    tod = bucketOf(new Date().getHours());   // 내부 폴백용 (블록 모드는 테스트 훅 전용)
+    if (ll && reLL.test(ll)){ var c=ll.split(','); setDest(q||'Destination',+c[0],+c[1]); }
+    else if (q){ $('q').value=q; search(q); }
+  }).catch(function(){ showErr('Couldn’t load the data files. If you opened this file directly, run a local server (e.g. python3 -m http.server).'); });
+})();
+
+/* test hook — jsdom 게이트 전용 (플래그를 미리 심은 창에서만 노출, 프로덕션 no-op) */
+if (window.__CURBSAFE_TEST__) window.__curbsafe = {
+  assess: assess, facilityFor: facilityFor, ratingFloorFail: ratingFloorFail,
+  setTod: function(t){ tod = t; },
+  setWin: function(w){ win = w; }, rerender: function(){ render(); },
+  partnerData: function(){ return SHOW_PARTNER_DATA; },
+  // QA-matrix hooks (test only): direct access to the join/link layer
+  bookFac: bookFac, bookUrl: bookUrl, mapUrl: mapUrl, hav: hav,
+  parking: function(){ return PARKING; }, facilities: function(){ return FACILITIES; },
+  cities: function(){ return CITIES; },   // SEO 생성기(gen-pages)용 — 도시·랜드마크의 유일한 소스는 이 파일
+  rental: function(){ return RENTAL; },   // 렌터카 레지스트리도 동일 (단일 소스)
+  hotels: function(){ return HOTELS; },
+  parseMapsUrl: parseMapsUrl
+};
+
+})();
+</script>
+</body>
+</html>
