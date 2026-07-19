@@ -52,13 +52,15 @@ header{position:sticky;top:0;z-index:30;background:rgba(250,249,246,.92);backdro
 /* search — 에어비앤비 알약 문법: Where+When+CTA가 한 덩어리, 검색 후엔 요약 pill로 접힘 */
 .searchwrap{background:var(--card);border:1.5px solid var(--ink);border-radius:18px;margin-top:16px;box-shadow:0 2px 10px rgba(25,23,19,.05)}
 .searchbox{position:relative}
+.cityrow{display:flex;align-items:center;gap:9px;border:0;border-bottom:1px solid var(--line);border-radius:18px 18px 0 0;padding:13px 16px}
+.cityrow svg{flex:none}
+.cityin{flex:1;width:100%;border:0;border-radius:0;background:none;font:inherit;font-size:14px;font-weight:600;color:var(--ink);padding:0 24px 0 0;cursor:pointer;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%238f8a7e' fill='none' stroke-width='1.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right center}
 .srow{display:flex;gap:0}
-.cityin{flex:none;max-width:34%;border:0;border-bottom:1px solid var(--line);border-right:1px solid var(--line);border-radius:18px 0 0 0;background:none;font:inherit;font-size:13px;font-weight:600;color:var(--ink);padding:0 24px 0 14px;cursor:pointer;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%238f8a7e' fill='none' stroke-width='1.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center}
-.sfield{flex:1;display:flex;align-items:center;gap:9px;background:none;border:0;border-bottom:1px solid var(--line);border-radius:18px 18px 0 0;padding:14px 16px}
+.sfield{flex:1;display:flex;align-items:center;gap:9px;background:none;border:0;border-bottom:1px solid var(--line);border-radius:0;padding:14px 16px}
 .sfield svg{flex:none;opacity:.45}
 .sfield input{border:0;outline:0;background:none;font:inherit;font-size:16px;width:100%;color:var(--ink)}
 .sfield input::placeholder{color:var(--ink-3)}
-.locbtn{flex:none;width:49px;border:0;border-bottom:1px solid var(--line);border-left:1px solid var(--line);background:none;border-radius:0 18px 0 0;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink-2)}
+.locbtn{flex:none;width:49px;border:0;border-bottom:1px solid var(--line);border-left:1px solid var(--line);background:none;border-radius:0;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink-2)}
 .locbtn:active{background:var(--paper)}
 /* 접힘 요약 pill — 검색 후 헤더 자리 상주, 탭하면 다시 펼침 */
 .sumpill{display:flex;align-items:center;gap:9px;width:100%;font:inherit;text-align:left;background:var(--card);border:1px solid var(--line-2);border-radius:999px;padding:10px 16px;margin-top:12px;cursor:pointer;box-shadow:0 1px 6px rgba(25,23,19,.07)}
@@ -71,6 +73,7 @@ body.mapmode .searcharea{top:114px}   /* 렌즈 알약 아래로 한 줄 더 —
 .sp2{flex:1;font-size:12.5px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .spedit{flex:none;font-size:12px;color:var(--ink-3)}
 .shint{font-size:12px;color:var(--ink-3);margin:7px 2px 0}
+.shint b{color:var(--ink);font-weight:600}
 .sugg{position:absolute;top:calc(100% + 6px);left:0;right:57px;background:var(--card);border:1px solid var(--line-2);border-radius:12px;box-shadow:0 8px 28px rgba(25,23,19,.10);overflow:hidden;z-index:40;display:none}
 .sugg.open{display:block}
 .sugg button{display:block;width:100%;text-align:left;border:0;background:none;font:inherit;padding:11px 14px;cursor:pointer;border-bottom:1px solid var(--line)}
@@ -293,7 +296,6 @@ body.mapmode .maplegend{position:absolute;left:10px;bottom:76px;right:auto;max-w
 }
 @media (max-width:420px){
   .hero h1{font-size:31px} .rtitle{font-size:23px}
-  .cityin{font-size:12px;max-width:41%;padding-left:11px;padding-right:22px;background-position:right 7px center}   /* 'San Francisco'가 안 잘리게 (2026-07-14) */
 }
 
 /* find on map — 인라인 링크 (알약 아래 힌트 줄에 흡수) */
@@ -375,8 +377,14 @@ body.searchopen .searchclose{display:flex;position:absolute;top:14px;right:14px;
       <button type="button" data-v="hotel"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6.5a2 2 0 012-2h2.5a2 2 0 012 2V13"/><path d="M3 13h16.5a1.5 1.5 0 011.5 1.5V18"/><path d="M3 18v2M20 18v2"/><circle cx="6.8" cy="10.5" r="1.2"/></svg>Hotels</button>
     </div>
     <div class="searchbox" id="searchbox">
-      <div class="srow">
+      <!-- 도시선택 = 자체 줄 (2026-07-19 유저: 검색창 너비 실측 89px → 경쟁사(트립닷컴·SpotHero) 전부
+           필드 하나 = 줄 하나, 한 줄에 몰아넣지 않음. 우리 도시선택은 49개 커버도시 중 고르는 용도라
+           경쟁사엔 없는 통제지만, "필드는 자기 줄을 갖는다"는 레이아웃 원칙은 그대로 적용) -->
+      <div class="cityrow">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" opacity=".45"><path d="M12 21s7-6.5 7-12a7 7 0 10-14 0c0 5.5 7 12 7 12z"/><circle cx="12" cy="9" r="2.4"/></svg>
         <select class="cityin" id="citySel" aria-label="City"></select>
+      </div>
+      <div class="srow">
         <form class="sfield" id="sform" autocomplete="off">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
           <input id="q" type="text" placeholder="Where to?" enterkeyhint="search" />
@@ -407,7 +415,7 @@ body.searchopen .searchclose{display:flex;position:absolute;top:14px;right:14px;
     </div>
     <button type="button" class="gobtn" id="gobtn">Find safe parking</button>
   </div>
-  <div class="shint">Search a place, or paste a Google&nbsp;Maps link. <button type="button" class="mapfind" id="mapfind">Find it on the map</button></div>
+  <div class="shint">Search a place, or <b>paste a Google&nbsp;Maps link</b> — works right in the box above. <button type="button" class="mapfind" id="mapfind">Find it on the map</button></div>
 
   <!-- 지도 읽는 법 — 라이브 데모 (첫 화면이 곧 사용법 소개, 2026-07-17). 칩을 누르면 해당 레이어가 반응 -->
   <div class="herodemo" id="herodemo" style="display:none">
