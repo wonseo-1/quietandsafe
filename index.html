@@ -151,8 +151,6 @@ body.mapmode .searcharea{top:114px}   /* 렌즈 알약 아래로 한 줄 더 —
 .areahead{font-size:15.5px;font-weight:600}
 .areahead .lvlword{font-weight:600}
 .areasub{font-size:14px;color:var(--ink-2);margin-top:4px;line-height:1.55}
-.areameta{font-size:12.5px;color:var(--ink-3);margin-top:6px}
-.areameta b{color:var(--ink-2)}
 .lvl0{color:var(--safe)} .lvl1{color:var(--warn)} .lvl2{color:var(--avoid)}
 .bg0{background:var(--safe)} .bg1{background:var(--warn)} .bg2{background:var(--avoid)}
 
@@ -185,9 +183,8 @@ body.mapmode .searcharea{top:114px}   /* 렌즈 알약 아래로 한 줄 더 —
 .securecard a{font-size:13px;font-weight:600;text-decoration:none;border-bottom:1px solid var(--line-2)}
 
 /* avoid line — 박스 아님: 빨간 리드 한 줄 + 회색 본문 (박스 수프 금지) */
-.avoidstrip{margin:16px 2px 0;padding:0}
+.avoidstrip{margin:16px 2px 0;padding:0;font-size:13px;color:var(--ink-2);line-height:1.5}
 .avoidstrip b{color:var(--avoid);font-size:13.5px}
-.avoidstrip p{margin:2px 0 0;font-size:13px;color:var(--ink-2);line-height:1.5}
 
 /* map — 일반 흐름 (sticky 접힘 은퇴 2026-07-12: 높이 애니메이션이 스크롤마다 ~300px 콘텐츠 점프를
    만들어 지도 밑 첫 글줄을 계속 가렸다. 에어비앤비 모바일 문법 = 리스트는 그냥 흐르고,
@@ -1039,27 +1036,6 @@ function whyPanel(p){
 
 /* ————— render ————— */
 var AREA_WORD = ['Quiet','Some street activity','High break-in & theft activity'];   // 240 통합 (2026-07-17)
-// 근처 최신 사건 중 미검거(unsolved) 수 — "잡힌 사람 없음"은 여행자에게 실질 경고 신호
-function unsolvedNearby(){
-  var n=0, i, j, c;
-  for (i=0;i<CELLS.length;i++){
-    c=CELLS[i]; if (hav(dest,c)>550 || !c.recent) continue;
-    for (j=0;j<c.recent.length;j++) if (c.recent[j].res==='unsolved') n++;
-  }
-  return n;
-}
-/* 차량 도난 근접 집계 — 셀 sv12(12mo, 전체 시간대) 합. 헤드라인은 합산 지표, 분해는 메타·왜?에서만 */
-function stolenNearby(){
-  if (!dest) return 0;
-  var n=0,i; for (i=0;i<CELLS.length;i++){ if (hav(dest,CELLS[i])<=550) n+=(CELLS[i].sv12||0); }
-  return n;
-}
-/* Street reports 근접 집계 — 캠프 '신고' 수일 뿐 위험 판정이 아니다 (라벨도 그렇게만 말한다) */
-function streetNearby(){
-  if (!STREET.length || !dest) return 0;
-  var n=0,i; for (i=0;i<STREET.length;i++){ if (hav(dest,STREET[i])<=550) n+=STREET[i].n; }
-  return n;
-}
 function renderArea(){
   var a = areaStats();
   if (!a.cells){
@@ -1075,28 +1051,19 @@ function renderArea(){
       )+'</div></div></div>';
     return a;
   }
-  // 산문 리드 1문장 + 조용한 메타 한 줄 (2026-07-14 유저 지적: "사실. 사실. 사실." 4연속 문단 = 생성문 리듬,
-  // 한정어 중복·서식 뒤죽박죽). 한정어는 한 번씩만: '~3 blocks'와 '12 mo'는 리드에, 창·출처는 메타 끝에 1회.
-  // 조각 문법 (2026-07-18 카카오맵·에어비앤비 실측: 완결문장 0개, 조각은 ·, 위계는 굵기·회색만).
-  // 한정어(~3 blocks·시간대·past 12 mo)는 전부 보존 — 문장을 조각으로 재배열했을 뿐.
+  // 고정 양식 = 헤드라인 1줄 + 사실 1줄, 끝 (2026-07-19 유저: "주저리주저리 읽기싫어. 양식을 정해두고
+  // 필요없는 정보 빼고" — unsolved·stolen·tent-camp 분해, peak 요일, 헤드라인과 중복되는 시간대 전부 삭제.
+  // 남긴 것: 건수·반경·기간·순위%만 — 판정을 뒷받침하는 최소 근거).
   var count = a.nTod
-    ? '<span style="white-space:nowrap"><b>'+a.nTod+(a.nTod===1?' break-in or theft':' break-ins & thefts')+'</b></span> · <span style="white-space:nowrap">~3 blocks</span> · <span style="white-space:nowrap">'+TOD_PHRASE[a.todUsed]+'</span> · <span style="white-space:nowrap">past 12 mo</span>'+
+    ? '<span style="white-space:nowrap"><b>'+a.nTod+(a.nTod===1?' break-in or theft':' break-ins & thefts')+'</b></span> · <span style="white-space:nowrap">~3 blocks</span> · <span style="white-space:nowrap">past 12 mo</span>'+
       (function(){ var t=a.lvl>=1?pctileTop(a.maxC12):null;
         return t!=null?' · <span style="white-space:nowrap">top '+t+'% of '+esc(CITY.name)+' blocks</span>':''; })()
-    : 'None logged · <span style="white-space:nowrap">~3 blocks</span> · <span style="white-space:nowrap">'+TOD_PHRASE[a.todUsed]+'</span> · <span style="white-space:nowrap">past 12 mo</span>';
-  var peak = (a.peak&&a.nTod&&a.peak!==TOD_PHRASE[a.todUsed].replace('in the ','').replace('overnight','night'))
-    ? ' · <span style="white-space:nowrap">peak: '+esc(a.peak)+'s</span>' : '';
-  var meta = [];
-  (function(){ var u=unsolvedNearby(); if (u>0&&a.lvl>=1) meta.push('<span style="white-space:nowrap"><b>'+u+'</b> cases unsolved</span>'); })();
-  (function(){ var v=stolenNearby(); if (v>0) meta.push('<span style="white-space:nowrap"><b>'+v+'</b> cars stolen</span>'); })();
-  (function(){ var s=streetNearby(); if (s>0) meta.push('<span style="white-space:nowrap"><b>'+s+'</b> tent-camp reports (311)</span>'); })();
+    : 'None logged · <span style="white-space:nowrap">~3 blocks</span> · <span style="white-space:nowrap">past 12 mo</span>';
   $('areacard').innerHTML =
     '<div class="areacard"><span class="areadot bg'+a.lvl+'"></span>'+
     '<div class="areabody">'+
       '<div class="areahead">'+esc(a.hood||dest.name)+' — <span class="lvlword lvl'+a.lvl+'"><span style="white-space:nowrap">'+AREA_WORD[a.lvl]+'</span> <span style="white-space:nowrap">'+TOD_PHRASE[a.todUsed]+'</span></span></div>'+
-      '<div class="areasub">'+count+peak+'</div>'+
-      (meta.length?'<button type="button" class="whybtn">details</button>'+
-        '<div class="whychain areameta">'+meta.join(' · ')+' · nearby, past 12 mo</div>':'')+
+      '<div class="areasub">'+count+'</div>'+
     '</div></div>';
   return a;
 }
@@ -1284,13 +1251,6 @@ function renderLugStrip(){
     '<div class="lugnote">Leave nothing visible in the car — rental papers included.</div></div>';
 }
 
-/* 지역카드 세부내역 토글 (2026-07-19 유저: 실렌더 보니 화면이 숫자로 뒤덮임 — "이걸 어떻게 다 읽어".
-   unsolved·stolen·tent-camp 3종 분해는 기본 숨김, .pcard의 details 문법 그대로 재사용 */
-$('areacard').addEventListener('click',function(e){
-  var b=e.target.closest&&e.target.closest('.whybtn'); if (!b) return;
-  var w=b.nextElementSibling;
-  if (w&&w.classList.contains('whychain')) w.style.display=(w.style.display==='block'?'none':'block');
-});
 /* 카드 리스트 상호작용 — 위임 한 번 (why 토글 · 정렬 · 필터) */
 $('cards').addEventListener('click',function(e){
   var t=e.target, b;
@@ -1322,11 +1282,14 @@ function render(){
   window.__lastArea = as;   // browsebar 힌트가 지역 성격(조용/위험/데이터없음)을 읽음
   lensBlock = (win && as && as.todUsed) ? as.todUsed : tod;   // 지도 색칠 렌즈 동기화
 
-  // 지역 경고는 리스트 위 — "어디를 피할지"를 먼저, 그다음 리스트에서 고른다
+  // 지역 경고는 리스트 위 — "어디를 피할지"를 먼저, 그다음 리스트에서 고른다.
+  // 메인 동네카드와 같은 hood면 스킵 (2026-07-19 수리: 같은 동네를 두 번 경고하던 버그 —
+  // 유저 실사이트 캡처에서 "Financial District/South Beach" 헤드라인 직후 같은 동네 avoidstrip 발견).
+  // 한 줄 고정 양식 — 별도 사실 문단 없이 헤드라인에 근거 하나만 접붙임.
   var wz = worstZone();
-  $('avoidwrap').innerHTML = !wz ? '' :
-    '<div class="avoidstrip"><b>Skip street parking around '+esc(wz.cell.hood||'here')+' <span style="white-space:nowrap">'+TOD_PHRASE[wz.b]+'</span></b>'+
-    '<p><span style="white-space:nowrap"><b>'+wz.n+'</b> break-ins & thefts</span> · <span style="white-space:nowrap">within a block</span> · <span style="white-space:nowrap">past 12 mo</span></p></div>';
+  $('avoidwrap').innerHTML = (!wz || wz.cell.hood===as.hood) ? '' :
+    '<div class="avoidstrip"><b>Skip street parking around '+esc(wz.cell.hood||'here')+' <span style="white-space:nowrap">'+TOD_PHRASE[wz.b]+'</span></b> — '+
+    '<span style="white-space:nowrap">'+wz.n+' break-ins &amp; thefts</span>, <span style="white-space:nowrap">past 12 mo</span></div>';
 
   var list = renderCards();
   renderLugStrip();
@@ -1648,14 +1611,26 @@ function loadHotelData(){
     WCELLS = walkGeojson ? walkGeojson.features.map(function(f){
       var ring=f.geometry.coordinates[0],x=0,y=0;
       for (var i=0;i<ring.length;i++){ x+=ring[i][0]; y+=ring[i][1]; }
-      var o=Object.assign({},f.properties); o.lng=x/ring.length; o.lat=y/ring.length; return o;
+      var o=Object.assign({},f.properties); o.lng=x/ring.length; o.lat=y/ring.length; o.ring=ring; return o;
     }) : [];
   });
 }
-function nearestWalkCell(pt){   // H3 res9 셀 중심 ~175m — 200m 내 최근접 = 그 블록
-  var best=null, bd=200;
-  for (var i=0;i<WCELLS.length;i++){ var d=hav(pt,WCELLS[i]); if (d<bd){ bd=d; best=WCELLS[i]; } }
-  return best;
+function pointInRing(pt, ring){   // 표준 ray-casting — ring = [[lng,lat],...]
+  var inside=false, n=ring.length;
+  for (var i=0,j=n-1; i<n; j=i++){
+    var xi=ring[i][0], yi=ring[i][1], xj=ring[j][0], yj=ring[j][1];
+    var hit = ((yi>pt.lat)!==(yj>pt.lat)) && (pt.lng < (xj-xi)*(pt.lat-yi)/(yj-yi)+xi);
+    if (hit) inside=!inside;
+  }
+  return inside;
+}
+// 지도 음영과 호텔 카드 숫자는 항상 같은 셀이어야 한다 (2026-07-19 유저: "그 호텔에 가까운 헥사곤이 아니라,
+// 그 지도랑 데이터는 무조건 맞아야지" — 근접 매칭(200m 이내 최근접 중심)은 핀이 경계 옆이면 이웃 셀 숫자를
+// 빌려오는 불일치를 만들었다). 핀이 실제로 서 있는 폴리곤만 사용 — 어느 셀에도 안 속하면 그 블록은 정직하게
+// 기록없음(0), 이웃 셀 숫자를 빌리지 않는다.
+function containingWalkCell(pt){
+  for (var i=0;i<WCELLS.length;i++){ if (pointInRing(pt, WCELLS[i].ring)) return WCELLS[i]; }
+  return null;
 }
 function hotelN(c){ return (c&&c.c12)||0; }   // 12개월 총량 — 호텔은 시간대 슬라이스 불필요 (2026-07-18 유저)
 function hotelList(){
@@ -1664,7 +1639,7 @@ function hotelList(){
   for (var i=0;i<CITY_HOTELS.length;i++){
     var h=CITY_HOTELS[i], d=hav(dest,h);
     if (d>1200) continue;
-    var c=nearestWalkCell(h);
+    var c=containingWalkCell(h);
     out.push({ name:h.name, named:true, lat:h.lat, lng:h.lng, dist:d, cell:c, c12:hotelN(c) });   // named — mapUrl이 호텔명으로 검색 (없으면 'parking' 폴백을 타버림)
   }
   out.sort(function(a,b){ return (a.c12-b.c12) || (a.dist-b.dist); });
@@ -1724,7 +1699,7 @@ function ensureWalkLayers(){
     map.on('click','hotel-dot',function(e){
       var f=e.features[0], co=f.geometry.coordinates.slice();
       var hh={name:f.properties.name, named:true, lat:co[1], lng:co[0]};
-      var c=nearestWalkCell(hh), h={name:hh.name, lat:hh.lat, lng:hh.lng, c12:hotelN(c)};
+      var c=containingWalkCell(hh), h={name:hh.name, lat:hh.lat, lng:hh.lng, c12:hotelN(c)};
       showInfo(co,'<b>'+esc(h.name)+'</b><br>'+hotelLine(h)+
         (dest?'<br>'+walkMin(hav(dest,hh))+' min walk':'')+
         ' · <a href="'+mapUrl(hh)+'" target="_blank" rel="noopener">Open in Maps</a>');
