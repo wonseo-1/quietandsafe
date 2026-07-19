@@ -1438,12 +1438,28 @@ function parkingFC(){
       b_morning:bk.morning||0, b_afternoon:bk.afternoon||0, b_evening:bk.evening||0, b_night:bk.night||0 }};
   })};
 }
+
+// 랜드마크 라벨 (2026-07-19): positron 전환으로 옅어진 POI를 우리 데이터로 보완 — "여기가 어딘지" 즉시 판단.
+// 대상 = CITIES.popular(도시당 8곳, 위키 그라운딩 완료 지명) — 발명 좌표 없음, 이미 검증된 소스 재사용.
+function landmarkFC(city){
+  return {type:'FeatureCollection',features:(city.popular||[]).map(function(p){
+    return {type:'Feature',geometry:{type:'Point',coordinates:[p[2],p[1]]},properties:{name:p[0]}};
+  })};
+}
+function addLandmarkLayer(mapObj, city, under){
+  mapObj.addSource('landmarks',{type:'geojson',data:landmarkFC(city)});
+  mapObj.addLayer({id:'landmark-label',type:'symbol',source:'landmarks',layout:{
+    'text-field':['get','name'],'text-font':['Noto Sans Bold'],'text-size':12.5,
+    'text-variable-anchor':['top','bottom','left','right'],'text-radial-offset':0.6,'text-justify':'auto',
+    'symbol-sort-key':['*',-1,['get','name']]},
+    paint:{'text-color':'#191713','text-halo-color':'#faf9f6','text-halo-width':1.6}});
+}
 function initMap(){
   map = new maplibregl.Map({
     container:'map',
-    // 실험 (2026-07-13): voyager → OpenFreeMap liberty — 지하철역 상시 + 상호명 POI(줌15+)로
-    // '내가 어딘지' 파악 가능하게. 톤이 안 맞으면 원복: basemaps.cartocdn.com/gl/voyager-gl-style/style.json
-    style:'https://tiles.openfreemap.org/styles/liberty',
+    // liberty → positron 전환 (2026-07-19 유저 실렌더 비교 확정): liberty의 노란 도로가 위험 램프(노랑~빨강)와
+    // 색이 섞였다 — positron은 무채색이라 데이터 음영만 튄다. 약해지는 POI 라벨은 landmark 레이어가 보완(아래).
+    style:'https://tiles.openfreemap.org/styles/positron',
     center:[dest.lng,dest.lat], zoom:URL_Z||14.2, attributionControl:false
   });
   map.addControl(new maplibregl.AttributionControl({compact:true}));   // v3에선 Map 옵션 객체가 안 먹어 — 모바일서 두 줄 판때기로 퍼지던 원인
@@ -1460,6 +1476,7 @@ function initMap(){
     // 건물을 반투명으로 눌러 음영이 비치게 하고, 3D 돌출은 끔 (음영 가독이 건물 디테일보다 우선).
     if (map.getLayer('building')) map.setPaintProperty('building','fill-opacity',0.28);
     if (map.getLayer('building-3d')) map.setLayoutProperty('building-3d','visibility','none');
+    addLandmarkLayer(map, CITY);   // firstSymbol 위 — 다른 라벨과 자연 충돌회피(collision) 공유
     if (riskGeojson){   // Tier B: 범죄셀 없음 → risk 소스/레이어 자체를 건너뜀 (G0-3 progressive)
       map.addSource('risk',{type:'geojson',data:riskGeojson});
       map.addLayer({id:'risk-fill',type:'fill',source:'risk',paint:{'fill-color':todExprCell(),'fill-opacity':0.55}},under);
@@ -1992,7 +2009,7 @@ $('locbtn').addEventListener('click',function(){
 var pickmap=null, pickReady=false;
 function initPicker(){
   var c = dest ? [dest.lng,dest.lat] : [CITY.center.lng,CITY.center.lat];
-  pickmap = new maplibregl.Map({ container:'pickmap', style:'https://tiles.openfreemap.org/styles/liberty', center:c, zoom:13, attributionControl:false });   // 메인 지도와 동일 (liberty)
+  pickmap = new maplibregl.Map({ container:'pickmap', style:'https://tiles.openfreemap.org/styles/positron', center:c, zoom:13, attributionControl:false });   // 메인 지도와 동일 (positron, 2026-07-19)
   pickmap.addControl(new maplibregl.AttributionControl({compact:true}));
   pickmap.addControl(new maplibregl.NavigationControl({showCompass:false}),'top-right');
   if (navigator.geolocation) pickmap.addControl(new maplibregl.GeolocateControl({positionOptions:{enableHighAccuracy:true}}),'top-right');
@@ -2004,6 +2021,7 @@ function initPicker(){
       pickmap.addSource('prisk',{type:'geojson',data:riskGeojson});
       pickmap.addLayer({id:'prisk-fill',type:'fill',source:'prisk',paint:{'fill-color':['interpolate',['linear'],['get','c24']].concat(RAMP),'fill-opacity':0.32}},firstRoad||firstSymbol);
     }
+    addLandmarkLayer(pickmap, CITY);
     pickReady=true; pickmap.resize();
   });
 }
@@ -2132,7 +2150,7 @@ function buildHeroDemo(hotel){
   $('hdDots').innerHTML = DOT + (hotel ? 'White dots = hotels' : 'White dots = bookable parking');
   if (heroMap){ try{ heroMap.remove(); }catch(e){} heroMap=null; }
   heroLens='risk'; var tb=$('hdTent'); if(tb) tb.classList.remove('on');
-  heroMap = new maplibregl.Map({ container:'heromap', style:'https://tiles.openfreemap.org/styles/liberty',
+  heroMap = new maplibregl.Map({ container:'heromap', style:'https://tiles.openfreemap.org/styles/positron',   // 실지도와 동일(2026-07-19)
     center:[CITY.center.lng,CITY.center.lat], zoom:12.4, attributionControl:false, dragRotate:false });
   heroMap.addControl(new maplibregl.AttributionControl({compact:true}));
   heroMap.on('load', function(){ try{   // compact가 작은 지도에서 펼침 상태로 시작하는 것 접기
@@ -2143,6 +2161,7 @@ function buildHeroDemo(hotel){
     var layers=heroMap.getStyle().layers, firstRoad, i;
     for (i=0;i<layers.length;i++){ if(/^(tunnel_|road_)/.test(layers[i].id)){ firstRoad=layers[i].id; break; } }
     if (heroMap.getLayer('building')) heroMap.setPaintProperty('building','fill-opacity',0.28);
+    addLandmarkLayer(heroMap, CITY, firstRoad);
     heroMap.addSource('hrisk',{type:'geojson',data: hotel ? walkGeojson : riskGeojson});
     heroMap.addLayer({id:'hrisk-fill',type:'fill',source:'hrisk',paint:{'fill-color': hotel ? walkFillExpr() : todExprCell(),'fill-opacity':0.55}},firstRoad);
     if (streetGeojson){
