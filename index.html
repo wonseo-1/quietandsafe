@@ -193,6 +193,7 @@ body.mapmode .searcharea{top:64px}
 .maplegend{display:block;font-size:11.5px;color:var(--ink-3);margin-top:7px}
 /* 플로팅 Map 버튼 — 지도가 화면 밖으로 나가면 등장, 탭하면 지도로 복귀 */
 .mapfab{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:60;display:none;align-items:center;gap:7px;font:inherit;font-size:13.5px;font-weight:700;color:var(--paper);background:var(--ink);border:0;border-radius:999px;padding:11px 19px;box-shadow:0 4px 14px rgba(25,23,19,.32);cursor:pointer}
+.mapfab{touch-action:manipulation}
 .mapfab.show{display:flex}
 /* 히어로 데모 지도 — 서비스 읽는 법을 첫 화면에서 라이브로 (SpotHero의 히어로 사진 자리, 2026-07-17) */
 .herodemo{margin:18px 0 6px}
@@ -228,7 +229,8 @@ body.mapmode .results{position:fixed;left:0;right:0;bottom:0;top:100vh;z-index:8
 body.mapmode.sheetopen .results{top:9vh}
 body.mapmode.sheetopen .mapfab{display:none}   /* 시트가 열리면 손잡이는 시트 상단 것으로 교대 */
 body.mapmode.sheetopen .sheettop{display:flex;position:sticky;top:0;z-index:5;width:100%;flex-direction:column;gap:5px;align-items:center;
-  background:var(--paper);border:0;border-radius:18px 18px 0 0;padding:10px 0 8px;cursor:pointer;font:inherit;font-size:12.5px;font-weight:600;color:var(--ink-3)}
+  background:var(--paper);border:0;border-radius:18px 18px 0 0;padding:12px 0 10px;cursor:pointer;font:inherit;font-size:12.5px;font-weight:600;color:var(--ink-3);
+  touch-action:none}   /* iOS: manipulation/none 없으면 스크롤 제스처로 오인돼 탭·드래그가 씹힌다 (2026-07-19 실기기) */
 body.mapmode.sheetopen .sheettop .grab{width:38px;height:4px;border-radius:2px;background:var(--line-2)}
 body.mapmode .maplegend{position:absolute;left:10px;bottom:76px;right:auto;max-width:78%;background:rgba(250,249,246,.94);border:1px solid var(--line);border-radius:8px;padding:5px 9px;font-size:11px;z-index:5}
 .minicard{display:none;position:absolute;left:10px;right:10px;bottom:76px;z-index:7;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 40px 12px 14px;box-shadow:0 8px 28px rgba(25,23,19,.22);font-size:13.5px;line-height:1.6}
@@ -296,6 +298,14 @@ body.mapmode .maplegend{position:absolute;left:10px;bottom:76px;right:auto;max-w
 .mapfind{display:inline;font:inherit;font-size:12px;font-weight:600;color:var(--ink-2);background:none;border:0;border-bottom:1px dotted var(--line-2);padding:0;cursor:pointer}
 .mapfind:hover{color:var(--ink)}
 .picker{position:fixed;inset:0;z-index:90;background:var(--paper);display:none;flex-direction:column}
+/* 검색 오버레이 (2026-07-19 유저: 지도/시트 상태를 무너뜨리지 않고 그 위에 뜨는 것 — picker와 동일 관례).
+   body.searchopen일 때만 고정 전체화면; 홈 화면 인라인 렌더는 그대로(이 클래스는 첫 검색 이후에만 붙는다). */
+body.searchopen #searchwrap{position:fixed;inset:0;z-index:95;background:var(--paper);overflow-y:auto;
+  padding:16px 16px calc(16px + env(safe-area-inset-bottom))}
+.searchclose{display:none}
+body.searchopen .searchclose{display:flex;position:absolute;top:14px;right:14px;z-index:1;
+  align-items:center;justify-content:center;width:34px;height:34px;font:inherit;font-size:18px;
+  background:none;border:0;color:var(--ink-2);cursor:pointer;touch-action:manipulation}
 .picker.open{display:flex}
 .pickhead{display:flex;align-items:center;justify-content:space-between;padding:15px 16px;border-bottom:1px solid var(--line);font-family:var(--serif);font-weight:600;font-size:16px;color:var(--ink)}
 .pickclose{font:inherit;font-size:20px;line-height:1;background:none;border:0;color:var(--ink-2);cursor:pointer;padding:2px 8px}
@@ -347,6 +357,7 @@ body.mapmode .maplegend{position:absolute;left:10px;bottom:76px;right:auto;max-w
 
   <!-- search pill stack: Where / When / CTA 한 덩어리 (에어비앤비 문법) -->
   <div class="searchwrap" id="searchwrap">
+    <button type="button" class="searchclose" id="searchclose" aria-label="Close">✕</button>
     <div class="searchbox" id="searchbox">
       <div class="srow">
         <select class="cityin" id="citySel" aria-label="City"></select>
@@ -1356,7 +1367,26 @@ $('mapfab').addEventListener('click', function(){
   if (mapMode && window.innerWidth<1020){ setSheet(true); return; }   // 모바일: 손잡이 = 시트 열기
   setMapMode(!mapMode);   // 데스크톱/리스트뷰 FAB은 기존 토글
 });
-(function(){ var st=$('sheettop'); if(st) st.addEventListener('click', function(){ setSheet(false); }); })();
+(function(){
+  var st=$('sheettop'); if(!st) return;
+  st.addEventListener('click', function(){ setSheet(false); });
+  // 드래그로 내려서 닫기 (2026-07-19 유저: "내리거나 탭을 누르면 나가져야 하는데" — 탭만 있고 드래그가 없었다)
+  var startY=null, dragging=false, sheet=$('results');
+  st.addEventListener('pointerdown', function(e){ startY=e.clientY; dragging=true; sheet.style.transition='none'; });
+  st.addEventListener('pointermove', function(e){
+    if (!dragging || startY===null) return;
+    var dy=Math.max(0, e.clientY-startY);
+    sheet.style.top='calc(9vh + '+dy+'px)';
+  });
+  function endDrag(e){
+    if (!dragging) return;
+    dragging=false; sheet.style.transition=''; sheet.style.top='';
+    var dy = startY!==null ? (e.clientY-startY) : 0; startY=null;
+    if (dy>70) setSheet(false);   // 임계 넘겨 놓으면 닫힘, 아니면 원위치(top:'' → CSS 규칙 복귀)
+  }
+  st.addEventListener('pointerup', endDrag);
+  st.addEventListener('pointercancel', endDrag);
+})();
 
 /* ————— map (lazy, tod-aware) ————— */
 /* 팝업은 전 지도 통틀어 단일 인스턴스 — 점 팝업과 핀 팝업이 서로를 안 닫고 쌓이던 겹침 버그의 근치 */
@@ -1795,6 +1825,7 @@ function drawMapFocus(picks){
 // dest 확정 후 공통 흐름(Tier A/B 양쪽에서 호출): URL 갱신 + render + 라이브 조회
 /* 검색 알약 접힘/펼침 (에어비앤비 문법: 검색 후 화면은 결과의 것) */
 function collapseSearch(){
+  document.body.classList.remove('searchopen');   // 오버레이였다면 여기서 항상 닫힘(홈 리셋 경로도 안전)
   $('searchwrap').style.display='none';
   var sh=document.querySelector('.shint'); if (sh) sh.style.display='none';
   $('sumpill').style.display='flex';
@@ -1808,11 +1839,14 @@ function expandSearch(){
   var sh=document.querySelector('.shint'); if (sh) sh.style.display='';
   $('sumpill').style.display='none';
 }
-$('sumpill').addEventListener('click', function(){
-  if (mapMode) setMapMode(false);   // 지도 모드 탈출 → 검색 편집 (재검색·탭 전환 모두 여기서)
+// 검색 오버레이 (2026-07-19 유저: "여기서 맵모드·리스트 다시 못 돌아가고" — picker와 동일 관례로 재설계).
+// 열 때 mapMode/sheetOpen을 절대 안 건드린다 — 그래서 ✕는 그 상태 그대로를 다시 보여주기만 하면 된다.
+function openSearchOverlay(){   // 오직 이 경로만 고정 오버레이가 된다 — expandSearch 재사용(홈 리셋)은 영향 없음
   expandSearch();
-  window.scrollTo({top:0});
-});
+  document.body.classList.add('searchopen');
+}
+$('sumpill').addEventListener('click', openSearchOverlay);
+$('searchclose').addEventListener('click', collapseSearch);
 function commitDest(name,lat,lng,city){
   dest={name:name,lat:lat,lng:lng,city:city||''};
   liveLoading = tierB;   // Tier B만 "첫 응답 대기" 로딩문구 필요 (Tier A는 정적 데이터가 즉시 있음)
