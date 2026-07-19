@@ -662,7 +662,7 @@ function facSpot(f){
   var p = { name: f.title, named: true, lat:+f.lat, lng:+f.lng,
             ptype: f.ftype==='garage' ? 'multi-storey' : 'surface',
             fee: 'yes', fac: f, sh: true };
-  p.cell = nearestCell(p);
+  p.cell = containingCell(p);
   return p;
 }
 function seedFacilities(){
@@ -864,13 +864,17 @@ function buildCellIndex(){
   CELLIDX={};
   for (var i=0;i<CELLS.length;i++){ var k=binKey(CELLS[i].lat,CELLS[i].lng); (CELLIDX[k]||(CELLIDX[k]=[])).push(CELLS[i]); }
 }
-function nearestCell(p){
-  var best=null, bd=1e9, ky=Math.round(p.lat/0.004), kx=Math.round(p.lng/0.004);
+// 지도 음영과 스팟 판정은 항상 같은 셀이어야 한다 (2026-07-19 유저: 호텔에서 같은 버그 발견 후 "주차 스팟도
+// 같은 버그 있는지 확인해줘" — 실측 결과 SF 223개 시설 중 49개(22%)가 근접매칭과 실제소속 폴리곤이 서로
+// 달랐음). 근접(400m 이내 최근접 중심점) 매칭 폐기 — 그리드 인덱스로 후보만 좁히고, point-in-polygon으로
+// 그 스팟이 실제로 서 있는 셀만 채택. 어느 셀에도 안 걸치면 이웃 셀을 빌리지 않고 null(=dataless 정직 처리).
+function containingCell(p){
+  var ky=Math.round(p.lat/0.004), kx=Math.round(p.lng/0.004);
   for (var dy=-1;dy<=1;dy++) for (var dx=-1;dx<=1;dx++){
     var bin=CELLIDX[(ky+dy)+','+(kx+dx)]; if(!bin) continue;
-    for (var i=0;i<bin.length;i++){ var d=hav(p,bin[i]); if(d<bd){bd=d;best=bin[i];} }
+    for (var i=0;i<bin.length;i++){ if (pointInRing(p, bin[i].ring)) return bin[i]; }
   }
-  return bd<400 ? best : null;
+  return null;
 }
 /* 정렬 v7 (브라우징-first, 2026-07-11 사용자 결정): 기본은 무조건 가까운 순.
    안전은 순서를 바꾸지 않는다 — 뱃지(Attendant/Indoor/Underground)와 pill(Active/Hot)이 말한다.
@@ -2335,14 +2339,14 @@ function loadCity(key){
     CELLS=risk.features.map(function(f){
       var ring=f.geometry.coordinates[0],x=0,y=0;
       for (var i=0;i<ring.length;i++){ x+=ring[i][0]; y+=ring[i][1]; }
-      var o=Object.assign({},f.properties); o.lng=x/ring.length; o.lat=y/ring.length; return o;
+      var o=Object.assign({},f.properties); o.lng=x/ring.length; o.lat=y/ring.length; o.ring=ring; return o;
     });
     buildCellIndex();
     C12SORT = CELLS.map(function(c){ return c.c12||0; }).sort(function(a,b){ return a-b; });   // ② 퍼센타일 분포
     for (var pi=0; pi<PARKING.length; pi++){   // one-time joins: grid index makes this ~free
       var pp=PARKING[pi];
       pp.named = !!(pp.name && pp.name!=='Parking lot');
-      pp.cell = nearestCell(pp);
+      pp.cell = containingCell(pp);
       pp.fac = (pp.fee==='no' ? null : facilityFor(pp));   // 시설 조인 (확실 무료는 조인 안 함 — 유료시설 둔갑 방지)
       upgradeName(pp);            // 무명 lot → 매칭 실제명/유형·동네 (bare 'Parking lot' 제거)
     }
