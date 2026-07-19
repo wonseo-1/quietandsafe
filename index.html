@@ -139,6 +139,10 @@ body.mapmode .searcharea{top:114px}   /* 렌즈 알약 아래로 한 줄 더 —
 /* facility fact badges — 인쇄물 하이라이트 문법 (2026-07-12 C안): 소문자·무테두리·각진 모서리·종이 틴트.
    대문자+자간+테두리 알약(컴포넌트 기본값 지문)은 폐기 */
 .fb{display:inline-block;font-size:11.5px;font-weight:500;color:var(--ink-2);background:#efece2;border-radius:2px;padding:2px 7px}
+.ic-ext,.ic-chev,.ic-star,.ic-warn{vertical-align:-1px;flex-shrink:0}
+.ic-ext{margin-left:3px}
+.ic-star{color:#d9b53f}
+.ic-warn{color:#96231c}
 
 /* area safety card */
 .areacard{display:flex;align-items:flex-start;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:13px 15px;margin:0 0 14px}
@@ -205,9 +209,10 @@ body.mapmode .searcharea{top:114px}   /* 렌즈 알약 아래로 한 줄 더 —
 .hd-chips button.on{background:#ddd4ee;color:#2e2454}
 /* 버티컬 탭 = 신문 섹션 제목 문법 (2026-07-18 유저: 칩꼴 재발 지적) — 배경·라운드 없음,
    세리프 + 활성 밑줄(rtitle 밑줄과 같은 모티프). 배치는 검색 카드에 부착(트립닷컴). */
-.vtabs{display:flex;justify-content:center;gap:26px;margin:14px 0 2px}
-.vtabs button{font-family:'Fraunces',Georgia,serif;font-size:17.5px;font-weight:600;color:var(--ink-3);background:none;border:0;border-bottom:2px solid transparent;border-radius:0;padding:0 2px 6px;cursor:pointer;letter-spacing:0}
-.vtabs button.on{color:var(--ink);border-bottom-color:var(--ink)}
+.vtabs{display:flex;justify-content:center;gap:8px;margin:14px 0 2px}
+.vtabs button{display:inline-flex;align-items:center;gap:6px;font:inherit;font-size:14px;font-weight:600;color:var(--ink-2);background:var(--card);border:0;border-radius:999px;padding:9px 16px;cursor:pointer}
+.vtabs button svg{flex-shrink:0}
+.vtabs button.on{background:var(--ink);color:var(--paper)}
 .hd-chips .sw{width:14px;height:10px;border-radius:3px;display:inline-block}
 @media (min-width:1020px){ #heromap{height:300px} }
 /* 전체화면 지도 모드 — 리스트↔지도 왕복 토글 (Zillow·Airbnb 모바일 문법, 2026-07-17).
@@ -299,10 +304,13 @@ body.mapmode .maplegend{position:absolute;left:10px;bottom:76px;right:auto;max-w
 .mapfind:hover{color:var(--ink)}
 .picker{position:fixed;inset:0;z-index:90;background:var(--paper);display:none;flex-direction:column}
 /* 검색 오버레이 (2026-07-19 유저: 지도/시트 상태를 무너뜨리지 않고 그 위에 뜨는 것 — picker와 동일 관례).
-   body.searchopen일 때만 고정 전체화면; 홈 화면 인라인 렌더는 그대로(이 클래스는 첫 검색 이후에만 붙는다). */
-body.searchopen #searchwrap{position:fixed;inset:0;z-index:95;background:var(--paper);overflow-y:auto;
-  border:0;border-radius:0;margin:0;box-shadow:none;   /* .searchwrap 카드 스타일(둥근모서리·테두리·상단여백) 리셋 —
-  안 지우면 전체화면 대신 지도가 비치는 둥근 카드로 뜬다 (2026-07-19 실기기: 시트로 착각) */
+   2차 수정(2026-07-19 유저: "다 덮이는게 아니라 조금 확대되서 지도를 살짝 덮는 형태") — 전체화면 대신
+   위에서 살짝 내려온 카드(둥근모서리·그림자) + 뒤쪽 어둑한 스크림으로 지도/리스트가 비쳐 보이게.
+   시트(하단 고정·스크림 없음)와 혼동되지 않도록 상하 여백을 남겨 "떠 있는 대화상자"로 읽히게 함. */
+body.searchopen::before{content:'';position:fixed;inset:0;z-index:94;background:rgba(25,23,19,.45)}
+body.searchopen #searchwrap{position:fixed;top:5vh;left:12px;right:12px;bottom:auto;margin:0 auto;
+  max-width:480px;max-height:90vh;z-index:95;background:var(--paper);overflow-y:auto;
+  border:1.5px solid var(--ink);border-radius:18px;box-shadow:0 16px 40px rgba(25,23,19,.35);
   padding:16px 16px calc(16px + env(safe-area-inset-bottom))}
 .searchclose{display:none}
 .vtabs-overlay{display:none !important}
@@ -312,7 +320,7 @@ body.searchopen .searchclose{display:flex;position:absolute;top:14px;right:14px;
   background:none;border:0;color:var(--ink-2);cursor:pointer;touch-action:manipulation}
 .picker.open{display:flex}
 .pickhead{display:flex;align-items:center;justify-content:space-between;padding:15px 16px;border-bottom:1px solid var(--line);font-family:var(--serif);font-weight:600;font-size:16px;color:var(--ink)}
-.pickclose{font:inherit;font-size:20px;line-height:1;background:none;border:0;color:var(--ink-2);cursor:pointer;padding:2px 8px}
+.pickclose{display:flex;align-items:center;justify-content:center;font:inherit;background:none;border:0;color:var(--ink-2);cursor:pointer;padding:2px 8px}
 .pickmapwrap{position:relative;flex:1;min-height:0}
 #pickmap{position:absolute;inset:0}
 .pickpin{position:absolute;left:50%;top:50%;transform:translate(-50%,-100%);pointer-events:none;z-index:5;color:var(--ink);filter:drop-shadow(0 3px 4px rgba(0,0,0,.28))}
@@ -341,11 +349,12 @@ body.searchopen .searchclose{display:flex;position:absolute;top:14px;right:14px;
 </div></header>
 
 <div class="wrap">
-  <!-- 버티컬 전환 — 에어비앤비 문법 (2026-07-18 유저): 탭이 화면 전체 경험을 바꾼다.
-       스타일 = 신문 섹션 제목 (세리프+활성 밑줄) — 칩·알약 금지 (재발 1위) -->
+  <!-- 버티컬 전환 — 탭이 화면 전체 경험을 바꾼다.
+       스타일 = 아이콘+알약 (2026-07-19 유저 확정: 에어비앤비·트립닷컴 실측 후 "알약형으로 교체" —
+       DESIGN.md의 "테두리 알약 금지"는 배지/칩 규칙이고, 이 카테고리 전환 탭은 명시적 예외) -->
   <div class="vtabs" id="vtabs">
-    <button type="button" data-v="park" class="on">Parking</button>
-    <button type="button" data-v="hotel">Hotels</button>
+    <button type="button" data-v="park" class="on"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13l1.6-4.8A2 2 0 016.5 7h11a2 2 0 011.9 1.2L21 13"/><path d="M3 13h18v4a1 1 0 01-1 1h-1a1 1 0 01-1-1v-1H6v1a1 1 0 01-1 1H4a1 1 0 01-1-1v-4z"/><circle cx="7.5" cy="17" r="1"/><circle cx="16.5" cy="17" r="1"/></svg>Parking</button>
+    <button type="button" data-v="hotel"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6.5a2 2 0 012-2h2.5a2 2 0 012 2V13"/><path d="M3 13h16.5a1.5 1.5 0 011.5 1.5V18"/><path d="M3 18v2M20 18v2"/><circle cx="6.8" cy="10.5" r="1.2"/></svg>Hotels</button>
   </div>
 
   <!-- cold start -->
@@ -361,12 +370,12 @@ body.searchopen .searchclose{display:flex;position:absolute;top:14px;right:14px;
 
   <!-- search pill stack: Where / When / CTA 한 덩어리 (에어비앤비 문법) -->
   <div class="searchwrap" id="searchwrap">
-    <button type="button" class="searchclose" id="searchclose" aria-label="Close">✕</button>
+    <button type="button" class="searchclose" id="searchclose" aria-label="Close"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     <!-- 오버레이 전용 버티컬 탭 (2026-07-19 유저: 탭 열면 지도 밖 상단 탭이 가려져 렌터카·호텔 선택이 사라짐) —
          같은 .vtabs 클래스라 아래 document 위임 클릭·applyVModeChrome의 on-상태 동기화를 그대로 공유 */ -->
     <div class="vtabs vtabs-overlay" id="vtabsOverlay">
-      <button type="button" data-v="park" class="on">Parking</button>
-      <button type="button" data-v="hotel">Hotels</button>
+      <button type="button" data-v="park" class="on"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13l1.6-4.8A2 2 0 016.5 7h11a2 2 0 011.9 1.2L21 13"/><path d="M3 13h18v4a1 1 0 01-1 1h-1a1 1 0 01-1-1v-1H6v1a1 1 0 01-1 1H4a1 1 0 01-1-1v-4z"/><circle cx="7.5" cy="17" r="1"/><circle cx="16.5" cy="17" r="1"/></svg>Parking</button>
+      <button type="button" data-v="hotel"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6.5a2 2 0 012-2h2.5a2 2 0 012 2V13"/><path d="M3 13h16.5a1.5 1.5 0 011.5 1.5V18"/><path d="M3 18v2M20 18v2"/><circle cx="6.8" cy="10.5" r="1.2"/></svg>Hotels</button>
     </div>
     <div class="searchbox" id="searchbox">
       <div class="srow">
@@ -386,7 +395,7 @@ body.searchopen .searchclose{display:flex;position:absolute;top:14px;right:14px;
       <button type="button" class="whensum" id="whensum">
         <span class="whenlab">When</span>
         <span class="whenval" id="whenval"></span>
-        <span class="whencar">▾</span>
+        <span class="whencar"><svg class="ic-chev" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span>
       </button>
       <div class="whenpanel" id="whenpanel">
         <input type="date" id="wdate" aria-label="Date">
@@ -466,7 +475,7 @@ body.searchopen .searchclose{display:flex;position:absolute;top:14px;right:14px;
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
       <input id="pickq" type="text" placeholder="Search a place, or drag the map" enterkeyhint="search" />
     </form>
-    <button class="pickclose" id="pickclose" aria-label="Close">✕</button>
+    <button class="pickclose" id="pickclose" aria-label="Close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   </div>
   <div class="pickmapwrap">
     <div id="pickmap"></div>
@@ -741,6 +750,13 @@ function mapUrl(p){
 // 안전+무료 자리엔 안 띄움 — 그냥 세우면 되니까.
 function needsGarage(p){ return p.lvl > 0 || p.paid; }
 
+/* 아이콘 = 그려진 SVG만 (이모지 금지 — 2026-07-19 유저: 에어비앤비·트립닷컴 실측, 전부 커스텀 아이콘 자산이지
+   유니코드 이모지가 아니다). 기존 search·locate 아이콘과 동일 문법(viewBox 24, stroke 2.2~2.6, currentColor). */
+var ICON_EXT   = '<svg class="ic-ext" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M9 7h8v8"/></svg>';
+var ICON_CHEV  = '<svg class="ic-chev" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>';
+var ICON_STAR  = '<svg class="ic-star" width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6L22 9.3l-5 4.9 1.2 7.1L12 17.8 5.8 21.3 7 14.2 2 9.3l7.1-.7z"/></svg>';
+var ICON_WARN  = '<svg class="ic-warn" width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5L1.5 21h21L12 2.5zm0 6.3c.55 0 1 .45 1 1v3.9a1 1 0 01-2 0V9.8c0-.55.45-1 1-1zm0 8.4a1.1 1.1 0 110 2.2 1.1 1.1 0 010-2.2z"/></svg>';
+
 /* ————— time-of-day blocks —————
    Safety is judged for the block you'll PARK IN, not "right now".
    Per-cell counts live under bk12/bk24, keyed morning|afternoon|evening|night. */
@@ -947,15 +963,17 @@ function exposureBadge(p){
   else if (INDOOR[p.ptype])     b = '<span class="fb ex-covered">Indoor garage</span>'; // 진짜 건물 안
   else if (covered)             b = '<span class="fb ex-covered">Covered</span>';       // 지붕만 (canopy lot) — garage라고 부르면 거짓
   else                          b = '<span class="fb ex-open">Open-air</span>';         // 그대로 노출 — 직원 있어도 차는 보인다
-  if (valet) b += '<span class="fb ex-valet">Valet</span>';   // 운영축 최상급 — Attended를 대체 (칩 1개 유지)
-  else if (staffed) b += '<span class="fb ex-attend">Attended</span>';
+  // valet과 Attended는 별개 칩 (2026-07-19 유저 확정: "둘다 띄워야지... 따로해" — 이전엔 발렛이 Attended를
+  // 대체했으나, 발렛도 결국 직원이 있다는 사실이므로 둘 다 보여주는 게 맞다는 유저 판단으로 뒤집음)
+  if (valet) b += '<span class="fb ex-valet">Valet</span>';
+  if (staffed) b += '<span class="fb ex-attend">Attended</span>';
   return b;
 }
 function badgeHtml(p){
   var b = exposureBadge(p);   // 노출도 = 항상 1개
-  if (p.floorFail || ratingFloorFail(p.fac)) b += '<span class="fb warn">⚠ Low ratings</span>';
+  if (p.floorFail || ratingFloorFail(p.fac)) b += '<span class="fb warn">'+ICON_WARN+' Low ratings</span>';
   if (SHOW_PARTNER_DATA && p.fac && p.fac.rating && p.fac.rating.avg!=null)
-    b += '<span class="fb">'+p.fac.rating.avg+'★ ('+fmtRC(p.fac.rating.count)+') · via SpotHero</span>';
+    b += '<span class="fb">'+ICON_STAR+' '+p.fac.rating.avg+' ('+fmtRC(p.fac.rating.count)+') · via SpotHero</span>';
   return b;
 }
 /* pill = 블록 범죄 원판, 무조건 표시 (2026-07-12 유저 결정: 보호 승격이 'Hot block'을 지워버리면
@@ -987,7 +1005,7 @@ function humanIncident(r){
 function countChip(x){   // x = 숫자(레거시) 또는 assessed 후보객체(per-spot 렌즈)
   var n = (x && typeof x==='object') ? x.n : x;
   var pil = (x && typeof x==='object') ? tpil(x) : TOD_PILL[tod];
-  return (n||0)+(n===1?' break-in or theft':' break-ins & thefts')+' near here · '+pil+' · past 12 mo';
+  return '<span style="white-space:nowrap">'+(n||0)+(n===1?' break-in or theft':' break-ins & thefts')+' near here</span> · <span style="white-space:nowrap">'+pil+'</span> · <span style="white-space:nowrap">past 12 mo</span>';
 }
 /* per-card "why?" chain — re-reads assess() fields + cell.hood, no new math */
 function whyChain(p){
@@ -1062,22 +1080,23 @@ function renderArea(){
   // 조각 문법 (2026-07-18 카카오맵·에어비앤비 실측: 완결문장 0개, 조각은 ·, 위계는 굵기·회색만).
   // 한정어(~3 blocks·시간대·past 12 mo)는 전부 보존 — 문장을 조각으로 재배열했을 뿐.
   var count = a.nTod
-    ? '<b>'+a.nTod+(a.nTod===1?' break-in or theft':' break-ins & thefts')+'</b> · ~3 blocks · '+TOD_PHRASE[a.todUsed]+' · <span style="white-space:nowrap">past 12 mo</span>'+
+    ? '<span style="white-space:nowrap"><b>'+a.nTod+(a.nTod===1?' break-in or theft':' break-ins & thefts')+'</b></span> · <span style="white-space:nowrap">~3 blocks</span> · <span style="white-space:nowrap">'+TOD_PHRASE[a.todUsed]+'</span> · <span style="white-space:nowrap">past 12 mo</span>'+
       (function(){ var t=a.lvl>=1?pctileTop(a.maxC12):null;
-        return t!=null?' · <span style="white-space:nowrap">top '+t+'%</span> of '+esc(CITY.name)+' blocks':''; })()
-    : 'None logged · ~3 blocks · '+TOD_PHRASE[a.todUsed]+' · <span style="white-space:nowrap">past 12 mo</span>';
+        return t!=null?' · <span style="white-space:nowrap">top '+t+'% of '+esc(CITY.name)+' blocks</span>':''; })()
+    : 'None logged · <span style="white-space:nowrap">~3 blocks</span> · <span style="white-space:nowrap">'+TOD_PHRASE[a.todUsed]+'</span> · <span style="white-space:nowrap">past 12 mo</span>';
   var peak = (a.peak&&a.nTod&&a.peak!==TOD_PHRASE[a.todUsed].replace('in the ','').replace('overnight','night'))
-    ? ' · peak: '+esc(a.peak)+'s' : '';
+    ? ' · <span style="white-space:nowrap">peak: '+esc(a.peak)+'s</span>' : '';
   var meta = [];
-  (function(){ var u=unsolvedNearby(); if (u>0&&a.lvl>=1) meta.push('<b>'+u+'</b> cases unsolved'); })();
-  (function(){ var v=stolenNearby(); if (v>0) meta.push('<b>'+v+'</b> cars stolen'); })();
-  (function(){ var s=streetNearby(); if (s>0) meta.push('<b>'+s+'</b> tent-camp reports (311)'); })();
+  (function(){ var u=unsolvedNearby(); if (u>0&&a.lvl>=1) meta.push('<span style="white-space:nowrap"><b>'+u+'</b> cases unsolved</span>'); })();
+  (function(){ var v=stolenNearby(); if (v>0) meta.push('<span style="white-space:nowrap"><b>'+v+'</b> cars stolen</span>'); })();
+  (function(){ var s=streetNearby(); if (s>0) meta.push('<span style="white-space:nowrap"><b>'+s+'</b> tent-camp reports (311)</span>'); })();
   $('areacard').innerHTML =
     '<div class="areacard"><span class="areadot bg'+a.lvl+'"></span>'+
     '<div class="areabody">'+
-      '<div class="areahead">'+esc(a.hood||dest.name)+' — <span class="lvlword lvl'+a.lvl+'">'+AREA_WORD[a.lvl]+' <span style="white-space:nowrap">'+TOD_PHRASE[a.todUsed]+'</span></span></div>'+
+      '<div class="areahead">'+esc(a.hood||dest.name)+' — <span class="lvlword lvl'+a.lvl+'"><span style="white-space:nowrap">'+AREA_WORD[a.lvl]+'</span> <span style="white-space:nowrap">'+TOD_PHRASE[a.todUsed]+'</span></span></div>'+
       '<div class="areasub">'+count+peak+'</div>'+
-      (meta.length?'<div class="areameta">'+meta.join(' · ')+' · nearby, past 12 mo</div>':'')+
+      (meta.length?'<button type="button" class="whybtn">details</button>'+
+        '<div class="whychain areameta">'+meta.join(' · ')+' · nearby, past 12 mo</div>':'')+
     '</div></div>';
   return a;
 }
@@ -1130,14 +1149,14 @@ function cardHtml(p){
   return '<div class="pcard">'+
     '<div class="cname">'+esc(p.name)+'</div>'+
     '<div class="fbrow">'+badges+'<span class="pill '+pillClass(p)+'">'+pillText(p)+'</span></div>'+
-    '<div class="cmeta"><span>'+typeLabel(p)+(p.paid?' · paid':'')+'</span><span>'+walkMin(p.dist)+' min walk</span>'+
+    '<div class="cmeta"><span style="white-space:nowrap">'+typeLabel(p)+(p.paid?' · paid':'')+'</span><span style="white-space:nowrap">'+walkMin(p.dist)+' min walk</span>'+
       (p.cell&&p.cell.hood?'<span>'+esc(p.cell.hood)+'</span>':'')+
       // 정확창 견적 — 프록시 v2가 quote total(cents)을 이미 실어줌. 표시는 Phase 게이트 뒤(제휴 승인 시 플래그만).
       (SHOW_PARTNER_DATA&&p.fac&&p.fac.price_cents!=null?'<span>$'+(p.fac.price_cents/100).toFixed(2)+' · your window</span>':'')+'</div>'+
     (p.dataless?'':'<div class="cchip">'+countChip(p)+'</div>')+
     (sold?'<span class="soldnote">may be sold out for your exact time. Booking page will confirm.</span>':'')+
     '<div class="cfoot">'+
-      (bookFac(p)?'<a class="altlink" href="'+bookUrl(p)+'" target="_blank" rel="noopener">Book ↗</a>'
+      (bookFac(p)?'<a class="altlink" href="'+bookUrl(p)+'" target="_blank" rel="noopener">Book '+ICON_EXT+'</a>'
         : (needsGarage(p)?'<span class="walkin">walk-in</span>':''))+
       '<a class="altlink" href="'+mapUrl(p)+'" target="_blank" rel="noopener">Maps</a>'+
       '<button type="button" class="whybtn">details</button>'+
@@ -1164,7 +1183,7 @@ function renderCards(){
       $('securewrap').innerHTML = '<div class="securecard"><b>Nearest bookable garage</b>'+
         '<p>'+esc(nb.name)+' — '+typeLabel(nb).toLowerCase()+', '+
         (nb.dist>1400 ? (nb.dist/1609).toFixed(1)+' mi away' : walkMin(nb.dist)+' min walk')+'. '+countChip(nb)+'.</p>'+
-        '<div class="slinks"><a href="'+bookUrl(nb)+'" target="_blank" rel="noopener">Book it ↗</a>'+
+        '<div class="slinks"><a href="'+bookUrl(nb)+'" target="_blank" rel="noopener">Book it '+ICON_EXT+'</a>'+
         '<a href="'+mapUrl(nb)+'" target="_blank" rel="noopener">Open in Maps</a></div></div>';
     } else if (tierB){
       $('securewrap').innerHTML = '<div class="securecard"><p style="margin:0">SpotHero has no bookable garages right here. Try the map: pan to a nearby area, then tap <b>Search this area</b>.</p></div>';
@@ -1183,8 +1202,8 @@ function renderCards(){
     (function(){   // 정렬 힌트는 실제 정렬 상태(browseSort)를 따라간다 — Closest로 바꿨는데 'Safest first'라고 말하면 거짓
       var a = window.__lastArea;
       var srt = browseSort==='close'
-        ? 'Closest first · tap Safest for block risk'
-        : 'Safest first · tap Closest for walk time';
+        ? '<span style="white-space:nowrap">Closest first</span> · <span style="white-space:nowrap">tap Safest for block risk</span>'
+        : '<span style="white-space:nowrap">Safest first</span> · <span style="white-space:nowrap">tap Closest for walk time</span>';
       if (!a || !a.cells) return '<div class="bhint">No crime data for this city yet. Badges show which spots are staffed or covered.</div>';
       return a.lvl>=1
         ? '<div class="bhint">'+srt+'</div>'
@@ -1233,7 +1252,7 @@ function renderRentalHome(){
   el.innerHTML = '<div class="lugcard"><div class="lugtop">'+
     '<div class="lugtitle">Renting a car for this trip?'+
       '<div class="lugmeta">'+esc(CITY.name)+' pickup rates · <span style="white-space:nowrap">'+esc(RENTAL.label)+'</span></div></div>'+
-    '<a class="lugcta" href="'+RENTAL.urlFor(CITY.name)+RENTAL.aff+'" target="_blank" rel="noopener nofollow sponsored">Compare ↗</a></div></div>';
+    '<a class="lugcta" href="'+RENTAL.urlFor(CITY.name)+RENTAL.aff+'" target="_blank" rel="noopener nofollow sponsored">Compare '+ICON_EXT+'</a></div></div>';
 }
 var LUG_PROVIDERS = {
   bounce: { label:'Bounce', aff:'ref=QUIETANDSAFE56383283&utm_medium=link&utm_source=affiliates',   // 제휴 승인 2026-07-18 (go.bounce.com 302 실측: /s?ref=)
@@ -1261,10 +1280,17 @@ function renderLugStrip(){
     '<div class="lugcard"><div class="lugtop">'+
       '<div class="lugtitle">Bag storage near '+dn+
         '<div class="lugmeta">'+p.label+' · '+p.priceFrom+'</div></div>'+
-      '<a class="lugcta" href="'+affUrl(p.search(lugQuery()), 'bounce')+'" target="_blank" rel="noopener">Browse spots ↗</a></div>'+
+      '<a class="lugcta" href="'+affUrl(p.search(lugQuery()), 'bounce')+'" target="_blank" rel="noopener">Browse spots '+ICON_EXT+'</a></div>'+
     '<div class="lugnote">Leave nothing visible in the car — rental papers included.</div></div>';
 }
 
+/* 지역카드 세부내역 토글 (2026-07-19 유저: 실렌더 보니 화면이 숫자로 뒤덮임 — "이걸 어떻게 다 읽어".
+   unsolved·stolen·tent-camp 3종 분해는 기본 숨김, .pcard의 details 문법 그대로 재사용 */
+$('areacard').addEventListener('click',function(e){
+  var b=e.target.closest&&e.target.closest('.whybtn'); if (!b) return;
+  var w=b.nextElementSibling;
+  if (w&&w.classList.contains('whychain')) w.style.display=(w.style.display==='block'?'none':'block');
+});
 /* 카드 리스트 상호작용 — 위임 한 번 (why 토글 · 정렬 · 필터) */
 $('cards').addEventListener('click',function(e){
   var t=e.target, b;
@@ -1299,9 +1325,8 @@ function render(){
   // 지역 경고는 리스트 위 — "어디를 피할지"를 먼저, 그다음 리스트에서 고른다
   var wz = worstZone();
   $('avoidwrap').innerHTML = !wz ? '' :
-    '<div class="avoidstrip"><b>Skip street parking around '+esc(wz.cell.hood||'here')+' '+TOD_PHRASE[wz.b]+'</b>'+
-    '<p><b>'+wz.n+'</b> break-ins & thefts · within a block · <span style="white-space:nowrap">past 12 mo</span>'+
-    (wz.cell.peakDay?' · <span style="white-space:nowrap">worst: '+esc(wz.cell.peakDay)+'s</span>':'')+'</p></div>';
+    '<div class="avoidstrip"><b>Skip street parking around '+esc(wz.cell.hood||'here')+' <span style="white-space:nowrap">'+TOD_PHRASE[wz.b]+'</span></b>'+
+    '<p><span style="white-space:nowrap"><b>'+wz.n+'</b> break-ins & thefts</span> · <span style="white-space:nowrap">within a block</span> · <span style="white-space:nowrap">past 12 mo</span></p></div>';
 
   var list = renderCards();
   renderLugStrip();
@@ -1648,8 +1673,8 @@ function hotelList(){
 function hotelLine(h){   // 사실 문장 1개 + 한정어 각 1회 (COPY R1·R2) — 단복수·명사 생략 금지
   var noun = function(n){ return n===1 ? '1 robbery or assault' : n+' robberies & assaults'; };
   return h.c12
-    ? '<b>'+noun(h.c12)+'</b> · within a block · <span style="white-space:nowrap">past 12 mo</span>'
-    : 'None recorded · this block · <span style="white-space:nowrap">past 12 mo</span>';
+    ? '<span style="white-space:nowrap"><b>'+noun(h.c12)+'</b></span> · <span style="white-space:nowrap">within a block</span> · <span style="white-space:nowrap">past 12 mo</span>'
+    : 'None recorded · <span style="white-space:nowrap">this block</span> · <span style="white-space:nowrap">past 12 mo</span>';
 }
 function drawHotelPins(picks){
   for (var i=0;i<__marks.length;i++){ try{ __marks[i].remove(); }catch(e){} }
@@ -1740,7 +1765,7 @@ function renderHotels(){
     var h=top[i];
     html += '<div class="lugcard"><div class="lugtop"><b>'+(i+1)+'. '+esc(h.name)+'</b>'+
       '<a class="altlink" href="'+mapUrl(h)+'" target="_blank" rel="noopener">Maps</a></div>'+
-      '<p class="lugmeta">'+hotelLine(h)+' · '+walkMin(h.dist)+' min walk</p></div>';
+      '<p class="lugmeta">'+hotelLine(h)+' · <span style="white-space:nowrap">'+walkMin(h.dist)+' min walk</span></p></div>';
   }
   $('cards').innerHTML = html;
   // 정직성 푸터 — 기록이 실제로 언제까지 있나 (≥5건/월 규칙, 주차 푸터와 동일)
@@ -1862,6 +1887,9 @@ $('sumpill').addEventListener('click', function(){
   try{ history.pushState({view:'search'}, '', location.href); }catch(e){}
 });
 $('searchclose').addEventListener('click', function(){ history.back(); });   // 실제 닫기는 popstate가 수행(아래) — 히스토리와 항상 동기화
+document.body.addEventListener('click', function(e){   // 스크림(카드 바깥 어둑한 영역) 탭 = ✕와 동일
+  if (e.target===document.body && document.body.classList.contains('searchopen')) history.back();
+});
 function resetToHomeUI(){   // 결과→홈 화면 리셋 (히스토리 조작은 호출부 책임 — citySel push / popstate는 무push)
   dest=null; $('q').value=''; $('results').classList.remove('show'); setMapMode(false);
   document.body.classList.remove('searchopen');
