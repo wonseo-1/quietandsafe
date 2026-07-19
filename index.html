@@ -66,7 +66,7 @@ header{position:sticky;top:0;z-index:30;background:rgba(250,249,246,.92);backdro
 /* 지도 모드 탈출구 (2026-07-19 유저: "맵 상태에서 나올 방법이 없네") — 캡슐이 지도 위에 떠서 탭=검색으로 복귀 */
 body.mapmode .sumpill{display:flex !important;position:fixed;top:10px;left:12px;right:12px;width:auto;z-index:90;margin:0;box-shadow:0 3px 12px rgba(25,23,19,.22)}
 body.mapmode .maplens{top:64px}   /* 렌즈 라디오는 캡슐 아래로 */
-body.mapmode .searcharea{top:64px}
+body.mapmode .searcharea{top:114px}   /* 렌즈 알약 아래로 한 줄 더 — 겹침 실사 후 수리 (2026-07-19) */
 .sp1{font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:45%}
 .sp2{flex:1;font-size:12.5px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .spedit{flex:none;font-size:12px;color:var(--ink-3)}
@@ -301,8 +301,12 @@ body.mapmode .maplegend{position:absolute;left:10px;bottom:76px;right:auto;max-w
 /* 검색 오버레이 (2026-07-19 유저: 지도/시트 상태를 무너뜨리지 않고 그 위에 뜨는 것 — picker와 동일 관례).
    body.searchopen일 때만 고정 전체화면; 홈 화면 인라인 렌더는 그대로(이 클래스는 첫 검색 이후에만 붙는다). */
 body.searchopen #searchwrap{position:fixed;inset:0;z-index:95;background:var(--paper);overflow-y:auto;
+  border:0;border-radius:0;margin:0;box-shadow:none;   /* .searchwrap 카드 스타일(둥근모서리·테두리·상단여백) 리셋 —
+  안 지우면 전체화면 대신 지도가 비치는 둥근 카드로 뜬다 (2026-07-19 실기기: 시트로 착각) */
   padding:16px 16px calc(16px + env(safe-area-inset-bottom))}
 .searchclose{display:none}
+.vtabs-overlay{display:none !important}
+body.searchopen .vtabs-overlay{display:flex !important;margin:8px 0 14px}
 body.searchopen .searchclose{display:flex;position:absolute;top:14px;right:14px;z-index:1;
   align-items:center;justify-content:center;width:34px;height:34px;font:inherit;font-size:18px;
   background:none;border:0;color:var(--ink-2);cursor:pointer;touch-action:manipulation}
@@ -358,6 +362,12 @@ body.searchopen .searchclose{display:flex;position:absolute;top:14px;right:14px;
   <!-- search pill stack: Where / When / CTA 한 덩어리 (에어비앤비 문법) -->
   <div class="searchwrap" id="searchwrap">
     <button type="button" class="searchclose" id="searchclose" aria-label="Close">✕</button>
+    <!-- 오버레이 전용 버티컬 탭 (2026-07-19 유저: 탭 열면 지도 밖 상단 탭이 가려져 렌터카·호텔 선택이 사라짐) —
+         같은 .vtabs 클래스라 아래 document 위임 클릭·applyVModeChrome의 on-상태 동기화를 그대로 공유 */ -->
+    <div class="vtabs vtabs-overlay" id="vtabsOverlay">
+      <button type="button" data-v="park" class="on">Parking</button>
+      <button type="button" data-v="hotel">Hotels</button>
+    </div>
     <div class="searchbox" id="searchbox">
       <div class="srow">
         <select class="cityin" id="citySel" aria-label="City"></select>
@@ -1774,10 +1784,11 @@ function syncModeUrl(){
     history.replaceState(null,'',u.pathname+(u.search||''));
   }catch(e){}
 }
-(function(){
-  var el=$('vtabs'); if(!el) return;
-  el.addEventListener('click',function(e){ var b=e.target.closest?e.target.closest('button'):null; if (b) setVMode(b.getAttribute('data-v')); });
-})();
+// document 위임으로 전환 (2026-07-19) — .vtabs가 헤더 탭 하나뿐이던 시절엔 단일 바인딩으로 충분했지만,
+// 검색 오버레이 안에 두 번째 .vtabs(vtabsOverlay)가 생기면서 위임 하나로 둘 다 커버해야 함.
+document.addEventListener('click',function(e){
+  var b=e.target.closest?e.target.closest('.vtabs button'):null; if (b) setVMode(b.getAttribute('data-v'));
+});
 
 function pinEl(label){
   // 균일한 잉크색 핀 — "1위 초록핀" 은퇴 (단일 정답 사상 폐기: 순서=거리일 뿐, 우열 아님)
