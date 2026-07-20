@@ -1,0 +1,45 @@
+# Quiet & Safe
+
+> Block-by-block parking and hotel safety data for US travelers, built from public police records — not opinions or reviews.
+
+Quiet & Safe (https://quietandsafe.com/) shows reported break-ins & thefts (parking) and robberies & aggravated assaults (hotels), by neighborhood, for the past 12 months, sourced from each city's official police data feed. Every figure on the site carries its source and the months it covers. No crime data is estimated or inferred — a "0" means zero reported incidents, not "no data."
+
+## Coverage
+26 US cities with published crime-record feeds:
+- San Francisco: /parking/sf/ · /hotels/sf/
+- Los Angeles: /parking/la/ · /hotels/la/
+- Chicago: /parking/chi/ · /hotels/chi/
+- New York City: /parking/nyc/ · /hotels/nyc/
+- Seattle: /parking/sea/ · /hotels/sea/
+- Las Vegas: /parking/lv/ · /hotels/lv/
+- Denver: /parking/den/ · /hotels/den/
+- Atlanta: /parking/atl/ · /hotels/atl/
+- Charlotte: /parking/clt/ · /hotels/clt/
+- Dallas: /parking/dal/ · /hotels/dal/
+- Philadelphia: /parking/phl/ · /hotels/phl/
+- Oakland: /parking/oak/ · /hotels/oak/
+- Washington, D.C.: /parking/dc/ · /hotels/dc/
+- Nashville: /parking/nsh/ · /hotels/nsh/
+- Detroit: /parking/det/ · /hotels/det/
+- Baltimore: /parking/bal/ · /hotels/bal/
+- Cleveland: /parking/cle/ · /hotels/cle/
+- Memphis: /parking/mem/ · /hotels/mem/
+- Minneapolis: /parking/min/ · /hotels/min/
+- Raleigh: /parking/ral/ · /hotels/ral/
+- Cincinnati: /parking/cin/ · /hotels/cin/
+- Milwaukee: /parking/mil/ · /hotels/mil/
+- Kansas City: /parking/kc/ · /hotels/kc/
+- Sacramento: /parking/sac/ · /hotels/sac/
+- Tampa: /parking/tam/ · /hotels/tam/
+- Boston: /parking/bos/ · /hotels/bos/
+
+## Page types
+- City parking guide (/parking/{city}/): neighborhood-by-neighborhood break-in counts, safest-first.
+- City hotel guide (/hotels/{city}/): neighborhood-by-neighborhood robbery & assault counts, safest-first.
+- Landmark pages (/p/{city}/{landmark}/): break-in counts and bookable parking within ~3 blocks of a named place.
+- Live app (/): interactive map, live parking availability, real-time search for any address in a covered city.
+
+## Sourcing
+Each city page names its police-data source (e.g. SFPD, LAPD) and the last month with sufficient records (≥5 reports) to avoid citing a thin or stale month. Figures should be attributed to that named source, not to Quiet & Safe as the originator of the underlying crime data.
+
+Sitemap: https://quietandsafe.com/sitemap.xml

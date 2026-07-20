@@ -13,6 +13,14 @@
 <meta property="og:description" content="Every garage, lot and hotel near your destination — quietest blocks first, grounded in public city records. 26 US cities deep, live parking nationwide." />
 <meta property="og:type" content="website" />
 <meta name="twitter:card" content="summary" />
+<!-- 파비콘 (2026-07-20, 유저: "탭 옆에 지구본만 뜬다") — 워드마크의 그린 & 그대로 재사용, 새 파일 없이
+     인라인 SVG data URI(단일 파일 아키텍처 유지). 잉크 배경(#191713) + 브랜드 그린 & — 탭 크기에서도
+     식별 가능하도록 배경을 채움(투명 배경은 밝은/어두운 브라우저 크롬 양쪽에서 대비가 불안정). -->
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23191713'/%3E%3Ctext x='50' y='70' font-family='Georgia,serif' font-size='64' font-weight='700' fill='%230c6b4d' text-anchor='middle'%3E%26amp%3B%3C/text%3E%3C/svg%3E" />
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23191713'/%3E%3Ctext x='50' y='70' font-family='Georgia,serif' font-size='64' font-weight='700' fill='%230c6b4d' text-anchor='middle'%3E%26amp%3B%3C/text%3E%3C/svg%3E" />
+<!-- WebSite 구조화 데이터 (2026-07-20) — 구글·AI 검색엔진이 사이트 정체를 기계적으로 읽을 수 있게.
+     사실만: 판정·과장 없음(앱 전체 카피 원칙과 동일). -->
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"Quiet & Safe","url":"https://quietandsafe.com/","description":"Block-by-block parking and hotel safety data for US travelers, grounded in public police records — reported break-ins, thefts, robberies and assaults by neighborhood, past 12 months."}</script>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet" />
 <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet" />
@@ -1225,6 +1233,18 @@ var HOTELS = {
   label: 'Booking.com', aff: '',
   urlFor: function(city){ return 'https://www.booking.com/searchresults.html?ss=' + encodeURIComponent(city); }
 };
+/* 앱 안 호텔 카드/핀용 — 트립닷컴 다이렉트 제휴(2026-07-20 가입, Allianceid+SID 발급 확인).
+   우리가 이미 가진 이름+좌표만으로 조립 — 데이터 피드(가격) 없이도 되는 클릭아웃 링크.
+   주의: 트립닷컴 내부 도시ID 없이는 "이 정확한 호텔"이 검색 결과 1위로 안 나올 수 있음(실측 확인) —
+   그래서 라벨은 "Book"이 아니라 "Search on Trip.com"으로 정직하게(과잉 확신 금지). */
+var TRIP_HOTELS = {
+  label: 'Trip.com', aff: 'Allianceid=9395765&SID=325094771',
+  urlFor: function(h){
+    return 'https://www.trip.com/hotels/list?lat=' + h.lat + '&lon=' + h.lng +
+      '&searchType=H&searchWord=' + encodeURIComponent(h.name) +
+      '&crn=1&adult=2&children=0&domestic=false&' + TRIP_HOTELS.aff;
+  }
+};
 function renderRentalHome(){
   var el = $('rentalhome'); if (!el) return;
   // 렌터카는 '여행 전' 결정 — 홈(도시 컨텍스트)에 노출 (2026-07-14 유저 지정: 맨 앞에도).
@@ -1679,7 +1699,8 @@ function drawHotelPins(picks){
       ev.stopPropagation();
       showInfo([h.lng,h.lat],
         '<b>'+esc(h.name)+'</b><br>'+hotelLine(h)+
-        '<br>'+walkMin(h.dist)+' min walk · <a href="'+mapUrl(h)+'" target="_blank" rel="noopener">Open in Maps</a>');
+        '<br>'+walkMin(h.dist)+' min walk · <a href="'+TRIP_HOTELS.urlFor(h)+'" target="_blank" rel="noopener nofollow sponsored">Search on Trip.com</a>'+
+        ' · <a href="'+mapUrl(h)+'" target="_blank" rel="noopener">Open in Maps</a>');
     });
     __marks.push(new maplibregl.Marker({element:el, anchor:'bottom'}).setLngLat([h.lng,h.lat]).addTo(map));
   });
@@ -1714,6 +1735,7 @@ function ensureWalkLayers(){
       var c=containingWalkCell(hh), h={name:hh.name, lat:hh.lat, lng:hh.lng, c12:hotelN(c)};
       showInfo(co,'<b>'+esc(h.name)+'</b><br>'+hotelLine(h)+
         (dest?'<br>'+walkMin(hav(dest,hh))+' min walk':'')+
+        ' · <a href="'+TRIP_HOTELS.urlFor(hh)+'" target="_blank" rel="noopener nofollow sponsored">Search on Trip.com</a>'+
         ' · <a href="'+mapUrl(hh)+'" target="_blank" rel="noopener">Open in Maps</a>');
     });
     map.on('mouseenter','hotel-dot',function(){ map.getCanvas().style.cursor='pointer'; });
@@ -1751,6 +1773,7 @@ function renderHotels(){
   for (var i=0;i<top.length;i++){
     var h=top[i];
     html += '<div class="lugcard"><div class="lugtop"><b>'+(i+1)+'. '+esc(h.name)+'</b>'+
+      '<a class="altlink" href="'+TRIP_HOTELS.urlFor(h)+'" target="_blank" rel="noopener nofollow sponsored">Search on Trip.com '+ICON_EXT+'</a>'+
       '<a class="altlink" href="'+mapUrl(h)+'" target="_blank" rel="noopener">Maps</a></div>'+
       '<p class="lugmeta">'+hotelLine(h)+' · <span style="white-space:nowrap">'+walkMin(h.dist)+' min walk</span></p></div>';
   }
