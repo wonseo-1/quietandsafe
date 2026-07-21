@@ -39,6 +39,7 @@ Quiet & Safe (https://quietandsafe.com/) shows reported break-ins & thefts (park
 - Landmark pages (/p/{city}/{landmark}/): break-in counts and bookable parking within ~3 blocks of a named place.
 - Neighborhood stay guides (/hotels/{city}/{neighborhood}/): robbery & assault counts and city rank for a single neighborhood.
 - Neighborhood parking guides (/parking/{city}/{neighborhood}/): break-in counts, city rank, and named parking facilities mapped inside that neighborhood.
+- Incident logs (/incidents/{city}/{neighborhood}/): individual vehicle-related incident records (date, time, source description, case status), published only for cities where the source feed's measured publication lag is 7 days or less at build time.
 - Live app (/): interactive map, live parking availability, real-time search for any address in a covered city.
 
 ## Sourcing
