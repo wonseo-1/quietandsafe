@@ -49,6 +49,8 @@ a{color:inherit}
 header{position:sticky;top:0;z-index:30;background:rgba(250,249,246,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
 .hbar{max-width:600px;margin:0 auto;padding:13px 18px;display:flex;align-items:baseline;justify-content:space-between}
 .wordmark{font-family:var(--serif);font-weight:600;font-size:19px;letter-spacing:-.01em;text-decoration:none}
+.guideslink{font-size:13px;font-weight:600;color:var(--ink-2);text-decoration:none;padding:6px 4px}
+.guideslink:hover{color:var(--ink)}
 .wordmark small{color:var(--ink-3);font-family:var(--sans);font-weight:400;font-size:12px;margin-left:8px;letter-spacing:.02em}
 .city{font-size:12px;color:var(--ink-2);border:1px solid var(--line-2);border-radius:999px;padding:4px 26px 4px 12px;font-family:inherit;-webkit-appearance:none;appearance:none;background:var(--card);cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%238f8a7e' fill='none' stroke-width='1.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center}
 
@@ -356,6 +358,10 @@ body.searchopen .searchclose{display:flex;position:absolute;top:14px;right:14px;
 
 <header><div class="hbar">
   <a class="wordmark" href="./">Quiet <span style="color:var(--brand)">&</span> Safe<small>don’t get bipped</small></a>
+  <!-- 도시별 정적 가이드 인덱스 — vMode(park/hotel) 검색·예약 흐름이랑 완전히 분리된 별도 진입점
+       (2026-07-22 유저: "파킹/호텔은 예약 연결, 이건 별도 탭으로" — vMode를 3단으로 늘리면 검증된
+       검색 로직 전체를 건드려야 해서, 헤더의 독립 링크로 최소 침습 구현) -->
+  <a class="guideslink" id="guidesLink" href="guides/sf/" style="display:none">Guides</a>
 </div></header>
 
 <div class="wrap">
@@ -2497,9 +2503,15 @@ function renderChips(){
 }
 
 /* load a city's data (risk + parking) → reset maps, chips, header */
+function updateGuidesLink(){
+  var a=$('guidesLink'); if (!a) return;
+  if (!CITY || CITY.nocrime){ a.style.display='none'; return; }   // 가이드는 범죄데이터 있는 도시만(빈 페이지 없음)
+  a.href='guides/'+CITY.key+'/'; a.style.display='';
+}
 function loadCity(key){
   tierB = false;   // 실제 커버 도시(정적 데이터) 로드 = Tier B 해제의 단일 지점 (citySel 복귀 경로 포함)
   CITY = CITIES[key];
+  updateGuidesLink();
   if (CITY.nocrime){
     // 파킹-온리 도시 (2026-07-12 유저 결정: "전국 도시 다 넣어, 범죄지도 없더라도").
     // 정적 파일 없음 — 라이브 SpotHero만. 화면은 Tier B 문법 그대로 (dataless pill·정직한 범례·푸터).
@@ -2540,6 +2552,10 @@ function loadCity(key){
       var o=Object.assign({},f.properties); o.lng=x/ring.length; o.lat=y/ring.length; o.ring=ring; return o;
     });
     buildCellIndex();
+    // 가이드 링크는 hood 태깅된 셀이 있는 도시만 — 일부 도시(chi/nyc/bos 등)는 원본 피드에 동네 필드가
+    // 없어 /guides/{city}/ 자체가 안 만들어짐(빈 페이지 금지 원칙). 서버 목록을 따로 안 두고
+    // 이미 로드된 실제 셀 데이터로 직접 판정 — 데이터 소스 이원화 방지.
+    if (!CELLS.some(function(c){ return c.hood; })) { var gl=$('guidesLink'); if (gl) gl.style.display='none'; }
     C12SORT = CELLS.map(function(c){ return c.c12||0; }).sort(function(a,b){ return a-b; });   // ② 퍼센타일 분포
     for (var pi=0; pi<PARKING.length; pi++){   // one-time joins: grid index makes this ~free
       var pp=PARKING[pi];
