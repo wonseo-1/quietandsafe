@@ -362,6 +362,8 @@ body.searchopen .searchclose{display:flex;position:absolute;top:14px;right:14px;
        (2026-07-22 유저: "파킹/호텔은 예약 연결, 이건 별도 탭으로" — vMode를 3단으로 늘리면 검증된
        검색 로직 전체를 건드려야 해서, 헤더의 독립 링크로 최소 침습 구현) -->
   <a class="guideslink" id="guidesLink" href="guides/sf/" style="display:none">Guides</a>
+  <!-- 여행 브리핑 — 도시 무관 정적 페이지라 조건 없이 상시 노출 (2026-07-22 goal: 여행 전 매일 오는 이유 만들기) -->
+  <a class="guideslink" href="briefing/">Briefing</a>
 </div></header>
 
 <div class="wrap">
@@ -1238,8 +1240,10 @@ function renderCards(){
    생성기가 유일한 경로. 그래서 가입 전까지만 조립 가능한 Kayak 도시검색을 임시 사용. */
 var RENTAL = {
   label: 'Discover Cars', aff: '',
-  // 가입 전: 홈으로 (도시 딥링크는 제휴 대시보드 생성기로만 조립 가능 — 가입 후 이 함수 교체)
-  urlFor: function(city){ return 'https://www.discovercars.com/'; }
+  // DiscoverCars WW — Admitad 승인 완료 (2026-07-22 패널 실확인, "My Programs"에 트래킹 링크 발급됨).
+  // naiawork.com = Admitad 트래킹 도메인, 이 링크가 클릭 추적 후 discovercars.com으로 리다이렉트.
+  // 도시 딥링크는 ?ulp=<타깃URL> 파라미터로 가능하지만 DiscoverCars 검색 URL 구조 검증 전까지 홈으로.
+  urlFor: function(city){ return 'https://naiawork.com/g/wqjhitsyjq5f896691b25ea594bb46/'; }
 };
 /* 호텔 제휴 — 같은 패턴. Booking 딥링크는 도시 검색이 공개 URL이라 지금부터 기능함 (aff는 &aid= 추가) */
 var HOTELS = {

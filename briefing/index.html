@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Trip briefing — weather, safety, food near your hotel | Quiet & Safe</title>
+<meta name="description" content="One page for your trip: weather for your dates, how your hotel's neighborhood ranks on safety, recent incident records, and places to eat nearby — all from public data.">
+<link rel="canonical" href="https://quietandsafe.com/briefing/">
+<meta property="og:title" content="Trip briefing — weather, safety, food near your hotel">
+<meta property="og:description" content="Enter your city, hotel, and dates. Get one shareable page: weather, neighborhood safety rank, recent incidents, food nearby.">
+<meta property="og:type" content="website"><meta property="og:url" content="https://quietandsafe.com/briefing/">
+<style>
+:root{--paper:#faf9f6;--card:#fff;--ink:#191713;--ink-2:#5f5b52;--ink-3:#8f8a7e;--line:#e7e4dc;--line-2:#d6d2c6;--brand:#0c6b4d;--serif:Georgia,'Times New Roman',serif}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.55 -apple-system,system-ui,sans-serif}
+main{max-width:640px;margin:0 auto;padding:28px 20px 60px}
+.top a{font-weight:700;color:var(--ink);text-decoration:none;font-family:var(--serif);font-size:19px}
+.top small{color:var(--ink-3);font-size:12px;margin-left:8px}
+h1{font-family:var(--serif);font-size:28px;line-height:1.2;margin:18px 0 6px}
+.sub{color:var(--ink-2);margin:0 0 20px}
+.form{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:26px}
+.frow{margin-bottom:12px}
+label{display:block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);margin-bottom:4px}
+select,input{width:100%;font:inherit;font-size:15px;padding:10px 12px;border:1px solid var(--line-2);border-radius:9px;background:var(--paper);color:var(--ink)}
+.dates{display:flex;gap:10px}.dates>div{flex:1}
+.go{width:100%;background:var(--brand);color:#fff;border:0;border-radius:10px;font:inherit;font-weight:600;font-size:15px;padding:12px;cursor:pointer;margin-top:4px}
+.go:disabled{opacity:.5;cursor:default}
+.hint{font-size:12px;color:var(--ink-3);margin-top:8px}
+.results{display:none}
+h2{font-size:13px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3);margin:26px 0 10px;border-top:1px solid var(--line);padding-top:16px}
+h2:first-of-type{border-top:0;padding-top:0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:8px;font-size:14px}
+.card b{font-size:15px}
+.wxrow{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px}
+.wx{flex:0 0 84px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 8px;text-align:center;font-size:12px}
+.wx .d{color:var(--ink-3);font-size:11px}.wx .t{font-weight:700;font-size:14px;margin:3px 0}.wx .c{color:var(--ink-2)}
+.wx .p{color:var(--ink-3);font-size:11px;margin-top:2px}
+.fact{font-size:14.5px}.fact b{font-size:17px}
+.note{font-size:12.5px;color:var(--ink-3);margin-top:8px}
+.irow{display:flex;gap:12px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.irow:last-child{border-bottom:0}
+.itime{color:var(--ink-3);font-variant-numeric:tabular-nums;white-space:nowrap}
+.eatgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px}
+@media(max-width:520px){.eatgrid{grid-template-columns:1fr}}
+.eat{font-size:13.5px;padding:6px 0;border-bottom:1px solid var(--line)}
+.eat .cz{color:var(--ink-3);font-size:12px}
+.cta{display:inline-block;background:var(--brand);color:#fff;text-decoration:none;font-weight:600;font-size:14px;padding:10px 18px;border-radius:9px;margin:4px 8px 4px 0}
+.cta.alt{background:var(--card);color:var(--ink);border:1px solid var(--line-2)}
+.share{background:#eef3f0;border:1px solid #cfe0d8;border-radius:10px;padding:12px 14px;font-size:13px;margin-top:22px}
+.share input{margin-top:6px;font-size:12.5px;background:#fff}
+footer{margin-top:40px;font-size:12.5px;color:var(--ink-3);line-height:1.6}footer a{color:var(--ink-2)}
+.err{color:#b03030;font-size:13px;margin-top:8px;display:none}
+.gr{display:none;color:var(--ink-3);font-size:13px;margin-top:8px}
+.suggest{position:relative}
+.sugbox{position:absolute;left:0;right:0;top:100%;background:var(--card);border:1px solid var(--line-2);border-radius:9px;margin-top:2px;z-index:5;max-height:220px;overflow:auto;display:none}
+.sugbox div{padding:9px 12px;font-size:13.5px;cursor:pointer;border-bottom:1px solid var(--line)}
+.sugbox div:hover{background:var(--paper)}
+</style></head><body><main>
+<div class="top"><a href="/">Quiet &amp; Safe</a><small>trip briefing</small></div>
+<h1>Your trip, one page.</h1>
+<p class="sub">Weather for your dates, how your hotel’s area ranks on safety, what happened there recently, and where to eat nearby — all from public data, nothing invented.</p>
+
+<div class="form">
+  <div class="frow"><label>City</label><select id="city"></select></div>
+  <div class="frow suggest"><label>Hotel or where you’re staying</label>
+    <input id="q" placeholder="Hotel name or address" autocomplete="off">
+    <div class="sugbox" id="sug"></div>
+  </div>
+  <div class="frow dates">
+    <div><label>Arrive</label><input type="date" id="d1"></div>
+    <div><label>Leave</label><input type="date" id="d2"></div>
+  </div>
+  <button class="go" id="go" disabled>Build my briefing</button>
+  <div class="gr" id="gr">Looking things up…</div>
+  <div class="err" id="err"></div>
+  <div class="hint">Pick a suggestion from the list so we know the exact spot. Nothing is stored — the link you get keeps everything in the URL.</div>
+</div>
+
+<div class="results" id="results">
+  <h2 id="wxh">Weather for your dates</h2>
+  <div class="wxrow" id="wx"></div>
+  <div class="note" id="wxnote"></div>
+
+  <h2>Your hotel’s area</h2>
+  <div class="card fact" id="area"></div>
+  <div class="note" id="areanote"></div>
+
+  <h2 id="incih" style="display:none">Recent incident records within a short walk</h2>
+  <div class="card" id="inci" style="display:none"></div>
+
+  <h2>Food &amp; coffee within a 10-minute walk</h2>
+  <div class="card"><div class="eatgrid" id="eats"></div>
+  <div class="note">OpenStreetMap-listed places with a cuisine tag — a sample, not a directory. No ratings: we don’t rank what we can’t verify.</div></div>
+
+  <h2>Book &amp; get around</h2>
+  <div id="ctas"></div>
+
+  <div class="share"><b>Share this briefing</b> — same page, same data, for whoever’s coming with you.
+    <input id="shareurl" readonly onclick="this.select()"></div>
+</div>
+
+<footer>Weather: Open-Meteo (forecast, not a guarantee). Crime counts: each city’s police open-data feed, updated daily — area records, not a judgment about any address. Food: OpenStreetMap.
+Bookings via hotel, rental-car or parking partners may earn us a commission. <a href="/">Quiet &amp; Safe home</a> · <a href="/about/">About</a></footer>
+</main>
+<script>
+(function(){
+'use strict';
+var $=function(id){return document.getElementById(id);};
+var CITIES=null, pick=null;   // pick = {name,lat,lng}
+var WMO={0:'Clear',1:'Mostly clear',2:'Partly cloudy',3:'Overcast',45:'Fog',48:'Fog',51:'Drizzle',53:'Drizzle',55:'Drizzle',61:'Light rain',63:'Rain',65:'Heavy rain',66:'Icy rain',67:'Icy rain',71:'Light snow',73:'Snow',75:'Heavy snow',77:'Snow',80:'Showers',81:'Showers',82:'Heavy showers',85:'Snow showers',86:'Snow showers',95:'Thunderstorm',96:'Thunderstorm',99:'Thunderstorm'};
+var R=6371000,rad=function(d){return d*Math.PI/180;};
+function hav(a,b){var dLa=rad(b.lat-a.lat),dLo=rad(b.lng-a.lng);
+  var s2=Math.sin(dLa/2)*Math.sin(dLa/2)+Math.cos(rad(a.lat))*Math.cos(rad(b.lat))*Math.sin(dLo/2)*Math.sin(dLo/2);
+  return 2*R*Math.asin(Math.sqrt(s2));}
+function pointInRing(pt,ring){var inside=false;
+  for(var i=0,j=ring.length-1;i<ring.length;j=i++){var xi=ring[i][0],yi=ring[i][1],xj=ring[j][0],yj=ring[j][1];
+    var hit=((yi>pt.lat)!==(yj>pt.lat))&&(pt.lng<(xj-xi)*(pt.lat-yi)/(yj-yi)+xi);if(hit)inside=!inside;}
+  return inside;}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function centroid(f){var r=f.geometry.coordinates[0],x=0,y=0,i;for(i=0;i<r.length;i++){x+=r[i][0];y+=r[i][1];}return{lng:x/r.length,lat:y/r.length};}
+
+fetch('/data/cities-lite.json').then(function(r){return r.json();}).then(function(c){
+  CITIES=c;
+  var ks=Object.keys(c).filter(function(k){return c[k].fresh&&!c[k].nocrime;})
+    .sort(function(a,b){return c[a].name.localeCompare(c[b].name);});
+  $('city').innerHTML=ks.map(function(k){return '<option value="'+k+'">'+esc(c[k].name)+'</option>';}).join('');
+  var h=parseHash(); if(h){restore(h);}
+});
+
+/* — 지오코딩: photon(무료·키없음). 도시 중심 바이어스 + 선택 강제(자유입력 좌표 없음 = 엉뚱한 도시 방지) — */
+var sugTimer=null;
+$('q').addEventListener('input',function(){
+  pick=null;$('go').disabled=true;
+  var q=this.value.trim();if(q.length<3){$('sug').style.display='none';return;}
+  clearTimeout(sugTimer);
+  sugTimer=setTimeout(function(){
+    var c=CITIES[$('city').value];
+    fetch('https://photon.komoot.io/api/?q='+encodeURIComponent(q)+'&lat='+c.center.lat+'&lon='+c.center.lng+'&limit=5')
+      .then(function(r){return r.json();}).then(function(j){
+        var fs=(j.features||[]).filter(function(f){
+          var lng=f.geometry.coordinates[0],lat=f.geometry.coordinates[1],bb=c.bbox;
+          return lng>=bb[0]&&lat>=bb[1]&&lng<=bb[2]&&lat<=bb[3];});
+        if(!fs.length){$('sug').style.display='none';return;}
+        $('sug').innerHTML=fs.map(function(f,i){
+          var p=f.properties,label=[p.name,p.street,p.city].filter(Boolean).join(', ');
+          return '<div data-i="'+i+'">'+esc(label)+'</div>';}).join('');
+        $('sug').style.display='block';
+        [].forEach.call($('sug').children,function(el,i){
+          el.addEventListener('click',function(){
+            var f=fs[i],p=f.properties;
+            pick={name:p.name||q,lat:f.geometry.coordinates[1],lng:f.geometry.coordinates[0]};
+            $('q').value=[p.name,p.street].filter(Boolean).join(', ');
+            $('sug').style.display='none';$('go').disabled=false;});});
+      }).catch(function(){});
+  },350);
+});
+document.addEventListener('click',function(e){if(!e.target.closest('.suggest'))$('sug').style.display='none';});
+
+$('go').addEventListener('click',function(){build();});
+
+function parseHash(){
+  if(!location.hash||location.hash.length<2)return null;
+  try{
+    var p={};location.hash.slice(1).split('&').forEach(function(kv){var a=kv.split('=');p[a[0]]=decodeURIComponent(a[1]||'');});
+    if(p.city&&p.lat&&p.lng)return p;
+  }catch(e){}
+  return null;
+}
+function restore(h){
+  $('city').value=h.city;
+  pick={name:h.name||'Your stay',lat:+h.lat,lng:+h.lng};
+  $('q').value=pick.name;
+  if(h.d1)$('d1').value=h.d1;if(h.d2)$('d2').value=h.d2;
+  $('go').disabled=false;
+  build();
+}
+
+function build(){
+  if(!pick)return;
+  var key=$('city').value,c=CITIES[key];
+  var d1=$('d1').value,d2=$('d2').value;
+  $('gr').style.display='block';$('err').style.display='none';
+  var hash='#city='+key+'&lat='+pick.lat.toFixed(5)+'&lng='+pick.lng.toFixed(5)+'&name='+encodeURIComponent(pick.name)+(d1?'&d1='+d1:'')+(d2?'&d2='+d2:'');
+  try{history.replaceState(null,'',hash);}catch(e){}
+  $('shareurl').value=location.origin+'/briefing/'+hash;
+
+  var wxUrl='https://api.open-meteo.com/v1/forecast?latitude='+pick.lat+'&longitude='+pick.lng+
+    '&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&temperature_unit=fahrenheit&timezone='+encodeURIComponent(c.tz)+'&forecast_days=16';
+  Promise.all([
+    fetch(wxUrl).then(function(r){return r.json();}).catch(function(){return null;}),
+    fetch('/data/walk-'+key+'.geojson').then(function(r){return r.ok?r.json():null;}).catch(function(){return null;}),
+    fetch('/data/risk-'+key+'.geojson').then(function(r){return r.ok?r.json():null;}).catch(function(){return null;}),
+    fetch('/data/eats-'+key+'.json').then(function(r){return r.ok?r.json():null;}).catch(function(){return null;})
+  ]).then(function(res){
+    renderWx(res[0],d1,d2,c);
+    renderArea(res[1],res[2],c,key);
+    renderInci(res[2],c);
+    renderEats(res[3]);
+    renderCtas(c,key);
+    $('gr').style.display='none';
+    $('results').style.display='block';
+    document.title=(pick.name||'Trip')+' briefing — '+c.name+' | Quiet & Safe';
+  }).catch(function(e){
+    $('gr').style.display='none';
+    $('err').textContent='Something failed to load — try again.';$('err').style.display='block';
+  });
+}
+
+function renderWx(wx,d1,d2,c){
+  if(!wx||!wx.daily){$('wx').innerHTML='';$('wxnote').textContent='Weather unavailable right now.';return;}
+  var days=wx.daily.time,inTrip=[],all=[];
+  for(var i=0;i<days.length;i++){
+    var d=days[i];
+    var item={d:d,code:wx.daily.weather_code[i],hi:Math.round(wx.daily.temperature_2m_max[i]),lo:Math.round(wx.daily.temperature_2m_min[i]),pp:wx.daily.precipitation_probability_max[i]};
+    all.push(item);
+    if(d1&&d2&&d>=d1&&d<=d2)inTrip.push(item);
+  }
+  var show=inTrip.length?inTrip:all.slice(0,7);
+  $('wxh').textContent=inTrip.length?'Weather for your dates':'Weather — next 7 days';
+  $('wx').innerHTML=show.map(function(it){
+    var dt=new Date(it.d+'T12:00:00');
+    var lab=dt.toLocaleDateString('en-US',{weekday:'short',month:'numeric',day:'numeric'});
+    return '<div class="wx"><div class="d">'+esc(lab)+'</div><div class="t">'+it.hi+'° / '+it.lo+'°</div>'+
+      '<div class="c">'+esc(WMO[it.code]||'—')+'</div>'+(it.pp>=20?'<div class="p">'+it.pp+'% rain</div>':'')+'</div>';
+  }).join('');
+  $('wxnote').textContent=(d1&&!inTrip.length)?'Your dates are beyond the 16-day forecast window — showing the next 7 days instead. Check back closer to your trip.':'Forecasts drift — worth another look the day before you fly.';
+}
+
+function renderArea(walk,risk,c,key){
+  var src=walk||risk;
+  if(!src){$('area').innerHTML='No neighborhood crime data for '+esc(c.name)+'.';$('areanote').textContent='';return;}
+  var metric=walk?'robberies & aggravated assaults':'car break-ins & thefts';
+  var hoods={},myHood=null,f,i,h;
+  for(i=0;i<src.features.length;i++){
+    f=src.features[i];h=(f.properties.hood||'').trim().replace(/\s+/g,' ');
+    if(h){var a=(hoods[h]=hoods[h]||{c12:0,cells:0});a.c12+=f.properties.c12||0;a.cells++;}
+    if(!myHood&&pointInRing(pick,f.geometry.coordinates[0]))myHood=h||null;
+  }
+  var rows=Object.keys(hoods).filter(function(k){return hoods[k].cells>=5&&k.length<=48;})
+    .sort(function(x,y){return(hoods[x].c12/hoods[x].cells)-(hoods[y].c12/hoods[y].cells);});
+  if(!myHood){
+    $('area').innerHTML='<b>'+esc(pick.name)+'</b><br>This exact spot isn’t inside a tracked block — nearby counts may still appear below.';
+    $('areanote').textContent='';return;
+  }
+  var rank=rows.indexOf(myHood)+1,st=hoods[myHood];
+  $('area').innerHTML='<b>'+esc(myHood)+'</b><br>'+st.c12.toLocaleString()+' '+metric+' · '+st.cells+' blocks tracked · past 12 months'+
+    (rank?'<br>#'+rank+' of '+rows.length+' tracked '+esc(c.name)+' neighborhoods — fewest per tracked block first':'');
+  $('areanote').textContent=c.source+' records, updated daily. Area records, not a guarantee about any address.';
+}
+
+function renderInci(risk,c){
+  if(!risk)return;
+  var cutoff=new Date(Date.now()-90*864e5).toISOString().slice(0,10);
+  var items=[],i,j,f,r;
+  for(i=0;i<risk.features.length;i++){
+    f=risk.features[i];
+    if(hav(pick,centroid(f))>500)continue;
+    var rec=f.properties.recent||[];
+    for(j=0;j<rec.length;j++){r=rec[j];if(r.d>=cutoff)items.push(r);}
+  }
+  if(!items.length)return;
+  items.sort(function(x,y){return(x.d+x.time<y.d+y.time)?1:-1;});
+  var latest='';for(i=0;i<risk.features.length;i++){var rc=risk.features[i].properties.recent||[];
+    for(j=0;j<rc.length;j++)if(rc[j].d>latest)latest=rc[j].d;}
+  var lag=Math.round((Date.now()-Date.parse(latest))/864e5);
+  if(lag>7)return;   // 신선도 나쁜 도시는 '최근'이라 말하지 않는다 — 사건 로그와 동일 게이트
+  $('incih').style.display='block';$('inci').style.display='block';
+  $('inci').innerHTML=items.slice(0,8).map(function(it){
+    return '<div class="irow"><span class="itime">'+esc(it.d)+' '+esc(it.time)+'</span><span>'+esc(it.desc)+'</span></div>';
+  }).join('')+'<div class="note">Vehicle-related records within ~500m, last 90 days, '+esc(c.source)+' feed (latest available: '+esc(latest)+'). Not a complete list.</div>';
+}
+
+function renderEats(eats){
+  if(!eats||!eats.eats||!eats.eats.length){$('eats').innerHTML='<div class="eat">No OpenStreetMap-listed places found for this city yet.</div>';return;}
+  var near=eats.eats.map(function(e){return{e:e,d:hav(pick,e)};})
+    .filter(function(x){return x.d<=800;})
+    .sort(function(a,b){return a.d-b.d;}).slice(0,12);
+  if(!near.length){$('eats').innerHTML='<div class="eat">Nothing OSM-listed within a 10-minute walk — the area may just be under-mapped.</div>';return;}
+  $('eats').innerHTML=near.map(function(x){
+    var mins=Math.max(1,Math.round(x.d/80));
+    return '<div class="eat"><b>'+esc(x.e.name)+'</b> <span class="cz">'+esc(x.e.cuisine)+(x.e.kind==='cafe'?' · cafe':'')+' · '+mins+' min</span></div>';
+  }).join('');
+}
+
+function renderCtas(c,key){
+  var d1=$('d1').value,d2=$('d2').value;
+  var trip='https://www.trip.com/hotels/list?'+(c.tripId?'city='+c.tripId+'&':'')+
+    'lat='+pick.lat+'&lon='+pick.lng+'&searchType=H'+(d1&&d2?'&checkin='+d1+'&checkout='+d2:'')+
+    '&crn=1&adult=2&children=0&domestic=false&Allianceid=9395765&SID=325094771';
+  var cars='https://naiawork.com/g/wqjhitsyjq5f896691b25ea594bb46/';   // DiscoverCars WW — Admitad 승인 트래킹 링크 (index.html RENTAL과 동일)
+  $('ctas').innerHTML=
+    '<a class="cta" href="'+trip+'" target="_blank" rel="noopener nofollow sponsored">Hotels in '+esc(c.name)+' — Trip.com →</a>'+
+    '<a class="cta alt" href="'+cars+'" target="_blank" rel="noopener nofollow sponsored">Compare rental cars →</a>'+
+    '<a class="cta alt" href="/?q='+encodeURIComponent(pick.name)+'&ll='+pick.lat.toFixed(5)+','+pick.lng.toFixed(5)+'">Parking safety map →</a>';
+}
+})();
+</script></body></html>
