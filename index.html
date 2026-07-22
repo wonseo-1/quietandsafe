@@ -2552,10 +2552,6 @@ function loadCity(key){
       var o=Object.assign({},f.properties); o.lng=x/ring.length; o.lat=y/ring.length; o.ring=ring; return o;
     });
     buildCellIndex();
-    // 가이드 링크는 hood 태깅된 셀이 있는 도시만 — 일부 도시(chi/nyc/bos 등)는 원본 피드에 동네 필드가
-    // 없어 /guides/{city}/ 자체가 안 만들어짐(빈 페이지 금지 원칙). 서버 목록을 따로 안 두고
-    // 이미 로드된 실제 셀 데이터로 직접 판정 — 데이터 소스 이원화 방지.
-    if (!CELLS.some(function(c){ return c.hood; })) { var gl=$('guidesLink'); if (gl) gl.style.display='none'; }
     C12SORT = CELLS.map(function(c){ return c.c12||0; }).sort(function(a,b){ return a-b; });   // ② 퍼센타일 분포
     for (var pi=0; pi<PARKING.length; pi++){   // one-time joins: grid index makes this ~free
       var pp=PARKING[pi];
