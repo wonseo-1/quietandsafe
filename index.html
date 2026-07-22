@@ -1638,6 +1638,16 @@ function initMap(){
       map.addSource('risk',{type:'geojson',data:riskGeojson});
       map.addLayer({id:'risk-fill',type:'fill',source:'risk',paint:{'fill-color':todExprCell(),'fill-opacity':0.55}},under);
       map.addLayer({id:'risk-line',type:'line',source:'risk',paint:{'line-color':'rgba(25,23,19,0.10)','line-width':0.4}},under);
+      // 블록 자체를 눌러도 반응 (2026-07-22 유저: "파킹도 블록 클릭하면 그 블록 주차장 뜨게") — walk-fill의
+      // 호텔 버전과 대칭. 정확히 핀을 맞춘 클릭이면 그 핀의 카드가 우선(더 구체적인 정보이므로 hood 카드로 안 덮음).
+      map.on('click','risk-fill',function(e){
+        if (vMode!=='park') return;
+        if (map.queryRenderedFeatures(e.point,{layers:['parking-dot']}).length) return;
+        var hoodName=e.features[0].properties.hood; if (!hoodName) return;
+        showInfo(e.lngLat, parkHoodCardHtml(hoodName));
+      });
+      map.on('mouseenter','risk-fill',function(){ if (vMode==='park') map.getCanvas().style.cursor='pointer'; });
+      map.on('mouseleave','risk-fill',function(){ map.getCanvas().style.cursor=''; });
     }
     if (streetGeojson){   // Tent camps 렌즈(시민 311 신고) — 면 음영은 한 번에 하나라 기본 숨김, 렌즈로 전환
       // '의미 있는 밀집만' 칠한다 — 저강도까지 칠하면 파랑 벽지 (2026-07-14 실물 2회 확인).
@@ -1828,6 +1838,45 @@ function hoodCardHtml(hoodName){
     (hotelsHere.length ? '<br>Hotels mapped here: '+hotelsHere.map(esc).join(' · ')
       : '<br>No OSM-mapped hotels in this area — sample only')+
     '<br><a href="'+hurl+'" target="_blank" rel="noopener nofollow sponsored">'+label+' →</a>';
+}
+// 파킹 모드 블록탭 카드 — hoodCardHtml(호텔)과 대칭 구조 (2026-07-22 유저: "파킹도 블록 클릭하면
+// 그 블록 주차장 뜨게"). CELLS(risk 레이어)·PARKING(스팟) 기준, Trip.com 대신 우리 자체 정적
+// 동네 페이지(/parking/{city}/{hood}/ — 실명 주차장 포함, 이미 생성돼있음)로 안내한다.
+function slugify(s){ return s.toLowerCase().replace(/['’.]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,''); }
+function allParkHoodRanks(){
+  var agg={}, i, c, k;
+  for (i=0;i<CELLS.length;i++){
+    c=CELLS[i]; if (!c.hood) continue;
+    var a=(agg[c.hood]||(agg[c.hood]={hood:c.hood,c12:0,cells:0}));
+    a.c12+=c.c12||0; a.cells++;
+  }
+  var out=[]; for (k in agg) if (agg[k].cells>=5) out.push(agg[k]);
+  out.sort(function(x,y){ return (x.c12/x.cells)-(y.c12/y.cells); });
+  return out;
+}
+function parkingInHood(hoodName){   // PARKING[pi].cell = containingCell() 조인이 로드 시 이미 끝나있다 (point-in-polygon, 근접 아님)
+  var out=[], i, p;
+  for (i=0;i<PARKING.length && out.length<6;i++){
+    p=PARKING[i]; if (p.cell && p.cell.hood===hoodName && p.named) out.push(p.name);
+  }
+  return out;
+}
+function parkHoodCardHtml(hoodName){
+  var ranks=allParkHoodRanks(), rank=0, st=null, i;
+  for (i=0;i<ranks.length;i++){ if (ranks[i].hood===hoodName){ st=ranks[i]; rank=i+1; break; } }
+  if (!st){
+    var c12=0, cells=0;
+    for (i=0;i<CELLS.length;i++){ if (CELLS[i].hood===hoodName){ c12+=CELLS[i].c12||0; cells++; } }
+    st={hood:hoodName,c12:c12,cells:cells};
+  }
+  var spotsHere=parkingInHood(hoodName);
+  var gurl='/parking/'+CITY.key+'/'+slugify(hoodName)+'/';
+  return '<b>'+esc(hoodName)+'</b><br>'+
+    st.c12+' break-ins & thefts · '+st.cells+' block'+(st.cells===1?'':'s')+' tracked · past 12 mo'+
+    (rank ? ' · #'+rank+' of '+ranks.length+' tracked neighborhoods' : '')+
+    (spotsHere.length ? '<br>Parking mapped here: '+spotsHere.map(esc).join(' · ')
+      : '<br>No named facilities mapped in this area — sample only')+
+    '<br><a href="'+gurl+'">See '+esc(hoodName)+' parking guide →</a>';
 }
 function drawHotelPins(picks){
   for (var i=0;i<__marks.length;i++){ try{ __marks[i].remove(); }catch(e){} }
