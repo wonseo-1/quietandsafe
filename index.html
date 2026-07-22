@@ -1071,7 +1071,9 @@ function renderArea(){
   var a = areaStats();
   if (!a.cells){
     $('areacard').innerHTML = '<div class="areacard"><span class="areadot" style="background:var(--line-2)"></span>'+
-      '<div class="areabody"><div class="areahead">'+esc(dest.name)+' area</div>'+
+      // "Search this area" 버튼은 목적지명을 그냥 'Map area'로 둔다(실제 지명 없음) — 여기서 무조건
+      // ' area'를 붙이면 "Map area area"처럼 겹친다(2026-07-22 유저 실측). 이미 area로 끝나면 안 붙임.
+      '<div class="areabody"><div class="areahead">'+esc(dest.name)+(/\barea$/i.test(dest.name)?'':' area')+'</div>'+
       // 정직성 (감사 M6·T9 수리): '곧 나온다' 약속 금지. 데이터 부재의 두 경우를 구분해 사실만 —
       // ①범죄 미커버 도시: 없다고만 ②커버 도시의 셀 0: 기록이 없다는 사실 + 관할 한계(산타모니카≠LAPD)를 함께.
       '<div class="areasub">'+(
