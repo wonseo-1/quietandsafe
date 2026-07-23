@@ -59,6 +59,16 @@ header{position:sticky;top:0;z-index:30;background:rgba(250,249,246,.92);backdro
 .wordmark{font-family:var(--serif);font-weight:600;font-size:19px;letter-spacing:-.01em;text-decoration:none}
 .guideslink{font-size:13px;font-weight:600;color:var(--ink-2);text-decoration:none;padding:6px 4px}
 .guideslink:hover{color:var(--ink)}
+
+/* Trip.com top banner (2026-07-23) — 유저 요청: 호텔 CTA까지 검색→탭전환→핀탭 3단계라 너무 멀다,
+   이미 어디서 잘지 정한 사람용으로 최상단에 즉시 나가는 지름길을 하나 둔다. 기존 sponsored 링크와
+   같은 톤(과장 없이, 광고 명시) — 배지·이모지 없이 텍스트 링크 하나. 닫으면 로컬에 기억(재방문 안 나옴).*/
+.tripbanner{background:var(--safe-bg);border-bottom:1px solid var(--line);font-size:13px}
+.tripbanner .tbwrap{max-width:600px;margin:0 auto;padding:8px 18px;display:flex;align-items:center;justify-content:center;gap:10px;text-align:center;color:var(--ink-2)}
+.tripbanner a{color:var(--brand);font-weight:600;text-decoration:none;white-space:nowrap}
+.tripbanner a:hover{text-decoration:underline}
+.tripbanner button{background:none;border:none;color:var(--ink-3);cursor:pointer;font-size:16px;line-height:1;padding:2px 0 2px 4px;flex-shrink:0}
+.tripbanner button:hover{color:var(--ink)}
 .wordmark small{color:var(--ink-3);font-family:var(--sans);font-weight:400;font-size:12px;margin-left:8px;letter-spacing:.02em}
 .city{font-size:12px;color:var(--ink-2);border:1px solid var(--line-2);border-radius:999px;padding:4px 26px 4px 12px;font-family:inherit;-webkit-appearance:none;appearance:none;background:var(--card);cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%238f8a7e' fill='none' stroke-width='1.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center}
 
@@ -373,6 +383,13 @@ body.searchopen .searchclose{display:flex;position:absolute;top:14px;right:14px;
   <!-- 여행 브리핑 — 도시 무관 정적 페이지라 조건 없이 상시 노출 (2026-07-22 goal: 여행 전 매일 오는 이유 만들기) -->
   <a class="guideslink" href="briefing/">Briefing</a>
 </div></header>
+
+<div class="tripbanner" id="tripBanner" style="display:none">
+  <div class="tbwrap">
+    <span>Already know your dates? <a id="tripBannerLink" href="https://www.trip.com/hotels/?Allianceid=9395765&amp;SID=325094771" target="_blank" rel="noopener nofollow sponsored">Search hotels on Trip.com →</a></span>
+    <button type="button" id="tripBannerClose" aria-label="Dismiss">×</button>
+  </div>
+</div>
 
 <div class="wrap">
   <!-- 버티컬 전환 — 탭이 화면 전체 경험을 바꾼다.
@@ -2581,6 +2598,19 @@ function renderChips(){
   });
 }
 
+/* Trip.com 배너 — 닫으면 로컬에 기억, try/catch는 프라이빗 모드에서 localStorage 접근이 던지는 경우 대비 */
+function initTripBanner(){
+  var KEY='qs_tripbanner_dismissed', el=$('tripBanner'), close=$('tripBannerClose');
+  if (!el || !close) return;
+  var dismissed=false;
+  try { dismissed = localStorage.getItem(KEY)==='1'; } catch(e){}
+  if (!dismissed) el.style.display='';
+  close.addEventListener('click', function(){
+    el.style.display='none';
+    try { localStorage.setItem(KEY,'1'); } catch(e){}
+  });
+}
+
 /* load a city's data (risk + parking) → reset maps, chips, header */
 function updateGuidesLink(){
   var a=$('guidesLink'); if (!a) return;
@@ -2679,6 +2709,7 @@ window.addEventListener('popstate', function(e){
 });
 
 (function boot(){
+  initTripBanner();
   var sp=new URLSearchParams(location.search), ll=sp.get('ll'), q=sp.get('q'), cp=sp.get('city');
   URL_LENS=sp.get('lens'); URL_Z=+sp.get('z')||0;   // 공유/디버그: 렌즈 상태·고정 줌 복원
   if (sp.get('mode')==='hotels'){   // 호텔 버티컬 복원 — dest 처리 전에 모드부터 (탭·히어로·CTA·When 동기화)
@@ -2722,7 +2753,8 @@ if (window.__CURBSAFE_TEST__) window.__curbsafe = {
   vMode: function(){ return vMode; }, setVMode: setVMode,
   hotelList: hotelList, hotelLine: hotelLine, walk: function(){ return walkGeojson; }, cityHotels: function(){ return CITY_HOTELS; },
   // 블록 클릭 동네 카드 (2026-07-21) — qa-hotels 게이트용
-  allHoodRanks: allHoodRanks, hotelsInHood: hotelsInHood, tripHoodUrl: tripHoodUrl, hoodCard: hoodCardHtml
+  allHoodRanks: allHoodRanks, hotelsInHood: hotelsInHood, tripHoodUrl: tripHoodUrl, hoodCard: hoodCardHtml,
+  initTripBanner: initTripBanner   // 트립닷컴 배너 (2026-07-23) — 재부팅 시 dismiss 유지 검증용
 };
 
 })();
