@@ -1772,13 +1772,16 @@ function hotelList(){
     var h=CITY_HOTELS[i], d=hav(dest,h);
     if (d>1200) continue;
     var c=containingWalkCell(h);
-    out.push({ name:h.name, named:true, lat:h.lat, lng:h.lng, dist:d, cell:c, c12:hotelN(c) });   // named — mapUrl이 호텔명으로 검색 (없으면 'parking' 폴백을 타버림)
+    // dataless — 범죄 격자 밖(시 경계 밖 BWI류) 호텔: c12=0과 절대 동급 아님. "None recorded"로
+    // 최상위에 뜨면 데이터 없는 호텔이 가장 안전해 보이는 거짓 — 주차의 dataless 원칙과 동일하게 강등.
+    out.push({ name:h.name, named:true, lat:h.lat, lng:h.lng, dist:d, cell:c, c12:hotelN(c), dataless:!c });   // named — mapUrl이 호텔명으로 검색 (없으면 'parking' 폴백을 타버림)
   }
-  out.sort(function(a,b){ return (a.c12-b.c12) || (a.dist-b.dist); });
+  out.sort(function(a,b){ return ((a.dataless?1:0)-(b.dataless?1:0)) || (a.c12-b.c12) || (a.dist-b.dist); });
   return out;
 }
 function hotelLine(h){   // 사실 문장 1개 + 한정어 각 1회 (COPY R1·R2) — 단복수·명사 생략 금지
   var noun = function(n){ return n===1 ? '1 robbery or assault' : n+' robberies & assaults'; };
+  if (h.dataless) return 'No street-crime data for this block yet — outside the tracked area';   // 격자 밖 = "None recorded" 주장 금지 (주차 G0-1과 동일)
   return h.c12
     ? '<span style="white-space:nowrap"><b>'+noun(h.c12)+'</b></span> · <span style="white-space:nowrap">within a block</span> · <span style="white-space:nowrap">past 12 mo</span>'
     : 'None recorded · <span style="white-space:nowrap">this block</span> · <span style="white-space:nowrap">past 12 mo</span>';
@@ -2706,7 +2709,7 @@ if (window.__CURBSAFE_TEST__) window.__curbsafe = {
   parseMapsUrl: parseMapsUrl,
   // 호텔 버티컬 (2026-07-18) — qa-hotels 게이트용
   vMode: function(){ return vMode; }, setVMode: setVMode,
-  hotelList: hotelList, walk: function(){ return walkGeojson; }, cityHotels: function(){ return CITY_HOTELS; },
+  hotelList: hotelList, hotelLine: hotelLine, walk: function(){ return walkGeojson; }, cityHotels: function(){ return CITY_HOTELS; },
   // 블록 클릭 동네 카드 (2026-07-21) — qa-hotels 게이트용
   allHoodRanks: allHoodRanks, hotelsInHood: hotelsInHood, tripHoodUrl: tripHoodUrl, hoodCard: hoodCardHtml
 };
