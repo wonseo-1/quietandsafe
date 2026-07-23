@@ -455,7 +455,10 @@ body.searchopen .searchclose{display:flex;position:absolute;top:14px;right:14px;
     <h2 id="popstitle">Popular spots</h2>
     <div class="chips" id="chips"></div>
   </section>
-  <p id="sitefoot" style="margin:26px 2px 0;font-size:12px;color:#8f8a7e"><a href="about/" style="color:#5f5b52">About</a> · <a href="privacy/" style="color:#5f5b52">Privacy &amp; disclosure</a></p>
+  <!-- 정적·항상-노출 링크(JS 토글 없음) — GSC 실측(2026-07-23): 신규 도메인이라 백링크가 없고, 이전엔
+       홈에서 생성 페이지 2,600여개로 가는 크롤 경로가 사이트맵뿐이라 전부 "발견됨-색인 안 됨"에 정체.
+       이 한 줄이 Home(색인됨) → /guides/ → 도시별 가이드 → 동네 페이지로 이어지는 링크 그래프를 연다. -->
+  <p id="sitefoot" style="margin:26px 2px 0;font-size:12px;color:#8f8a7e"><a href="guides/" style="color:#5f5b52">Browse all cities</a> · <a href="about/" style="color:#5f5b52">About</a> · <a href="privacy/" style="color:#5f5b52">Privacy &amp; disclosure</a></p>
 
   <div class="loading" id="loading" style="display:none">Checking the block records…</div>
   <div class="errbox" id="errbox" style="display:none"></div>
