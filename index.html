@@ -102,6 +102,14 @@ body.mapmode .searcharea{top:114px}   /* 렌즈 알약 아래로 한 줄 더 —
 .spedit{flex:none;font-size:12px;color:var(--ink-3)}
 .shint{font-size:12px;color:var(--ink-3);margin:7px 2px 0}
 .shint b{color:var(--ink);font-weight:600}
+/* 홈 화면 즉시-사실 카드 (2026-07-26) — 검색 없이도 첫 화면에서 실제 데이터 하나를 바로 보여준다.
+   유저 지적: "이탈 방지엔 문구가 아니라 뭔가 바꿔야" — 타이핑 전엔 아무 값도 없던 빈 검색창 아래에,
+   현재 선택 도시의 실측 사실(가장 조용한 동네 vs 가장 활발한 동네, past 12mo)을 always-on으로 배치. */
+.citysnap{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:13px 15px;margin:10px 0 0;font-size:13.5px;line-height:1.55}
+.citysnap .cs-k{font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-3);margin-bottom:4px}
+.citysnap b{color:var(--ink);font-weight:600}
+.citysnap .cs-hood{color:var(--brand);font-weight:600;background:none;border:0;padding:0;font:inherit;cursor:pointer;text-decoration:underline;text-decoration-color:var(--line-2)}
+.citysnap .cs-note{display:block;font-size:11.5px;color:var(--ink-3);margin-top:4px}
 .sugg{position:absolute;top:calc(100% + 6px);left:0;right:57px;background:var(--card);border:1px solid var(--line-2);border-radius:12px;box-shadow:0 8px 28px rgba(25,23,19,.10);overflow:hidden;z-index:40;display:none}
 .sugg.open{display:block}
 .sugg button{display:block;width:100%;text-align:left;border:0;background:none;font:inherit;padding:11px 14px;cursor:pointer;border-bottom:1px solid var(--line)}
@@ -460,6 +468,7 @@ body.searchopen .searchclose{display:flex;position:absolute;top:14px;right:14px;
     <button type="button" class="gobtn" id="gobtn">Find safe parking</button>
   </div>
   <div class="shint">Search a place, or <b>paste a Google&nbsp;Maps link</b> — works right in the box above. <button type="button" class="mapfind" id="mapfind">Find it on the map</button></div>
+  <div class="citysnap" id="citysnap" style="display:none"></div>
 
   <!-- 지도 읽는 법 — 라이브 데모 (첫 화면이 곧 사용법 소개, 2026-07-17). 칩을 누르면 해당 레이어가 반응 -->
   <div class="herodemo" id="herodemo" style="display:none">
@@ -1846,6 +1855,40 @@ function tripCityUrl(pt){   // 도시 단위 브라우징 CTA — TRIP_DISTRICTS
 /* 블록(walk-fill 셀) 클릭 카드용 — nearbyHoodRanks()는 목적지 도보권만 보지만, 이건 지도 아무 데나
    눌러도 동작해야 하니 전체 도시 기준 (2026-07-21 유저: "블록 누르면 호텔 목록 나오고"). 순위 계산은
    gen-pages.mjs 동네 페이지와 동일 규칙(추적블록 5개 이상만 순위표에), 판정 없이 사실만. */
+// 홈 화면 즉시-사실 카드 — 검색 전에도 현재 도시의 실제 데이터 한 조각을 보여준다 (renderChips()·setVMode()에서 호출).
+// 랭킹 함수(allHoodRanks/allParkHoodRanks) 정의보다 먼저 선언되지만 호출은 그 함수들이 로드된 뒤(런타임)라 문제 없음.
+function renderCitySnapshot(){
+  var el = $('citysnap'); if (!el) return;
+  if (tierB || !CELLS.length){ el.style.display='none'; el.innerHTML=''; return; }
+  var isHotel = vMode==='hotel';
+  // 호텔 모드 데이터(walk/WCELLS)는 dest 없이는 안 불려있을 수 있다(loadHotelData는 원래 dest 있을 때만
+  // 호출됨) — 목적지 검색 전에도 카드가 떠야 하니, 없으면 이 카드가 직접 로드를 트리거한다.
+  if (isHotel && hotelDataKey !== CITY.key){
+    if (typeof loadHotelData==='function') loadHotelData().then(renderCitySnapshot);
+    return;
+  }
+  var ranks = isHotel ? allHoodRanks() : allParkHoodRanks();
+  if (ranks.length < 2){ el.style.display='none'; el.innerHTML=''; return; }
+  var quiet=ranks[0], busy=ranks[ranks.length-1];
+  var qRate=quiet.c12/quiet.cells, bRate=busy.c12/busy.cells;
+  var gap = qRate>0 ? bRate/qRate : null;
+  var gapTxt = gap ? '~'+(gap>=10?Math.round(gap):Math.round(gap*10)/10)+'x more per block' : quiet.hood+' saw none there';
+  var noun = isHotel ? 'robberies & assaults' : 'car break-ins & thefts';
+  el.innerHTML =
+    '<div class="cs-k">'+esc(CITY.name)+' &middot; past 12 months</div>'+
+    '<button type="button" class="cs-hood" data-hood="'+esc(quiet.hood)+'">'+esc(quiet.hood)+'</button>'+
+    ' &mdash; quietest: '+quiet.c12+' '+noun+', '+quiet.cells+' blocks tracked. '+
+    '<button type="button" class="cs-hood" data-hood="'+esc(busy.hood)+'">'+esc(busy.hood)+'</button>'+
+    ' &mdash; busiest: '+busy.c12+', '+busy.cells+' blocks. <b>'+gapTxt+'</b>, same city.'+
+    '<span class="cs-note">'+ranks.length+' tracked neighborhoods &mdash; area facts, not a guarantee about any block.</span>';
+  el.style.display='';
+}
+document.addEventListener('click', function(e){
+  var b = e.target.closest && e.target.closest('#citysnap .cs-hood'); if (!b) return;
+  var h = b.getAttribute('data-hood');
+  track('snapshot_card_click', {hood: h, city: CITY.key, vertical: vMode});
+  $('q').value = h; search(h);
+});
 function allHoodRanks(){
   var agg={}, i, c, k;
   for (i=0;i<WCELLS.length;i++){
@@ -2080,6 +2123,7 @@ function setVMode(v){
   track('vertical_switch', {to: v});
   vMode=v;
   applyVModeChrome();
+  renderCitySnapshot();
   if (dest){
     if (v==='hotel'){ $('loading').style.display='block';
       loadHotelData().then(function(){ $('loading').style.display='none'; renderHotels(); syncModeUrl(); });
@@ -2639,6 +2683,7 @@ function loadCity(key){
     if (pickmap){ try{ pickmap.remove(); }catch(e){} pickmap=null; pickReady=false; }
     if ($('citySel')) $('citySel').value = CITY.key;
     renderChips();
+    renderCitySnapshot();
     return Promise.resolve();
   }
   // 후보 = SpotHero 단독 (bookable-only, 2026-07-11 확정). OSM·시공식 데이터 배제 —
@@ -2681,6 +2726,7 @@ function loadCity(key){
     if (pickmap){ try{ pickmap.remove(); }catch(e){} pickmap=null; pickReady=false; }
     if ($('citySel')) $('citySel').value = CITY.key;
     renderChips();
+    renderCitySnapshot();
   });
 }
 
@@ -2750,7 +2796,8 @@ if (window.__CURBSAFE_TEST__) window.__curbsafe = {
   partnerData: function(){ return SHOW_PARTNER_DATA; },
   // QA-matrix hooks (test only): direct access to the join/link layer
   bookFac: bookFac, bookUrl: bookUrl, mapUrl: mapUrl, hav: hav,
-  parking: function(){ return PARKING; }, facilities: function(){ return FACILITIES; },
+  parking: function(){ return PARKING; }, facilities: function(){ return FACILITIES; }, cells: function(){ return CELLS; },
+  tierB: function(){ return tierB; },
   cities: function(){ return CITIES; },   // SEO 생성기(gen-pages)용 — 도시·랜드마크의 유일한 소스는 이 파일
   rental: function(){ return RENTAL; },   // 렌터카 레지스트리도 동일 (단일 소스)
   hotels: function(){ return HOTELS; },
