@@ -1313,10 +1313,20 @@ var TRIP_HOTELS = {
     var id = CITY && TRIP_HOTELS.cityIds[CITY.key];
     return id ? 'city=' + id + '&' : '';
   },
+  // 날짜 없이 보내면 트립닷컴이 가격을 안 띄우고 사용자가 날짜부터 다시 고르게 된다 — 항상 오늘 기준 +7/+8일.
+  stay: function(){
+    var fmt = function(d){ return d.toISOString().slice(0,10); };
+    return 'checkin=' + fmt(new Date(Date.now()+7*864e5)) + '&checkout=' + fmt(new Date(Date.now()+8*864e5));
+  },
+  // trip_sub1 = 제휴 대시보드 서브추적(2026-07-27 실측: 딥링크에도 그대로 붙고 리포트에 뜬다).
+  // 어느 도시·어느 자리(핀/동네/도시폴백)에서 나간 클릭이 예약이 되는지 알아야 위치를 고칠 수 있다.
+  sub: function(slot){
+    return '&trip_sub1=' + encodeURIComponent('qs-' + ((CITY && CITY.key) || 'x') + '-' + slot);
+  },
   urlFor: function(h){
     return 'https://www.trip.com/hotels/list?' + TRIP_HOTELS.cityParam() + 'lat=' + h.lat + '&lon=' + h.lng +
-      '&searchType=H&searchWord=' + encodeURIComponent(h.name) +
-      '&crn=1&adult=2&children=0&domestic=false&' + TRIP_HOTELS.aff;
+      '&searchType=H&searchWord=' + encodeURIComponent(h.name) + '&' + TRIP_HOTELS.stay() +
+      '&crn=1&adult=2&children=0&domestic=false&' + TRIP_HOTELS.aff + TRIP_HOTELS.sub('pin');
   }
 };
 /* 유명 동네만 실제 스코핑 (2026-07-21 실증): 트립닷컴 자체 UI의 "Location > Popular locations" 필터에서
@@ -1337,10 +1347,8 @@ var TRIP_DISTRICTS = {
 function tripHoodUrl(hoodName){
   var frag = TRIP_DISTRICTS[CITY.key] && TRIP_DISTRICTS[CITY.key][hoodName];
   if (!frag) return null;   // 수집 안 된 동네 — 호출부가 tripCityUrl()로 폴백
-  var d1=new Date(Date.now()+7*864e5), d2=new Date(Date.now()+8*864e5);
-  var fmt=function(d){ return d.toISOString().slice(0,10); };   // 하드코딩 날짜 금지 — 항상 오늘 기준 +7일
-  return 'https://www.trip.com/hotels/list?'+TRIP_HOTELS.cityParam()+'searchType=H&checkin='+fmt(d1)+'&checkout='+fmt(d2)+
-    '&crn=1&adult=2&children=0&domestic=false&listFilters='+frag+'&'+TRIP_HOTELS.aff;
+  return 'https://www.trip.com/hotels/list?'+TRIP_HOTELS.cityParam()+'searchType=H&'+TRIP_HOTELS.stay()+
+    '&crn=1&adult=2&children=0&domestic=false&listFilters='+frag+'&'+TRIP_HOTELS.aff+TRIP_HOTELS.sub('hood');
 }
 function renderRentalHome(){
   var el = $('rentalhome'); if (!el) return;
@@ -1856,7 +1864,8 @@ function tripCityUrl(pt){   // 도시 단위 브라우징 CTA — TRIP_DISTRICTS
   // 수작업 수집돼있어 커버리지가 좁으니, 나머지 동네는 최소한 그 동네 중심 좌표로 근접순 정렬은 시켜준다)
   var ct = pt || dest || {lat:0,lng:0};
   return 'https://www.trip.com/hotels/list?'+TRIP_HOTELS.cityParam()+'lat='+ct.lat+'&lon='+ct.lng+
-    '&searchType=H&crn=1&adult=2&children=0&domestic=false&'+TRIP_HOTELS.aff;
+    '&searchType=H&'+TRIP_HOTELS.stay()+'&crn=1&adult=2&children=0&domestic=false&'+
+    TRIP_HOTELS.aff+TRIP_HOTELS.sub('city');
 }
 /* 블록(walk-fill 셀) 클릭 카드용 — nearbyHoodRanks()는 목적지 도보권만 보지만, 이건 지도 아무 데나
    눌러도 동작해야 하니 전체 도시 기준 (2026-07-21 유저: "블록 누르면 호텔 목록 나오고"). 순위 계산은
@@ -2678,10 +2687,19 @@ function updateGuidesLink(){
   if (!CITY || CITY.nocrime){ a.style.display='none'; return; }   // 가이드는 범죄데이터 있는 도시만(빈 페이지 없음)
   a.href='guides/'+CITY.key+'/'; a.style.display='';
 }
+// "Already know your dates?" 배너는 원래 트립닷컴 일반 호텔 페이지로 보냈다 — 지금 보고 있는 도시로 보낸다.
+function updateTripBannerLink(){
+  var a=$('tripBannerLink'); if (!a || !CITY) return;
+  var id = TRIP_HOTELS.cityIds[CITY.key];
+  if (!id) return;   // 트립닷컴 도시ID 없는 도시 — 기본 href 유지(엉뚱한 도시로 보내느니)
+  a.href = 'https://www.trip.com/hotels/list?city='+id+'&searchType=H&'+TRIP_HOTELS.stay()+
+    '&crn=1&adult=2&children=0&domestic=false&'+TRIP_HOTELS.aff+TRIP_HOTELS.sub('banner');
+}
 function loadCity(key){
   tierB = false;   // 실제 커버 도시(정적 데이터) 로드 = Tier B 해제의 단일 지점 (citySel 복귀 경로 포함)
   CITY = CITIES[key];
   updateGuidesLink();
+  updateTripBannerLink();
   if (CITY.nocrime){
     // 파킹-온리 도시 (2026-07-12 유저 결정: "전국 도시 다 넣어, 범죄지도 없더라도").
     // 정적 파일 없음 — 라이브 SpotHero만. 화면은 Tier B 문법 그대로 (dataless pill·정직한 범례·푸터).
