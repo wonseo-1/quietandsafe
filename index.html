@@ -104,12 +104,18 @@ body.mapmode .searcharea{top:114px}   /* 렌즈 알약 아래로 한 줄 더 —
 .shint b{color:var(--ink);font-weight:600}
 /* 홈 화면 즉시-사실 카드 (2026-07-26) — 검색 없이도 첫 화면에서 실제 데이터 하나를 바로 보여준다.
    유저 지적: "이탈 방지엔 문구가 아니라 뭔가 바꿔야" — 타이핑 전엔 아무 값도 없던 빈 검색창 아래에,
-   현재 선택 도시의 실측 사실(가장 조용한 동네 vs 가장 활발한 동네, past 12mo)을 always-on으로 배치. */
-.citysnap{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:13px 15px;margin:10px 0 0;font-size:13.5px;line-height:1.55}
-.citysnap .cs-k{font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-3);margin-bottom:4px}
-.citysnap b{color:var(--ink);font-weight:600}
-.citysnap .cs-hood{color:var(--brand);font-weight:600;background:none;border:0;padding:0;font:inherit;cursor:pointer;text-decoration:underline;text-decoration-color:var(--line-2)}
-.citysnap .cs-note{display:block;font-size:11.5px;color:var(--ink-3);margin-top:4px}
+   현재 선택 도시의 실측 사실(가장 조용한 동네 vs 가장 활발한 동네, past 12mo)을 always-on으로 배치.
+   2026-07-26 재작업: 한 문장으로 욱여넣었더니 "읽기 어렵고 줄넘김 이상함" — 항목별로 줄을 나눠
+   스캔 가능한 표 형태로 재구성 (라벨 → 동네명 → 숫자, 각자 자기 줄). */
+.citysnap{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 15px;margin:10px 0 0}
+.citysnap .cs-k{font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-3);margin-bottom:8px}
+.citysnap .cs-row{display:flex;align-items:baseline;gap:8px;padding:6px 0;border-top:1px solid var(--line)}
+.citysnap .cs-row:first-of-type{border-top:0;padding-top:0}
+.citysnap .cs-tag{flex:none;width:56px;font-size:10.5px;letter-spacing:.03em;text-transform:uppercase;color:var(--ink-3)}
+.citysnap .cs-hood{flex:1;min-width:0;color:var(--brand);font-weight:600;font-size:14px;background:none;border:0;padding:0;font:inherit;cursor:pointer;text-align:left;text-decoration:underline;text-decoration-color:var(--line-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.citysnap .cs-num{flex:none;font-size:12.5px;color:var(--ink-2);white-space:nowrap}
+.citysnap .cs-gap{font-size:13px;font-weight:600;color:var(--ink);margin-top:8px}
+.citysnap .cs-note{display:block;font-size:11px;color:var(--ink-3);margin-top:6px;line-height:1.4}
 .sugg{position:absolute;top:calc(100% + 6px);left:0;right:57px;background:var(--card);border:1px solid var(--line-2);border-radius:12px;box-shadow:0 8px 28px rgba(25,23,19,.10);overflow:hidden;z-index:40;display:none}
 .sugg.open{display:block}
 .sugg button{display:block;width:100%;text-align:left;border:0;background:none;font:inherit;padding:11px 14px;cursor:pointer;border-bottom:1px solid var(--line)}
@@ -1872,15 +1878,19 @@ function renderCitySnapshot(){
   var quiet=ranks[0], busy=ranks[ranks.length-1];
   var qRate=quiet.c12/quiet.cells, bRate=busy.c12/busy.cells;
   var gap = qRate>0 ? bRate/qRate : null;
-  var gapTxt = gap ? '~'+(gap>=10?Math.round(gap):Math.round(gap*10)/10)+'x more per block' : quiet.hood+' saw none there';
-  var noun = isHotel ? 'robberies & assaults' : 'car break-ins & thefts';
+  var noun = isHotel ? 'robberies & assaults' : 'break-ins & thefts';
+  var row = function(tag, a){
+    return '<div class="cs-row"><span class="cs-tag">'+tag+'</span>'+
+      '<button type="button" class="cs-hood" data-hood="'+esc(a.hood)+'">'+esc(a.hood)+'</button>'+
+      '<span class="cs-num">'+a.c12+' &middot; '+a.cells+' blk'+(a.cells===1?'':'s')+'</span></div>';
+  };
+  var gapTxt = gap ? '~'+(gap>=10?Math.round(gap):Math.round(gap*10)/10)+'x more '+noun+' per block, same city'
+                    : 'no reported '+noun+' at '+esc(quiet.hood);
   el.innerHTML =
     '<div class="cs-k">'+esc(CITY.name)+' &middot; past 12 months</div>'+
-    '<button type="button" class="cs-hood" data-hood="'+esc(quiet.hood)+'">'+esc(quiet.hood)+'</button>'+
-    ' &mdash; quietest: '+quiet.c12+' '+noun+', '+quiet.cells+' blocks tracked. '+
-    '<button type="button" class="cs-hood" data-hood="'+esc(busy.hood)+'">'+esc(busy.hood)+'</button>'+
-    ' &mdash; busiest: '+busy.c12+', '+busy.cells+' blocks. <b>'+gapTxt+'</b>, same city.'+
-    '<span class="cs-note">'+ranks.length+' tracked neighborhoods &mdash; area facts, not a guarantee about any block.</span>';
+    row('Quietest', quiet)+row('Busiest', busy)+
+    '<div class="cs-gap">'+gapTxt+'</div>'+
+    '<div class="cs-note">'+ranks.length+' tracked neighborhoods &mdash; area facts, not a guarantee about any block.</div>';
   el.style.display='';
 }
 document.addEventListener('click', function(e){
