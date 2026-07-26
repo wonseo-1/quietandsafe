@@ -870,6 +870,9 @@ function winWeekday(){ return win ? new Date(win.date+'T12:00:00').toLocaleDateS
 /* ————— utils ————— */
 function $(id){ return document.getElementById(id); }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+// 주요 버튼 커스텀 GA4 이벤트 (2026-07-26 유저 요청: "우리 사이트 안에서 뭘 눌러봤는지"는 향상된 측정
+// 만으로는 안 잡힘 — 이탈 클릭·사이트 검색·스크롤 정도만 자동 수집됨). gtag 없으면(로드 실패·차단) 조용히 무시.
+function track(name, params){ try{ if (typeof gtag==='function') gtag('event', name, params||{}); }catch(e){} }
 function hav(a,b){
   var R=6371000, dLa=(b.lat-a.lat)*Math.PI/180, dLn=(b.lng-a.lng)*Math.PI/180,
       l1=a.lat*Math.PI/180, l2=b.lat*Math.PI/180,
@@ -1372,7 +1375,7 @@ $('cards').addEventListener('click',function(e){
     if (map && la && ln){
       if (typeof sheetOpen!=='undefined' && sheetOpen && typeof setSheet==='function') setSheet(false);
       try{ map.flyTo({center:[ln,la], zoom:14.6}); }catch(err){}
-      if (hoodName) showInfo([ln,la], hoodCardHtml(hoodName));
+      if (hoodName){ track('hood_card_open', {hood: hoodName}); showInfo([ln,la], hoodCardHtml(hoodName)); }
     }
     return;
   }
@@ -1381,10 +1384,11 @@ $('cards').addEventListener('click',function(e){
     if (w) w.style.display = (w.style.display==='block'?'none':'block');
     return;
   }
-  if (t.closest && (b=t.closest('#bseg button'))){ browseSort=b.getAttribute('data-sort'); render(); return; }
+  if (t.closest && (b=t.closest('#bseg button'))){ browseSort=b.getAttribute('data-sort'); track('sort_toggle', {sort: browseSort}); render(); return; }
   if (t.closest && (b=t.closest('#bchips button'))){
     if (b.disabled) return;
-    var k=b.getAttribute('data-filter'); browseFilter=(browseFilter===k?null:k); render();
+    var k=b.getAttribute('data-filter'); browseFilter=(browseFilter===k?null:k);
+    track('filter_toggle', {filter: k, active: !!browseFilter}); render();
   }
 });
 function winLabel(){
@@ -2073,6 +2077,7 @@ function applyVModeChrome(){   // 모드가 화면 전체를 바꾼다 (에어�
 }
 function setVMode(v){
   if (v===vMode) return;
+  track('vertical_switch', {to: v});
   vMode=v;
   applyVModeChrome();
   if (dest){
@@ -2372,19 +2377,20 @@ function pendDest(name,lat,lng,city){
     g.textContent=(vMode==='hotel'?'Find a safe stay near ':'Find safe parking near ')+(name.length>22?name.slice(0,22)+'…':name); }
 }
 function go(){
-  if (pending){ setDest(pending.name,pending.lat,pending.lng,pending.city); return; }
+  if (pending){ track('search_submit', {vertical: vMode, via: 'suggestion'}); setDest(pending.name,pending.lat,pending.lng,pending.city); return; }
   var q=$('q').value.trim();
   if (dest && q===dest.name){   // 목적지 그대로 → 재접기(When 변경만 반영) — 오버레이에서 왔다면 현재 엔트리를 results로 재라벨
     try{ history.replaceState({view:'results'}, '', location.pathname+location.search); }catch(e){}
     collapseSearch(); render(); return;
   }
-  if (q) search(q); else $('q').focus();
+  if (q){ track('search_submit', {vertical: vMode, via: 'typed'}); search(q); } else $('q').focus();
 }
 $('sform').addEventListener('submit',function(e){ e.preventDefault(); go(); });
 if ($('gobtn')) $('gobtn').addEventListener('click', go);
 $('q').addEventListener('input', function(){ pending=null; var g=$('gobtn'); if(g){ g.classList.remove('armed'); g.textContent=vMode==='hotel'?'Find a safe stay':'Find safe parking'; } });
 $('locbtn').addEventListener('click',function(){
   if (!navigator.geolocation){ showErr('Location isn’t available in this browser.'); return; }
+  track('use_my_location');
   $('loading').style.display='block';
   navigator.geolocation.getCurrentPosition(function(pos){
     $('loading').style.display='none';
@@ -2607,6 +2613,7 @@ function initTripBanner(){
   if (!dismissed) el.style.display='';
   close.addEventListener('click', function(){
     el.style.display='none';
+    track('trip_banner_dismiss');
     try { localStorage.setItem(KEY,'1'); } catch(e){}
   });
 }
