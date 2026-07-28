@@ -311,6 +311,18 @@ body.mapmode .maplegend{position:absolute;left:10px;bottom:76px;right:auto;max-w
 .whenpanel{display:none;border:0;border-bottom:1px solid var(--line);background:var(--paper);padding:12px 16px;gap:8px;flex-wrap:wrap;align-items:center}
 .whenrow.open .whenpanel{display:flex}
 .whenpanel input,.whenpanel select{font:inherit;font-size:13.5px;color:var(--ink);background:var(--paper);border:1px solid var(--line-2);border-radius:9px;padding:7px 9px}
+/* Stay22 실재고 카드 — 우리 축(블록 건수)을 먼저 읽히는 자리에, 가격은 OTA별로 나란히 */
+.s22card{display:flex;gap:11px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px;margin-bottom:8px}
+.s22thumb{width:62px;height:62px;object-fit:cover;border-radius:9px;flex:none;background:var(--paper)}
+.s22body{flex:1;min-width:0}
+.s22name{font-weight:600;font-size:14px;line-height:1.3}
+.s22meta{font-size:12px;color:var(--ink-3);margin-top:2px}
+.s22blk{font-size:12.5px;color:var(--ink-2);margin-top:5px}
+.s22dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+.s22otas{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.s22ota{font-size:12px;text-decoration:none;color:var(--brand);border:1px solid var(--line-2);border-radius:999px;padding:4px 10px;white-space:nowrap}
+.s22ota b{font-weight:700}
+.s22ota.alt{color:var(--ink-3)}
 .gobtn{display:block;width:100%;margin:0;font:inherit;font-size:15.5px;font-weight:700;color:#fff;background:var(--brand);border:0;border-radius:0 0 16px 16px;padding:14px;cursor:pointer}
 .gobtn:hover{opacity:.92}
 .gobtn.armed{background:#1f6f45}
@@ -468,6 +480,28 @@ body.searchopen .searchclose{display:flex;position:absolute;top:14px;right:14px;
           <option value="180" selected>3 hours</option><option value="240">4 hours</option>
           <option value="360">6 hours</option><option value="480">8 hours</option>
           <option value="ON">Overnight → 8 am</option>
+        </select>
+      </div>
+    </div>
+    <!-- stay: 호텔 모드의 예약 파라미터. 주차의 When(도착시각·시간)과 질문이 다르다 —
+         호텔은 체크인 날짜와 몇 박이고, 이 값이 Stay22 가격 조회와 아웃바운드 링크에 그대로 실린다.
+         이게 없으면 가격을 부를 수 없고, 유저는 OTA에 도착해서 날짜를 또 골라야 한다. -->
+    <div class="whenrow" id="stayrow" style="display:none">
+      <button type="button" class="whensum" id="staysum">
+        <span class="whenlab">Stay</span>
+        <span class="whenval" id="stayval"></span>
+        <span class="whencar"><svg class="ic-chev" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span>
+      </button>
+      <div class="whenpanel" id="staypanel">
+        <input type="date" id="sdate" aria-label="Check-in date">
+        <select id="snights" aria-label="Nights">
+          <option value="1" selected>1 night</option><option value="2">2 nights</option>
+          <option value="3">3 nights</option><option value="4">4 nights</option>
+          <option value="5">5 nights</option><option value="7">7 nights</option>
+        </select>
+        <select id="sadults" aria-label="Adults">
+          <option value="1">1 adult</option><option value="2" selected>2 adults</option>
+          <option value="3">3 adults</option><option value="4">4 adults</option>
         </select>
       </div>
     </div>
@@ -2085,6 +2119,7 @@ function renderHotels(){
   }
   var list = hotelList(), top = list.slice(0,20);
   lastListCount = top.length;
+  var pinList = top;   // 지도 핀·개수의 기준 — 실재고가 있으면 아래에서 그쪽으로 바꾼다
   // 화면 순서 = 고객 손가락 순서 (2026-07-20): ①어느 동네가 조용한가(우리 데이터, 주인공)
   // → ②그 동네로 트립닷컴 전체 재고 브라우징(전환) → ③참고용 OSM 호텔 샘플(예시일 뿐임을 공시)
   var html = '';
@@ -2102,14 +2137,32 @@ function renderHotels(){
     '<div class="lugtitle">Browse all '+esc(CITY.name)+' hotels'+
       '<div class="lugmeta">Trip.com · full inventory — our map shows only OpenStreetMap-listed hotels</div></div>'+
     '<a class="lugcta" href="'+tripCityUrl()+'" target="_blank" rel="noopener nofollow sponsored">Open '+ICON_EXT+'</a></div></div>';
-  html += '<p class="bhint" style="font-size:12.5px;color:var(--ink-3);margin:14px 2px 10px">Hotels mapped nearby — an OpenStreetMap sample, not the full inventory · safest blocks first.</p>';
-  if (!top.length) html += '<div class="lugcard"><div class="lugtop"><b>No mapped hotels within a 15-min walk</b></div><p class="lugmeta">Try searching a spot closer to the city center.</p></div>';
-  for (var i=0;i<top.length;i++){
-    var h=top[i];
-    html += '<div class="lugcard"><div class="lugtop"><b>'+(i+1)+'. '+esc(h.name)+'</b>'+
-      '<a class="altlink" href="'+TRIP_HOTELS.urlFor(h)+'" target="_blank" rel="noopener nofollow sponsored">Search on Trip.com '+ICON_EXT+'</a>'+
-      '<a class="altlink" href="'+mapUrl(h)+'" target="_blank" rel="noopener">Maps</a></div>'+
-      '<p class="lugmeta">'+hotelLine(h)+' · <span style="white-space:nowrap">'+walkMin(h.dist)+' min walk</span></p></div>';
+  // 실재고(Stay22)가 있으면 그걸 쓴다. 없으면 OSM 샘플로 폴백 — 둘의 성격이 달라서 공시 문구도 다르다.
+  var s22 = STAY22.data && STAY22.key === stay22Key() ? STAY22.data.slice(0, 12) : null;
+  if (s22 && s22.length){
+    var sp = stayParams();
+    html += '<p class="bhint" style="font-size:12.5px;color:var(--ink-3);margin:14px 2px 10px">Hotels near here — quietest block first. Prices are the total for the stay, taxes and mandatory fees included.</p>';
+    for (var i=0;i<s22.length;i++) html += stay22Card(s22[i], i);
+    lastListCount = s22.length; pinList = s22;   // 손잡이의 "N hotels"와 지도 핀도 실재고 기준으로
+    // 손잡이는 첫 페인트(OSM 폴백) 때 그려져 있다 — 실재고로 바뀌면 다시 그려야 개수가 안 어긋난다
+    if (mapMode && $('mapfab')) $('mapfab').innerHTML = fabSheetHtml();
+    html += '<p class="bhint" style="font-size:11.5px;color:var(--ink-3);margin:8px 2px 0">'+
+      esc(sp.checkin)+' · '+sp.nights+(sp.nights===1?' night':' nights')+' · '+sp.adults+(sp.adults===1?' adult':' adults')+
+      ' · live from Booking.com / Expedia / Hotels.com via Stay22. Prices change; check the property. '+
+      'We earn a commission if you book through these links.</p>';
+  } else {
+    html += '<p class="bhint" style="font-size:12.5px;color:var(--ink-3);margin:14px 2px 10px">Hotels mapped nearby — an OpenStreetMap sample, not the full inventory · safest blocks first.</p>';
+    if (!top.length) html += '<div class="lugcard"><div class="lugtop"><b>No mapped hotels within a 15-min walk</b></div><p class="lugmeta">Try searching a spot closer to the city center.</p></div>';
+    for (var i=0;i<top.length;i++){
+      var h=top[i];
+      html += '<div class="lugcard"><div class="lugtop"><b>'+(i+1)+'. '+esc(h.name)+'</b>'+
+        '<a class="altlink" href="'+TRIP_HOTELS.urlFor(h)+'" target="_blank" rel="noopener nofollow sponsored">Search on Trip.com '+ICON_EXT+'</a>'+
+        '<a class="altlink" href="'+mapUrl(h)+'" target="_blank" rel="noopener">Maps</a></div>'+
+        '<p class="lugmeta">'+hotelLine(h)+' · <span style="white-space:nowrap">'+walkMin(h.dist)+' min walk</span></p></div>';
+    }
+    // 아직 안 받았으면 받아서 다시 그린다 (첫 페인트를 막지 않는다)
+    // renderHotels — render()는 주차 렌더러다. 여기서 render()를 부르면 호텔 카드가 주차 카드로 덮인다.
+    if (!STAY22.loading) loadStay22().then(function(){ if (vMode==='hotel' && dest && STAY22.data && STAY22.data.length) renderHotels(); });
   }
   $('cards').innerHTML = html;
   // 정직성 푸터 — 기록이 실제로 언제까지 있나 (≥5건/월 규칙, 주차 푸터와 동일)
@@ -2120,7 +2173,7 @@ function renderHotels(){
   $('trust').innerHTML = '<b>How this works.</b> Every reported robbery &amp; aggravated assault ('+total.toLocaleString()+' incidents) is mapped to block-zones from city police records. '+
     'Hotel locations from OpenStreetMap. Checked daily'+(upd?' · records through <b>'+upd+'</b>':'')+'. Area risk, not a guarantee — check any block yourself on the map.';
   if (!map) initMap();
-  else { ensureWalkLayers(); applyModeLayers(); drawHotelPins(top.slice(0,8)); renderLegend(); renderLens(); }
+  else { ensureWalkLayers(); applyModeLayers(); drawHotelPins(pinList.slice(0,8)); renderLegend(); renderLens(); }
 }
 function applyVModeChrome(){   // 모드가 화면 전체를 바꾼다 (에어비앤비 문법) — 홈·결과 공통 크롬
   var hotel = vMode==='hotel';
@@ -2128,6 +2181,7 @@ function applyVModeChrome(){   // 모드가 화면 전체를 바꾼다 (에어�
   for (var i=0;i<tabs.length;i++) tabs[i].classList.toggle('on', tabs[i].getAttribute('data-v')===vMode);
   $('gobtn').textContent = hotel ? 'Find a safe stay' : 'Find safe parking';
   $('whenrow').style.display = hotel ? 'none' : '';
+  if ($('stayrow')) $('stayrow').style.display = hotel ? '' : 'none';   // 호텔은 '언제 몇 박' — 주차의 When과 질문이 다르다
   if ($('heroH1')) $('heroH1').innerHTML = hotel ? 'Stay where the streets<br>are quiet at night.' : 'Park where they<br>don’t break in.';
   if ($('heroP')) $('heroP').textContent = hotel
     ? 'See real robbery & assault records for every block before you book. Free, no app.'
@@ -2546,6 +2600,121 @@ function paintWhen(){
 }
 initWhen();
 
+/* ── 호텔 모드의 Stay 컨트롤 (2026-07-28) ─────────────────────────────────────
+   주차의 When과 질문이 다르다: 호텔은 '언제 들어가서 몇 박'이다. 이 값이 Stay22 가격 조회와
+   아웃바운드 링크에 그대로 실린다 — 없으면 가격을 못 부르고, 유저는 OTA에서 날짜를 또 고르게 된다.
+   기본값은 오늘+30일 1박. 하드코딩 날짜 금지(항상 오늘 기준). */
+function isoPlus(n){ return new Date(Date.now()+n*864e5).toISOString().slice(0,10); }
+function stayParams(){
+  var ci = $('sdate') && $('sdate').value ? $('sdate').value : isoPlus(30);
+  var n = +(($('snights')||{}).value || 1) || 1;
+  var co = new Date(new Date(ci+'T12:00:00').getTime() + n*864e5).toISOString().slice(0,10);
+  return { checkin: ci, checkout: co, nights: n, adults: +(($('sadults')||{}).value || 2) || 2 };
+}
+function staySumHtml(){
+  var s = stayParams(), d = new Date(s.checkin+'T12:00:00');
+  var day = isNaN(d) ? s.checkin : d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+  return esc(day)+' · <span style="white-space:nowrap">'+s.nights+(s.nights===1?' night':' nights')+' · '+s.adults+(s.adults===1?' adult':' adults')+'</span>';
+}
+function paintStay(){ if ($('stayval')) $('stayval').innerHTML = staySumHtml(); }
+function initStay(){
+  if (!$('sdate')) return;
+  $('sdate').value = isoPlus(30);
+  $('sdate').min = isoPlus(0);   // 과거 체크인은 상류가 거부한다 — 아예 못 고르게
+  ['sdate','snights','sadults'].forEach(function(id){
+    $(id).addEventListener('change', function(){ paintStay(); if (dest && vMode==='hotel') renderHotels(); });
+  });
+  $('staysum').addEventListener('click', function(){ $('stayrow').classList.toggle('open'); });
+  paintStay();
+}
+initStay();
+
+/* ── Stay22 실재고 (2026-07-28) ──────────────────────────────────────────────
+   앱은 지금까지 data/hotels-*.json = OpenStreetMap tourism=hotel(이름+좌표뿐)로 목록을 만들었다.
+   예약 가능한 재고가 아니라 '지도에 찍힌 건물 이름'이라, 카드가 "Search on Trip.com"(재검색)으로
+   끝나고 유저는 OTA에서 그 호텔을 다시 찾아야 했다. Stay22는 Booking/Expedia/Hotels.com의
+   실제 재고를 가격·사진·직행 딥링크와 함께 준다 — 정적 동네 페이지엔 이미 붙어 있었고 앱만 빠져 있었다.
+   ENDPOINT: 키 없는 데모 티어(방문자 IP당 5 req/min). worker/stay22 배포 시 그 주소로 바꾸면 키 티어.
+   캐시하지 않는다(약관: 목록 저장 금지). 실패하면 조용히 OSM 목록으로 폴백한다. */
+var STAY22 = { ep:'https://api.stay22.com/v2/accommodations', aid:'quietandsafe', key:'', data:null, loading:false };
+function stay22Key(){
+  var s = stayParams();
+  return [CITY&&CITY.key, dest&&dest.lat.toFixed(4), dest&&dest.lng.toFixed(4), s.checkin, s.nights, s.adults].join('|');
+}
+function loadStay22(){
+  if (!dest || vMode!=='hotel') return Promise.resolve();
+  var k = stay22Key();
+  if (STAY22.key === k) return Promise.resolve();     // 같은 조건 재호출 방지 (한도 보호)
+  if (STAY22.loading) return Promise.resolve();
+  STAY22.loading = true;
+  var s = stayParams();
+  var url = STAY22.ep+'?lat='+dest.lat.toFixed(5)+'&lng='+dest.lng.toFixed(5)+'&radius=1200&type=hotel'+
+    '&checkin='+s.checkin+'&checkout='+s.checkout+'&adults='+s.adults+'&rooms=1&currency=USD&pageSize=24&aid='+STAY22.aid;
+  return fetch(url).then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; })
+    .then(function(j){
+      STAY22.loading = false;
+      if (!j || !j.results) return;
+      STAY22.key = k;
+      STAY22.data = j.results.map(function(h){
+        var best=null, links={};
+        for (var via in (h.suppliers||{})){
+          var sp=h.suppliers[via];
+          if (!sp || !sp.link) continue;
+          var t = sp.price && sp.price.total;
+          if (typeof t === 'number'){ links[via]=t; if (best===null || t<best) best=t; }
+          links[via+'_url']=sp.link;
+        }
+        if (best===null) return null;                  // 견적 없는 숙소는 버린다 (재고 없는 동네는 태반이 null)
+        var c = h.location && h.location.coordinates;
+        if (!c) return null;
+        var cell = containingWalkCell({lat:c.lat, lng:c.lng});
+        return { name:h.name, named:true, lat:c.lat, lng:c.lng,
+          dist: h.location.distanceInMeters != null ? h.location.distanceInMeters : hav(dest,{lat:c.lat,lng:c.lng}),
+          cell: cell, c12: hotelN(cell), dataless: !cell,
+          price: best, links: links,
+          score: (h.rating&&h.rating.value)||null, reviews:(h.rating&&h.rating.count)||null,
+          stars: (h.rating&&h.rating.hotelStars)||null,
+          free: !!(h.policies&&h.policies.freeCancellation),
+          thumb: (h.media&&h.media.thumbnail)||null };
+      }).filter(Boolean);
+      // 우리 축으로 정렬 — 블록당 건수 오름차순. 격자 밖(dataless)은 강등(주차·OSM 목록과 동일 원칙).
+      STAY22.data.sort(function(a,b){ return ((a.dataless?1:0)-(b.dataless?1:0)) || (a.c12-b.c12) || (a.dist-b.dist); });
+    });
+}
+var OTA_NAME = { booking:'Booking.com', expedia:'Expedia', hotelscom:'Hotels.com', vrbo:'Vrbo' };
+function stay22Card(h, i){
+  var s = stayParams();
+  var others = [];
+  for (var via in h.links){
+    if (via.indexOf('_url') > 0) continue;
+    others.push({ via: via, price: h.links[via], url: h.links[via+'_url'] });
+  }
+  others.sort(function(a,b){ return a.price-b.price; });
+  var meta = [];
+  if (h.dist != null) meta.push(Math.round(h.dist)+' m');
+  if (h.score) meta.push(h.score+'/10'+(h.reviews?' ('+h.reviews.toLocaleString()+')':''));
+  if (h.free) meta.push('free cancellation');
+  return '<div class="s22card">'+
+    (h.thumb ? '<img class="s22thumb" src="'+esc(h.thumb)+'" alt="" onerror="this.remove()">' : '') +
+    '<div class="s22body">'+
+      '<div class="s22name">'+(i+1)+'. '+esc(h.name)+'</div>'+
+      '<div class="s22meta">'+esc(meta.join(' · '))+'</div>'+
+      '<div class="s22blk"><span class="s22dot" style="background:'+blockColor(h)+'"></span>'+hotelLine(h)+'</div>'+
+      '<div class="s22otas">'+ others.map(function(o){
+        return '<a class="s22ota" href="'+esc(o.url)+'" target="_blank" rel="noopener nofollow sponsored">'+
+          esc(OTA_NAME[o.via]||o.via)+' <b>$'+o.price+'</b></a>';
+      }).join('') +
+      '<a class="s22ota alt" href="'+TRIP_HOTELS.urlFor(h)+'" target="_blank" rel="noopener nofollow sponsored">Trip.com</a>'+
+      '<a class="s22ota alt" href="'+mapUrl(h)+'" target="_blank" rel="noopener">Maps</a></div>'+
+    '</div></div>';
+}
+// 지도 범례와 같은 색 계단 — 새 문법을 만들지 않는다. 격자 밖은 회색(0건과 동급 아님).
+function blockColor(h){
+  if (h.dataless) return 'var(--line-2)';
+  var c = h.c12;
+  return c<=2?'#2e9e63' : c<=10?'#7fae3f' : c<=25?'#e0a52b' : c<=45?'#e07b3a' : '#d1503f';
+}
+
 /* 목적지 사진 — 에어비앤비 문법: 지역마다 사진. 소스 = Wikipedia 썸네일(자유 라이선스, CORS 개방).
    49도시 사진을 손 큐레이션하면 그게 또 슬롭 — "이름, 도시" 문서 썸네일로 런타임 자동 매칭,
    실패하면 조용히 텍스트 카드 유지 (jsdom·오프라인에서도 안전). */
@@ -2836,7 +3005,9 @@ if (window.__CURBSAFE_TEST__) window.__curbsafe = {
   hotelList: hotelList, hotelLine: hotelLine, walk: function(){ return walkGeojson; }, cityHotels: function(){ return CITY_HOTELS; },
   // 블록 클릭 동네 카드 (2026-07-21) — qa-hotels 게이트용
   allHoodRanks: allHoodRanks, hotelsInHood: hotelsInHood, tripHoodUrl: tripHoodUrl, hoodCard: hoodCardHtml,
-  initTripBanner: initTripBanner   // 트립닷컴 배너 (2026-07-23) — 재부팅 시 dismiss 유지 검증용
+  initTripBanner: initTripBanner,   // 트립닷컴 배너 (2026-07-23) — 재부팅 시 dismiss 유지 검증용
+  // Stay22 실재고 (2026-07-28) — 네트워크 없이 카드 규칙만 검증하기 위한 훅
+  stay22Card: stay22Card, stayParams: stayParams, blockColor: blockColor
 };
 
 })();
