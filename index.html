@@ -2636,7 +2636,7 @@ initStay();
    실제 재고를 가격·사진·직행 딥링크와 함께 준다 — 정적 동네 페이지엔 이미 붙어 있었고 앱만 빠져 있었다.
    ENDPOINT: 키 없는 데모 티어(방문자 IP당 5 req/min). worker/stay22 배포 시 그 주소로 바꾸면 키 티어.
    캐시하지 않는다(약관: 목록 저장 금지). 실패하면 조용히 OSM 목록으로 폴백한다. */
-var STAY22 = { ep:'https://api.stay22.com/v2/accommodations', aid:'quietandsafe', key:'', data:null, loading:false };
+var STAY22 = { ep:'https://qs-stay22.quietandsafe.workers.dev/hotels', aid:'quietandsafe', key:'', data:null, loading:false };
 function stay22Key(){
   var s = stayParams();
   return [CITY&&CITY.key, dest&&dest.lat.toFixed(4), dest&&dest.lng.toFixed(4), s.checkin, s.nights, s.adults].join('|');
@@ -2648,34 +2648,25 @@ function loadStay22(){
   if (STAY22.loading) return Promise.resolve();
   STAY22.loading = true;
   var s = stayParams();
-  var url = STAY22.ep+'?lat='+dest.lat.toFixed(5)+'&lng='+dest.lng.toFixed(5)+'&radius=1200&type=hotel'+
-    '&checkin='+s.checkin+'&checkout='+s.checkout+'&adults='+s.adults+'&rooms=1&currency=USD&pageSize=24&aid='+STAY22.aid;
+  // Worker가 파라미터를 화이트리스트로 검사하고 type/currency/aid를 강제한다 — 여기선 최소한만 보낸다.
+  var url = STAY22.ep+'?lat='+dest.lat.toFixed(5)+'&lng='+dest.lng.toFixed(5)+'&radius=1200'+
+    '&checkin='+s.checkin+'&checkout='+s.checkout+'&adults='+s.adults+'&limit=12';
   return fetch(url).then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; })
     .then(function(j){
       STAY22.loading = false;
-      if (!j || !j.results) return;
+      if (!j || !j.hotels) return;
       STAY22.key = k;
-      STAY22.data = j.results.map(function(h){
-        var best=null, links={};
-        for (var via in (h.suppliers||{})){
-          var sp=h.suppliers[via];
-          if (!sp || !sp.link) continue;
-          var t = sp.price && sp.price.total;
-          if (typeof t === 'number'){ links[via]=t; if (best===null || t<best) best=t; }
-          links[via+'_url']=sp.link;
-        }
-        if (best===null) return null;                  // 견적 없는 숙소는 버린다 (재고 없는 동네는 태반이 null)
-        var c = h.location && h.location.coordinates;
-        if (!c) return null;
-        var cell = containingWalkCell({lat:c.lat, lng:c.lng});
-        return { name:h.name, named:true, lat:c.lat, lng:c.lng,
-          dist: h.location.distanceInMeters != null ? h.location.distanceInMeters : hav(dest,{lat:c.lat,lng:c.lng}),
+      STAY22.data = j.hotels.map(function(h){
+        if (h.lat == null || h.lng == null) return null;
+        var links = {};
+        for (var i=0;i<(h.offers||[]).length;i++){ links[h.offers[i].via]=h.offers[i].price; links[h.offers[i].via+'_url']=h.offers[i].url; }
+        var cell = containingWalkCell({lat:h.lat, lng:h.lng});   // 블록 붙이기는 앱이 한다(WCELLS는 앱에만 있다)
+        return { name:h.name, named:true, lat:h.lat, lng:h.lng,
+          dist: h.dist != null ? h.dist : hav(dest,{lat:h.lat,lng:h.lng}),
           cell: cell, c12: hotelN(cell), dataless: !cell,
-          price: best, links: links,
-          score: (h.rating&&h.rating.value)||null, reviews:(h.rating&&h.rating.count)||null,
-          stars: (h.rating&&h.rating.hotelStars)||null,
-          free: !!(h.policies&&h.policies.freeCancellation),
-          thumb: (h.media&&h.media.thumbnail)||null };
+          price: h.price, links: links,
+          score: h.score||null, reviews: h.reviews||null, stars: h.stars||null,
+          free: !!h.free, thumb: h.thumb||null };
       }).filter(Boolean);
       // 우리 축으로 정렬 — 블록당 건수 오름차순. 격자 밖(dataless)은 강등(주차·OSM 목록과 동일 원칙).
       STAY22.data.sort(function(a,b){ return ((a.dataless?1:0)-(b.dataless?1:0)) || (a.c12-b.c12) || (a.dist-b.dist); });
