@@ -429,7 +429,7 @@ body.searchopen .searchclose{display:flex;position:absolute;top:14px;right:14px;
 <body>
 
 <header><div class="hbar">
-  <a class="wordmark" href="./">Quiet <span style="color:var(--brand)">&</span> Safe<small>don’t get bipped</small></a>
+  <a class="wordmark" href="./">Quiet <span style="color:var(--brand)">&</span> Safe<small>break-ins &amp; robberies, block by block</small></a>
   <!-- 도시별 정적 가이드 인덱스 — vMode(park/hotel) 검색·예약 흐름이랑 완전히 분리된 별도 진입점
        (2026-07-22 유저: "파킹/호텔은 예약 연결, 이건 별도 탭으로" — vMode를 3단으로 늘리면 검증된
        검색 로직 전체를 건드려야 해서, 헤더의 독립 링크로 최소 침습 구현) -->
@@ -457,7 +457,7 @@ body.searchopen .searchclose{display:flex;position:absolute;top:14px;right:14px;
   <!-- cold start -->
   <section class="hero" id="hero">
     <h1 id="heroH1">Park where they<br>don’t break in.</h1>
-    <p id="heroP">See real break-in records for every block before you park. Free, no app.</p>
+    <p id="heroP">See real break-in records for every block before you park. Free, no app, 49 US cities.</p>
   </section>
 
   <!-- 요약 pill: 검색 후 알약이 이걸로 접힘 — 탭하면 다시 펼침 (에어비앤비 문법) -->
@@ -485,7 +485,7 @@ body.searchopen .searchclose{display:flex;position:absolute;top:14px;right:14px;
       <div class="srow">
         <form class="sfield" id="sform" autocomplete="off">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-          <input id="q" type="text" placeholder="Where to?" enterkeyhint="search" />
+          <input id="q" type="text" placeholder="Where to? Google Maps links work too" enterkeyhint="search" />
         </form>
         <button class="locbtn" id="locbtn" title="Use my location" aria-label="Use my location">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="3.2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
@@ -535,7 +535,7 @@ body.searchopen .searchclose{display:flex;position:absolute;top:14px;right:14px;
     </div>
     <button type="button" class="gobtn" id="gobtn">Find safe parking</button>
   </div>
-  <div class="shint">Search a place, or <b>paste a Google&nbsp;Maps link</b> — works right in the box above. <button type="button" class="mapfind" id="mapfind">Find it on the map</button></div>
+  <div class="shint"><button type="button" class="mapfind" id="mapfind">Find it on the map</button></div>
   <div class="citysnap" id="citysnap" style="display:none"></div>
 
   <!-- 지도 읽는 법 — 라이브 데모 (첫 화면이 곧 사용법 소개, 2026-07-17). 칩을 누르면 해당 레이어가 반응 -->
@@ -568,7 +568,7 @@ body.searchopen .searchclose{display:flex;position:absolute;top:14px;right:14px;
   <!-- results — map-first: 지도가 공간 맥락의 주인공. 스크롤하면 덮이지 않고 '접힘'(띠로 남음) -->
   <section class="results" id="results">
     <button type="button" class="sheettop" id="sheettop"><span class="grab"></span><span class="stxt">Map</span></button>
-    <div class="rhead" id="rhead">Safe parking near</div>
+    <div class="rhead" id="rhead">Parking near</div>
     <h2 class="rtitle"><em id="destname"></em></h2>
 
     <div id="mapanchor" style="display:none"></div>
@@ -582,8 +582,9 @@ body.searchopen .searchclose{display:flex;position:absolute;top:14px;right:14px;
 
     <div id="areacard"></div>
     <div id="avoidwrap"></div>
-    <div id="lugstrip"></div>
     <div class="cards" id="cards"></div>
+    <!-- 가방보관(제휴)은 목록 뒤 — 운전자는 아직 주차 전이고, 브리핑 속 광고는 숫자 신뢰를 깎는다 (2026-07-29) -->
+    <div id="lugstrip"></div>
     <div id="securewrap"></div>
 
     <div class="trust" id="trust"></div>
@@ -892,7 +893,10 @@ var ICON_WARN  = '<svg class="ic-warn" width="11" height="11" viewBox="0 0 24 24
 function bucketOf(h){ return (h>=5&&h<12)?'morning' : (h>=12&&h<17)?'afternoon' : (h>=17&&h<22)?'evening' : 'night'; }
 var TOD_CLOCK  = { morning:'5 am–noon', afternoon:'noon–5 pm', evening:'5–10 pm', night:'10 pm–5 am' };
 var TOD_PHRASE = { morning:'in the morning', afternoon:'in the afternoon', evening:'in the evening', night:'overnight' };
-var TOD_PILL   = { morning:'this morning', afternoon:'this afternoon', evening:'this evening', night:'overnight' };
+// 'this evening'은 "오늘 저녁 12건"으로 읽힌다(외부 평가 2026-07-29: "actively false as read").
+// 실제 의미는 12개월간 그 시간대 합계 — 시간대를 '구간'으로 말한다. 이 배열을 쓰는
+// 알약·카드 카운트줄·지도 범례·팝업 네 곳이 이 한 줄로 같이 고쳐진다.
+var TOD_PILL   = { morning:'in morning hours', afternoon:'in afternoon hours', evening:'in evening hours', night:'overnight' };
 
 /* ————— state ————— */
 var PARKING = [], CELLS = [], META = {}, riskGeojson = null, FACILITIES = [];
@@ -1178,7 +1182,7 @@ function whyPanel(p){
 }
 
 /* ————— render ————— */
-var AREA_WORD = ['Quiet','Some street activity','High break-in & theft activity'];   // 240 통합 (2026-07-17)
+// AREA_WORD 판정 배열 제거 (2026-07-29) — 'High activity'는 'Hot block'과 같은 부류의 판정. 숫자 줄이 사실을 말한다.
 function renderArea(){
   var a = areaStats();
   if (!a.cells){
@@ -1207,7 +1211,7 @@ function renderArea(){
   $('areacard').innerHTML =
     '<div class="areacard"><span class="areadot bg'+a.lvl+'"></span>'+
     '<div class="areabody">'+
-      '<div class="areahead">'+esc(a.hood||dest.name)+' — <span class="lvlword lvl'+a.lvl+'"><span style="white-space:nowrap">'+AREA_WORD[a.lvl]+'</span> <span style="white-space:nowrap">'+TOD_PHRASE[a.todUsed]+'</span></span></div>'+
+      '<div class="areahead">'+esc(a.hood||dest.name)+'</div>'+
       '<div class="areasub">'+count+'</div>'+
     '</div></div>';
   return a;
@@ -1323,14 +1327,13 @@ function renderCards(){
         ? '<span style="white-space:nowrap">Closest first</span> · <span style="white-space:nowrap">tap Safest for block risk</span>'
         : '<span style="white-space:nowrap">Safest first</span> · <span style="white-space:nowrap">tap Closest for walk time</span>';
       if (!a || !a.cells) return '<div class="bhint">No crime data for this city yet. Badges show which spots are staffed or covered.</div>';
-      return a.lvl>=1
-        ? '<div class="bhint">'+srt+'</div>'
-        : '<div class="bhint">Quiet area · '+srt+'</div>';
+      return '<div class="bhint">'+srt+'</div>';   // 'Quiet area' 접두어 제거 — 판정
     })()+
     '<div class="bseg" id="bseg">'+BSORTS.map(function(s){ return '<button type="button" data-sort="'+s.key+'" class="'+(browseSort===s.key?'on':'')+'">'+s.label+'</button>'; }).join('')+'</div>'+
     '<div class="bchips" id="bchips">'+BFILTERS.map(function(f){
       var c=counts[f.key], on=browseFilter===f.key;
-      return '<button type="button" data-filter="'+f.key+'" class="bchip'+(on?' on':'')+(c?'':' off')+'"'+(c?'':' disabled')+'>'+f.label+' <span class="bc">'+c+'</span></button>';
+      if (!c) return '';   // 0건 칩은 그리지 않는다 — 누르지도 못하는 칩도 읽기 비용은 든다 (실측: "Underground 0")
+      return '<button type="button" data-filter="'+f.key+'" class="bchip'+(on?' on':'')+'">'+f.label+' <span class="bc">'+c+'</span></button>';
     }).join('')+'</div>'+
   '</div>';
 
@@ -1495,9 +1498,8 @@ function render(){
   $('hero').style.display='none'; $('pops').style.display='none'; $('herodemo').style.display='none';
   if ($('sitefoot')) $('sitefoot').style.display='none';
   $('results').classList.add('show');
-  $('rhead').textContent='Safe parking near';   // 호텔 모드에서 돌아올 때 복원
-  $('results').classList.remove('listfirst');
-  if ($('tripBanner') && !$('tripBanner').dataset.dismissed) $('tripBanner').style.display='';
+  $('rhead').textContent='Parking near';   // 호텔 모드에서 돌아올 때 복원
+  $('results').classList.remove('listfirst');   // 배너는 호텔 모드 전용이라 주차 복귀 시 복원하지 않는다
   $('destname').textContent = dest.name;
   var as = renderArea();
   window.__lastArea = as;   // browsebar 힌트가 지역 성격(조용/위험/데이터없음)을 읽음
@@ -1507,10 +1509,10 @@ function render(){
   // 메인 동네카드와 같은 hood면 스킵 (2026-07-19 수리: 같은 동네를 두 번 경고하던 버그 —
   // 유저 실사이트 캡처에서 "Financial District/South Beach" 헤드라인 직후 같은 동네 avoidstrip 발견).
   // 한 줄 고정 양식 — 별도 사실 문단 없이 헤드라인에 근거 하나만 접붙임.
-  var wz = worstZone();
-  $('avoidwrap').innerHTML = (!wz || wz.cell.hood===as.hood) ? '' :
-    '<div class="avoidstrip"><b>Skip street parking around '+esc(wz.cell.hood||'here')+' <span style="white-space:nowrap">'+TOD_PHRASE[wz.b]+'</span></b> — '+
-    '<span style="white-space:nowrap">'+wz.n+' break-ins &amp; thefts</span>, <span style="white-space:nowrap">past 12 mo</span></div>';
+  // avoidstrip 제거 (2026-07-29 외부 평가): 검색한 동네(예: Union Square)의 답 위에 다른 동네(Nob Hill)의
+  // 명령형 문구("Skip ...")가 뜨면 (a) 내 검색이 맞았나 의심하게 하고 (b) 명령형 자체가 판정이며
+  // (c) 차고를 찾는 사람에게 다른 동네 노상주차 경고는 보상 없는 지리 퍼즐이다. 지역 숫자 줄이 사실을 말한다.
+  $('avoidwrap').innerHTML = '';
 
   var list = renderCards();
   renderLugStrip();
@@ -2253,6 +2255,10 @@ function applyVModeChrome(){   // 모드가 화면 전체를 바꾼다 (에어�
   for (var i=0;i<tabs.length;i++) tabs[i].classList.toggle('on', tabs[i].getAttribute('data-v')===vMode);
   $('gobtn').textContent = hotel ? 'Find a safe stay' : 'Find safe parking';
   $('whenrow').style.display = hotel ? 'none' : '';
+  if ($('tripBanner')){   // 배너는 호텔 모드 전용 (dismiss 상태는 유지)
+    var tbDis=false; try{ tbDis = localStorage.getItem('qs_tripbanner_dismissed')==='1'; }catch(e){}
+    $('tripBanner').style.display = (hotel && !tbDis) ? '' : 'none';
+  }
   if ($('stayrow')){
     $('stayrow').style.display = hotel ? '' : 'none';   // 호텔은 '언제 몇 박' — 주차의 When과 질문이 다르다
     // 접어두면 유저가 안 건드리고, 기본값(오늘+30일)의 가격을 '자기 여행 가격'으로 읽는다.
@@ -2261,8 +2267,8 @@ function applyVModeChrome(){   // 모드가 화면 전체를 바꾼다 (에어�
   }
   if ($('heroH1')) $('heroH1').innerHTML = hotel ? 'Stay where the streets<br>are quiet at night.' : 'Park where they<br>don’t break in.';
   if ($('heroP')) $('heroP').textContent = hotel
-    ? 'See real robbery & assault records for every block before you book. Free, no app.'
-    : 'See real break-in records for every block before you park. Free, no app.';
+    ? 'See real robbery & assault records for every block before you book. Free, no app, '+Object.keys(CITIES).length+' US cities.'
+    : 'See real break-in records for every block before you park. Free, no app, '+Object.keys(CITIES).length+' US cities.';
   document.title = hotel ? 'Quiet & Safe — where to stay, block by block'
                          : 'Quiet & Safe — where to park, block by block';
   // 데모 지도는 모드의 데이터로 다시 그린다 (홈에 떠 있을 때만)
@@ -3023,7 +3029,11 @@ function initTripBanner(){
   if (!el || !close) return;
   var dismissed=false;
   try { dismissed = localStorage.getItem(KEY)==='1'; } catch(e){}
-  if (!dismissed) el.style.display='';
+  // 외부 평가 (2026-07-29): 방문자가 사이트가 뭔지 알기도 전에 첫 번째로 만나는 색 있는 요소가
+  // 외부로 나가는 문이었다 — 광고 냄새로 아래 모든 숫자의 신뢰를 깎고, 가장 좋은 방문자
+  // (날짜가 정해진 호텔 검색자)를 우리 검색을 보여주기도 전에 트립닷컴에 넘긴다.
+  // 호텔 모드에서만 보인다 (applyVModeChrome이 모드 전환 때 토글).
+  if (!dismissed && vMode==='hotel') el.style.display='';
   close.addEventListener('click', function(){
     el.style.display='none';
     track('trip_banner_dismiss');
