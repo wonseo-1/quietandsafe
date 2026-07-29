@@ -2191,7 +2191,7 @@ function renderHotels(){
     $('cards').innerHTML='<div class="lugcard"><div class="lugtop"><b>No street-crime layer for this city yet</b></div>'+
       '<p class="lugmeta">Hotel areas need robbery &amp; assault records — this city isn\'t covered yet. Parking mode still works here.</p></div>';
     $('trust').innerHTML='';
-    if (!map) initMap(); else { ensureWalkLayers(); applyModeLayers(); renderLegend(); renderLens(); }
+    if (typeof maplibregl!=='undefined'){ if (!map) initMap(); else { ensureWalkLayers(); applyModeLayers(); renderLegend(); renderLens(); } }
     return;
   }
   var list = hotelList(), top = list.slice(0,20);
@@ -2273,8 +2273,10 @@ function renderHotels(){
   var upd = lastM ? new Date(lastM+'-15T12:00:00').toLocaleDateString('en-US',{month:'short',year:'numeric'}) : '';
   $('trust').innerHTML = '<b>How this works.</b> Every reported robbery &amp; aggravated assault ('+total.toLocaleString()+' incidents) is mapped to block-zones from city police records. '+
     'Hotel locations from OpenStreetMap. Checked daily'+(upd?' · records through <b>'+upd+'</b>':'')+'. Area risk, not a guarantee — check any block yourself on the map.';
-  if (!map) initMap();
-  else { ensureWalkLayers(); applyModeLayers(); drawHotelPins(pinList.slice(0,8)); renderLegend(); renderLens(); }
+  if (typeof maplibregl!=='undefined'){   // 주차 render()와 같은 가드 — maplibre 없이도(스모크·CDN 실패) 목록은 살아야 한다
+    if (!map) initMap();
+    else { ensureWalkLayers(); applyModeLayers(); drawHotelPins(pinList.slice(0,8)); renderLegend(); renderLens(); }
+  }
 }
 function applyVModeChrome(){   // 모드가 화면 전체를 바꾼다 (에어비앤비 문법) — 홈·결과 공통 크롬
   var hotel = vMode==='hotel';
