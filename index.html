@@ -167,7 +167,7 @@ body.mapmode .searcharea{top:114px}   /* 렌즈 알약 아래로 한 줄 더 —
 .fbrow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:7px}
 .fbrow .pill{margin:0}
 .cmeta{font-size:13.5px;color:var(--ink-2);margin-top:6px}
-.cmeta span+span::before{content:"·";margin:0 6px;color:var(--line-2)}
+.cmeta .sep{color:var(--line-2)}
 .cchip{font-size:12px;color:var(--ink-3);margin-top:3px}
 .soldnote{display:block;font-size:11px;color:var(--warn);margin-top:6px;line-height:1.4}
 .cfoot{display:flex;gap:16px;align-items:center;margin-top:10px}
@@ -329,6 +329,15 @@ body.mapmode .maplegend{position:absolute;left:10px;bottom:76px;right:auto;max-w
 .s22skel .skl{height:11px;border-radius:5px;background:var(--paper);margin:5px 0}
 .s22skel .skl.w70{width:70%}.s22skel .skl.w45{width:45%}.s22skel .skl.w60{width:60%}
 .s22h3{font-size:14px;margin:22px 2px 4px}
+.s22blk.same{color:var(--ink-3);font-size:12px}
+/* 호텔 결과: 목록 먼저, 지도는 그 아래 (주차는 기존대로 지도 먼저) */
+.results.listfirst{display:flex;flex-direction:column}
+/* 지정 안 한 자식은 order:0이라 제목 사이로 끼어든다(실측: About·Privacy 줄) — 기본을 뒤로 민다 */
+.results.listfirst>*{order:9}
+.results.listfirst>#rhead{order:0}.results.listfirst>.rtitle{order:1}
+.results.listfirst>#cards{order:2}
+.results.listfirst>#mapblock{order:3;margin-top:18px}
+.results.listfirst>#trust{order:4}
 .s22save{font-size:11.5px;color:var(--brand);align-self:center}
 .s22sub{display:block;font-size:12px;color:var(--ink-3);margin-top:2px}
 .s22park{font-size:12px;color:var(--ink-2);margin-top:6px;padding-top:6px;border-top:1px dashed var(--line)}
@@ -1099,14 +1108,16 @@ function badgeHtml(p){
     b += '<span class="fb">'+ICON_STAR+' '+p.fac.rating.avg+' ('+fmtRC(p.fac.rating.count)+') · via SpotHero</span>';
   return b;
 }
-/* pill = 블록 범죄 원판, 무조건 표시 (2026-07-12 유저 결정: 보호 승격이 'Hot block'을 지워버리면
-   위험한 동네의 실내 차고가 "Safe indoors"로만 보인다 — Anchorage 사례. 보호는 뱃지가 말하고,
-   블록 열기는 pill이 말한다. 둘의 긴장은 숨기지 않고 여행자에게 그대로 보여준다.) */
+/* pill = 블록 범죄 원판, 무조건 표시.
+   2026-07-12 결정의 의도는 그대로다 — 보호 승격(실내·상주)이 블록의 열기를 가리면 안 된다.
+   달라진 건 말하는 방식뿐(2026-07-29): 형용사 대신 그 시간대 실제 건수를 쓴다.
+   사이트의 다른 모든 지면에선 판정 형용사가 이미 테스트로 금지돼 있었고(qa-seo·qa-hotels·qa-tierb)
+   앱 알약에만 남아 있었다. 숫자가 더 정확하고, 색(pillClass)이 이미 강약을 말한다.
+   길이 주의: 알약은 뱃지들과 한 줄에 서므로 375px에서 줄을 밀지 않게 짧게 유지한다
+   (실측: "13 break-ins this afternoon"은 가로 스크롤을 만들었다). */
 function pillText(p){
   if (p.dataless) return 'No crime data yet';   // 범죄셀 없음 = "조용하다" 주장 금지 (G0-1)
-  if (p.z===0) return 'Quiet block '+tpil(p);
-  if (p.z===1) return 'Active block';
-  return 'Hot block';
+  return (p.n || 0) + ' ' + tpil(p);            // 예: "13 this afternoon" — 명사는 범례·본문이 이미 말한다
 }
 function pillClass(p){ return p.dataless ? 'na' : ['safe','warn','avoid'][p.z]; }
 /* ① 최근 사건 1줄 — 통계("34건")가 아니라 장면("월 6pm, 잠긴 차, 미검거")이 위험을 체감시킨다 */
@@ -1244,10 +1255,16 @@ function cardHtml(p){
   return '<div class="pcard">'+
     '<div class="cname">'+esc(p.name)+'</div>'+
     '<div class="fbrow">'+badges+'<span class="pill '+pillClass(p)+'">'+pillText(p)+'</span></div>'+
-    '<div class="cmeta"><span style="white-space:nowrap">'+typeLabel(p)+(p.paid?' · paid':'')+'</span><span style="white-space:nowrap">'+walkMin(p.dist)+' min walk</span>'+
-      (p.cell&&p.cell.hood?'<span>'+esc(p.cell.hood)+'</span>':'')+
-      // 정확창 견적 — 프록시 v2가 quote total(cents)을 이미 실어줌. 표시는 Phase 게이트 뒤(제휴 승인 시 플래그만).
-      (SHOW_PARTNER_DATA&&p.fac&&p.fac.price_cents!=null?'<span>$'+(p.fac.price_cents/100).toFixed(2)+' · your window</span>':'')+'</div>'+
+    // 구분자는 마크업에 실제 공백과 함께 넣는다. CSS의 span+span::before로만 넣으면 그 '·'가
+    // nowrap span '안쪽' 인라인 박스라 줄바꿈 기회가 안 생겨서, 긴 동네명이 붙어 흘러넘친다
+    // (실측 375px: "…paid4 min walkTenderloin"이 한 덩어리로 밀려 가로 스크롤 발생).
+    '<div class="cmeta">'+
+      ['<span style="white-space:nowrap">'+typeLabel(p)+(p.paid?' · paid':'')+'</span>',
+       '<span style="white-space:nowrap">'+walkMin(p.dist)+' min walk</span>']
+        .concat(p.cell&&p.cell.hood ? ['<span>'+esc(p.cell.hood)+'</span>'] : [])
+        // 정확창 견적 — 프록시 v2가 quote total(cents)을 이미 실어줌. 표시는 Phase 게이트 뒤(제휴 승인 시 플래그만).
+        .concat(SHOW_PARTNER_DATA&&p.fac&&p.fac.price_cents!=null ? ['<span>$'+(p.fac.price_cents/100).toFixed(2)+' · your window</span>'] : [])
+        .join(' <span class="sep">·</span> ')+'</div>'+
     (p.dataless?'':'<div class="cchip">'+countChip(p)+'</div>')+
     (sold?'<span class="soldnote">may be sold out for your exact time. Booking page will confirm.</span>':'')+
     '<div class="cfoot">'+
@@ -1473,6 +1490,8 @@ function render(){
   if ($('sitefoot')) $('sitefoot').style.display='none';
   $('results').classList.add('show');
   $('rhead').textContent='Safe parking near';   // 호텔 모드에서 돌아올 때 복원
+  $('results').classList.remove('listfirst');
+  if ($('tripBanner') && !$('tripBanner').dataset.dismissed) $('tripBanner').style.display='';
   $('destname').textContent = dest.name;
   var as = renderArea();
   window.__lastArea = as;   // browsebar 힌트가 지역 성격(조용/위험/데이터없음)을 읽음
@@ -2119,6 +2138,16 @@ function renderHotels(){
   if (!dest) return;
   $('hero').style.display='none'; $('pops').style.display='none'; $('herodemo').style.display='none';
   if ($('sitefoot')) $('sitefoot').style.display='none';
+  // 홈 전용 블록은 #hero 밖에 있어서 hero만 숨기면 결과 화면에 그대로 남는다 (실측 2026-07-29:
+  // 첫 호텔 카드가 1132px 아래 = 뷰포트 밖). 도시 스냅샷은 '검색 전' 사실 한 조각이고 렌터카는
+  // 다른 여정이라, 숙소를 이미 검색한 화면에서는 둘 다 답이 아니다. 트립닷컴 배너도 카드마다
+  // 링크가 붙은 뒤로는 중복이다.
+  if ($('citysnap')) $('citysnap').style.display='none';
+  if ($('rentalhome')) $('rentalhome').style.display='none';
+  if ($('tripBanner')) $('tripBanner').style.display='none';
+  // 지도(374px)가 목록 위에 있으면 첫 호텔이 화면 밖으로 밀린다. 주차는 공간 문제라 지도가 먼저지만
+  // 숙소는 목록이 답이다 — flex order로만 내린다(지도 인스턴스를 옮기면 재초기화 위험).
+  $('results').classList.add('listfirst');
   $('results').classList.add('show');
   $('rhead').textContent='Where to stay near';
   $('destname').textContent=dest.name;
@@ -2142,7 +2171,7 @@ function renderHotels(){
     var sp = stayParams();
     html += quieterNearbyHtml();
     html += '<p class="bhint" style="font-size:12.5px;color:var(--ink-3);margin:2px 2px 10px">Hotels near here — quietest block first. Prices are the total for the stay, taxes and mandatory fees included.</p>';
-    for (var i=0;i<s22.length;i++) html += stay22Card(s22[i], i);
+    for (var i=0;i<s22.length;i++) html += stay22Card(s22[i], i, i ? s22[i-1] : null);
     lastListCount = s22.length; pinList = s22;   // 손잡이의 "N hotels"와 지도 핀도 실재고 기준으로
     if (mapMode && $('mapfab')) $('mapfab').innerHTML = fabSheetHtml();
     html += '<p class="bhint" style="font-size:11.5px;color:var(--ink-3);margin:8px 2px 0">'+
@@ -2223,6 +2252,10 @@ function setVMode(v){
   renderCitySnapshot();
   if (dest){
     if (v==='hotel'){ $('loading').style.display='block';
+      // 주차는 지도모드로 착지하므로, 거기서 탭만 바꾸면 호텔도 지도모드를 물려받아
+      // 지도가 전체화면을 차지하고 목록이 그 아래로 밀린다(실측: 첫 호텔 카드 962px).
+      // 숙소는 목록이 답이니 모드를 푼다 — 지도는 손잡이로 언제든 다시 연다.
+      if (mapMode) setMapMode(false);
       Promise.all([loadHotelData(), loadStationData()]).then(function(){ $('loading').style.display='none'; renderHotels(); syncModeUrl(); });
     } else { render(); if (map&&mapReady){ applyModeLayers(); drawMapFocus(rank()); renderLegend(); renderLens(); } syncModeUrl(); }
   } else syncModeUrl();
@@ -2742,7 +2775,16 @@ function nearestGarage(h){
   var c = containingCell(best);          // 차고가 선 블록의 차량범죄 (walk가 아니라 risk 격자)
   return { f: best, d: Math.round(bd), c12: c ? (c.c12||0) : null };
 }
-function stay22Card(h, i){
+/* 같은 블록에 선 호텔은 같은 숫자를 이고 있다 (실측 2026-07-29: 유니언스퀘어 12곳 중 9곳이 '15건').
+   그걸 9번 찍으면 정보가 아니라 소음이고, 정작 다른 하나(73건)가 묻힌다.
+   블록이 바뀌는 첫 카드에만 블록 줄을 싣고, 같은 블록의 뒤 카드는 생략한다 —
+   목록이 블록당 오름차순이라 생략된 카드는 바로 위 블록에 속한다는 게 순서로 드러난다. */
+function sameBlock(a, b){
+  if (!a || !b) return false;
+  if (a.dataless || b.dataless) return a.dataless && b.dataless;
+  return a.cell && b.cell && a.cell === b.cell;
+}
+function stay22Card(h, i, prev){
   var s = stayParams();
   var groups = otaGroups(h);
   var meta = [];
@@ -2752,16 +2794,24 @@ function stay22Card(h, i){
   var detail = blockDetail(h.cell);
   var g = nearestGarage(h);
   var save = groups.length > 1 ? groups[groups.length-1].price - groups[0].price : 0;
+  var repeat = sameBlock(h, prev);
   return '<div class="s22card">'+
     (h.thumb ? '<img class="s22thumb" src="'+esc(h.thumb)+'" alt="" onerror="this.remove()">' : '') +
     '<div class="s22body">'+
       '<div class="s22name">'+(i+1)+'. '+esc(h.name)+'</div>'+
       '<div class="s22meta">'+esc(meta.join(' · '))+'</div>'+
-      '<div class="s22blk"><span class="s22dot" style="background:'+blockColor(h)+'"></span>'+hotelLine(h)+
-        (detail ? '<span class="s22sub">'+esc(detail)+'</span>' : '')+'</div>'+
+      (repeat ? '<div class="s22blk same"><span class="s22dot" style="background:'+blockColor(h)+'"></span>same block as above</div>'
+              : '<div class="s22blk"><span class="s22dot" style="background:'+blockColor(h)+'"></span>'+hotelLine(h)+
+                (detail ? '<span class="s22sub">'+esc(detail)+'</span>' : '')+'</div>')+
       // 차 얘기는 OTA가 "Parking: paid"에서 끝내는 자리다. 우리는 그 차고 블록의 건수까지 안다.
-      (g ? '<div class="s22park">Parking: '+esc(String(g.f.title||'garage').split(' - ').slice(-1)[0]).slice(0,34)+
-            ' · '+g.d+' m'+(g.c12!=null ? ' · <span style="white-space:nowrap">'+g.c12+' break-ins on that block, past 12 mo</span>' : '')+'</div>' : '')+
+      (function(){
+        var bits = [];
+        if (g) bits.push('Parking: '+esc(String(g.f.title||'garage').split(' - ').slice(-1)[0]).slice(0,30)+
+          ' '+g.d+' m'+(g.c12!=null ? ' <span style="white-space:nowrap">('+g.c12+' break-ins on that block)</span>' : ''));
+        var st = nearestStation(h);   // 역이 없으면 줄을 안 만든다 — "역 없음"은 사실이 아니라 낙인이 된다
+        if (st) bits.push('<span style="white-space:nowrap">'+esc(st.s.name)+' station '+st.d+' m</span>');
+        return bits.length ? '<div class="s22park">'+bits.join(' · ')+'</div>' : '';
+      })()+
       '<div class="s22otas">'+ groups.map(function(o, gi){
         return '<a class="s22ota'+(gi===0&&save>0?' best':'')+'" href="'+esc(o.url)+'" target="_blank" rel="noopener nofollow sponsored">'+
           esc(o.vias.join(' · '))+' <b>$'+o.price+'</b></a>';
