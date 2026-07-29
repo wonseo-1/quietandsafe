@@ -323,7 +323,14 @@ body.mapmode .maplegend{position:absolute;left:10px;bottom:76px;right:auto;max-w
 .s22ota{font-size:12px;text-decoration:none;color:var(--brand);border:1px solid var(--line-2);border-radius:999px;padding:4px 10px;white-space:nowrap}
 .s22ota b{font-weight:700}
 .s22ota.alt{color:var(--ink-3)}
-.s22ota.best{border-color:var(--brand)}
+.s22ota.best{border-color:var(--brand);background:var(--brand);color:#fff}
+.s22ota.best b{color:#fff}
+.s22ota .pn{opacity:.65;font-size:11px;margin-left:2px}
+.s22save{font-size:11.5px;margin-left:6px;opacity:.9}
+.blkhead{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 6px;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin:14px 0 8px;font-size:13px;color:var(--ink-2)}
+.blkhead b{color:var(--ink)}
+.blkhead .blksub{width:100%;font-size:12px;color:var(--ink-3);margin-top:2px}
+.blkhead .blkn{margin-left:auto;font-size:12px;color:var(--ink-3);white-space:nowrap}
 .s22skel{pointer-events:none}
 .s22skel .s22thumb{background:var(--paper)}
 .s22skel .skl{height:11px;border-radius:5px;background:var(--paper);margin:5px 0}
@@ -338,7 +345,6 @@ body.mapmode .maplegend{position:absolute;left:10px;bottom:76px;right:auto;max-w
 .results.listfirst>#cards{order:2}
 .results.listfirst>#mapblock{order:3;margin-top:18px}
 .results.listfirst>#trust{order:4}
-.s22save{font-size:11.5px;color:var(--brand);align-self:center}
 .s22sub{display:block;font-size:12px;color:var(--ink-3);margin-top:2px}
 .s22park{font-size:12px;color:var(--ink-2);margin-top:6px;padding-top:6px;border-top:1px dashed var(--line)}
 .quieter{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:11px 14px;margin:12px 0 2px}
@@ -2170,8 +2176,21 @@ function renderHotels(){
   if (s22 && s22.length){
     var sp = stayParams();
     html += quieterNearbyHtml();
-    html += '<p class="bhint" style="font-size:12.5px;color:var(--ink-3);margin:2px 2px 10px">Hotels near here — quietest block first. Prices are the total for the stay, taxes and mandatory fees included.</p>';
-    for (var i=0;i<s22.length;i++) html += stay22Card(s22[i], i, i ? s22[i-1] : null);
+    // 블록 사실은 목록 위에 한 번. 카드마다 반복하면 (a) 같은 숫자가 12번 찍혀 소음이고
+    // (b) 생략하면 '데이터 없음 = 괜찮음'으로 읽히고 (c) 번호 1·2·3이 없는 안전순위를 주장한다.
+    // 실측: 유니언스퀘어 호텔 12곳이 셀 1개(15건)에 몰려 있다 — 이 목록은 안전으로 못 가른다.
+    html += '<p class="bhint" style="font-size:12.5px;color:var(--ink-3);margin:2px 2px 10px">'+
+      s22.length+' hotels &middot; fewest robberies &amp; aggravated assaults per block (police, 12 mo) &middot; '+
+      'prices = '+sp.nights+'-night totals, tax and mandatory fees in</p>';
+    var gi = 0;
+    for (var i=0;i<s22.length;i++){
+      var h2 = s22[i], prev2 = i ? s22[i-1] : null;
+      if (!sameBlock(h2, prev2)){
+        gi = 0;
+        html += blockHeaderHtml(h2, s22, i);
+      }
+      html += stay22Card(h2, gi++, prev2);
+    }
     lastListCount = s22.length; pinList = s22;   // 손잡이의 "N hotels"와 지도 핀도 실재고 기준으로
     if (mapMode && $('mapfab')) $('mapfab').innerHTML = fabSheetHtml();
     html += '<p class="bhint" style="font-size:11.5px;color:var(--ink-3);margin:8px 2px 0">'+
@@ -2234,7 +2253,12 @@ function applyVModeChrome(){   // 모드가 화면 전체를 바꾼다 (에어�
   for (var i=0;i<tabs.length;i++) tabs[i].classList.toggle('on', tabs[i].getAttribute('data-v')===vMode);
   $('gobtn').textContent = hotel ? 'Find a safe stay' : 'Find safe parking';
   $('whenrow').style.display = hotel ? 'none' : '';
-  if ($('stayrow')) $('stayrow').style.display = hotel ? '' : 'none';   // 호텔은 '언제 몇 박' — 주차의 When과 질문이 다르다
+  if ($('stayrow')){
+    $('stayrow').style.display = hotel ? '' : 'none';   // 호텔은 '언제 몇 박' — 주차의 When과 질문이 다르다
+    // 접어두면 유저가 안 건드리고, 기본값(오늘+30일)의 가격을 '자기 여행 가격'으로 읽는다.
+    // 날짜가 틀린 가격은 단위가 틀린 가격보다 나쁘다 — 요약이 항상 보이게 둔다.
+    $('stayrow').classList.toggle('on', hotel);
+  }
   if ($('heroH1')) $('heroH1').innerHTML = hotel ? 'Stay where the streets<br>are quiet at night.' : 'Park where they<br>don’t break in.';
   if ($('heroP')) $('heroP').textContent = hotel
     ? 'See real robbery & assault records for every block before you book. Free, no app.'
@@ -2759,7 +2783,7 @@ function blockDetail(c){
     var dark = Math.round((((b.evening|0)+(b.night|0))/tot)*100);
     bits.push(dark+'% after 6pm');
   }
-  if (c.c12 >= 5 && c.c6 != null) bits.push(c.c6+' in the last 6 mo');
+  if (c.c12 >= 5 && c.c6 != null) bits.push(c.c6+' of them in the last 6 mo');   // 'of them' 없으면 15+5=20으로 읽힌다
   return bits.join(' · ');
 }
 /* 호텔 옆의 "차는 어디 대지" — 호텔 발렛은 SF에서 1박 $60~90인데 OTA는 "Parking: paid"에서 끝난다.
@@ -2784,6 +2808,19 @@ function sameBlock(a, b){
   if (a.dataless || b.dataless) return a.dataless && b.dataless;
   return a.cell && b.cell && a.cell === b.cell;
 }
+/* 이 블록에 몇 곳이 있고, 그 블록이 어떤 곳인지 — 한 번만 말한다.
+   숫자가 카드가 아니라 블록에 붙어 있다는 게 눈으로 드러나야 "이 호텔의 범죄"로 안 읽힌다. */
+function blockHeaderHtml(h, list, from){
+  var n = 0;
+  for (var i=from;i<list.length;i++){ if (!sameBlock(list[i], h)) break; n++; }
+  var d = blockDetail(h.cell);
+  var body = h.dataless ? 'Outside the tracked area — no street-crime data for this block'
+    : hotelLine(h).replace(/ · <span style="white-space:nowrap">within a block<\/span>/, '');
+  return '<div class="blkhead"><span class="s22dot" style="background:'+blockColor(h)+'"></span>'+
+    '<b>This block</b> · '+body+
+    (d ? '<span class="blksub">'+esc(d)+'</span>' : '')+
+    '<span class="blkn">'+n+(n===1?' hotel here':' hotels here')+'</span></div>';
+}
 function stay22Card(h, i, prev){
   var s = stayParams();
   var groups = otaGroups(h);
@@ -2794,30 +2831,32 @@ function stay22Card(h, i, prev){
   var detail = blockDetail(h.cell);
   var g = nearestGarage(h);
   var save = groups.length > 1 ? groups[groups.length-1].price - groups[0].price : 0;
+  var showSave = save >= 25 && groups.length > 1 && save / groups[groups.length-1].price >= 0.05;
   var repeat = sameBlock(h, prev);
   return '<div class="s22card">'+
     (h.thumb ? '<img class="s22thumb" src="'+esc(h.thumb)+'" alt="" onerror="this.remove()">' : '') +
     '<div class="s22body">'+
       '<div class="s22name">'+(i+1)+'. '+esc(h.name)+'</div>'+
       '<div class="s22meta">'+esc(meta.join(' · '))+'</div>'+
-      (repeat ? '<div class="s22blk same"><span class="s22dot" style="background:'+blockColor(h)+'"></span>same block as above</div>'
-              : '<div class="s22blk"><span class="s22dot" style="background:'+blockColor(h)+'"></span>'+hotelLine(h)+
-                (detail ? '<span class="s22sub">'+esc(detail)+'</span>' : '')+'</div>')+
+
       // 차 얘기는 OTA가 "Parking: paid"에서 끝내는 자리다. 우리는 그 차고 블록의 건수까지 안다.
       (function(){
         var bits = [];
-        if (g) bits.push('Parking: '+esc(String(g.f.title||'garage').split(' - ').slice(-1)[0]).slice(0,30)+
-          ' '+g.d+' m'+(g.c12!=null ? ' <span style="white-space:nowrap">('+g.c12+' break-ins on that block)</span>' : ''));
+        // "break-ins"만 쓰면 바로 위 강도·폭행 건수와 같은 종류로 읽힌다 — 차량털이라고 명시한다.
+        if (g) bits.push('Parking '+g.d+' m'+(g.c12!=null ? ' <span style="white-space:nowrap">('+g.c12+' car break-ins there, 12 mo)</span>' : ''));
         var st = nearestStation(h);   // 역이 없으면 줄을 안 만든다 — "역 없음"은 사실이 아니라 낙인이 된다
         if (st) bits.push('<span style="white-space:nowrap">'+esc(st.s.name)+' station '+st.d+' m</span>');
         return bits.length ? '<div class="s22park">'+bits.join(' · ')+'</div>' : '';
       })()+
+      // 가격에 박수를 붙인다 — OTA 습관은 '1박 요금'이라, 3박 총액을 그냥 보여주면 3배 비싸 보인다.
+      // (기본값이 1박이라 총액=1박이 우연히 맞아떨어져 그 함정이 안 보였다.)
+      // 차액 뱃지는 의미 있을 때만: $25 미만이거나 5% 미만이면 광고처럼 보이기만 하고 결정에 안 쓰인다.
+      // 가격 없는 브랜드 알약(Trip.com)은 뺀다 — 데이터 없는 브랜드 버튼이 카드에서 제일 광고처럼 보인다.
       '<div class="s22otas">'+ groups.map(function(o, gi){
-        return '<a class="s22ota'+(gi===0&&save>0?' best':'')+'" href="'+esc(o.url)+'" target="_blank" rel="noopener nofollow sponsored">'+
-          esc(o.vias.join(' · '))+' <b>$'+o.price+'</b></a>';
+        return '<a class="s22ota'+(gi===0?' best':'')+'" href="'+esc(o.url)+'" target="_blank" rel="noopener nofollow sponsored">'+
+          esc(o.vias[0])+' <b>$'+o.price+'</b><span class="pn">/'+s.nights+'n</span>'+
+          (gi===0 && showSave ? ' <span class="s22save">&minus;$'+save+'</span>' : '')+'</a>';
       }).join('') +
-      (save > 0 ? '<span class="s22save">$'+save+' less</span>' : '') +
-      '<a class="s22ota alt" href="'+TRIP_HOTELS.urlFor(h)+'" target="_blank" rel="noopener nofollow sponsored">Trip.com</a>'+
       '<a class="s22ota alt" href="'+mapUrl(h)+'" target="_blank" rel="noopener">Maps</a></div>'+
     '</div></div>';
 }
@@ -3149,7 +3188,7 @@ if (window.__CURBSAFE_TEST__) window.__curbsafe = {
   allHoodRanks: allHoodRanks, hotelsInHood: hotelsInHood, tripHoodUrl: tripHoodUrl, hoodCard: hoodCardHtml,
   initTripBanner: initTripBanner,   // 트립닷컴 배너 (2026-07-23) — 재부팅 시 dismiss 유지 검증용
   // Stay22 실재고 (2026-07-28) — 네트워크 없이 카드 규칙만 검증하기 위한 훅
-  stay22Card: stay22Card, stayParams: stayParams, blockColor: blockColor
+  stay22Card: stay22Card, stayParams: stayParams, blockColor: blockColor, blockHeader: blockHeaderHtml
 };
 
 })();
