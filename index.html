@@ -69,7 +69,7 @@ header{position:sticky;top:0;z-index:30;background:rgba(250,249,246,.92);backdro
 .tripbanner a:hover{text-decoration:underline}
 .tripbanner button{background:none;border:none;color:var(--ink-3);cursor:pointer;font-size:16px;line-height:1;padding:2px 0 2px 4px;flex-shrink:0}
 .tripbanner button:hover{color:var(--ink)}
-.wordmark small{color:var(--ink-3);font-family:var(--sans);font-weight:400;font-size:12px;margin-left:8px;letter-spacing:.02em}
+.wordmark small{display:block;font-family:var(--sans);font-size:11px;letter-spacing:.02em;color:var(--ink-3);font-weight:400;margin-top:1px}
 .city{font-size:12px;color:var(--ink-2);border:1px solid var(--line-2);border-radius:999px;padding:4px 26px 4px 12px;font-family:inherit;-webkit-appearance:none;appearance:none;background:var(--card);cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%238f8a7e' fill='none' stroke-width='1.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center}
 
 /* hero (cold start) */
@@ -107,7 +107,9 @@ body.mapmode .searcharea{top:114px}   /* 렌즈 알약 아래로 한 줄 더 —
    현재 선택 도시의 실측 사실(가장 조용한 동네 vs 가장 활발한 동네, past 12mo)을 always-on으로 배치.
    2026-07-26 재작업: 한 문장으로 욱여넣었더니 "읽기 어렵고 줄넘김 이상함" — 항목별로 줄을 나눠
    스캔 가능한 표 형태로 재구성 (라벨 → 동네명 → 숫자, 각자 자기 줄). */
-.citysnap{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 15px;margin:10px 0 0}
+/* 증거 블록은 카드가 아니라 괘선에 매단다 — 도구(검색 카드)와 증거(데이터)가 다른 옷을 입는다 */
+.citysnap{border-left:2px solid var(--line-2);padding:2px 0 2px 14px;margin:12px 0 0}
+.citysnap .cs-num b{font-family:var(--serif);font-weight:600;font-size:14px;font-variant-numeric:tabular-nums;color:var(--ink)}
 .citysnap .cs-k{font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-3);margin-bottom:8px}
 .citysnap .cs-row{display:flex;align-items:baseline;gap:8px;padding:6px 0;border-top:1px solid var(--line)}
 .citysnap .cs-row:first-of-type{border-top:0;padding-top:0}
@@ -327,7 +329,8 @@ body.mapmode .maplegend{position:absolute;left:10px;bottom:76px;right:auto;max-w
 .s22ota.best b{color:#fff}
 .s22ota .pn{opacity:.65;font-size:11px;margin-left:2px}
 .s22save{font-size:11.5px;margin-left:6px;opacity:.9}
-.blkhead{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 6px;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin:14px 0 8px;font-size:13px;color:var(--ink-2)}
+.blkhead{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 6px;background:#f4f2ec;border:0;border-top:1px solid var(--line-2);border-bottom:1px solid var(--line-2);border-radius:0;margin:14px -18px 8px;padding:10px 18px;font-size:13px;color:var(--ink-2)}
+.blkhead b{font-family:var(--serif);font-variant-numeric:tabular-nums}
 .blkhead b{color:var(--ink)}
 .blkhead .blksub{width:100%;font-size:12px;color:var(--ink-3);margin-top:2px}
 .blkhead .blkn{margin-left:auto;font-size:12px;color:var(--ink-3);white-space:nowrap}
@@ -335,7 +338,18 @@ body.mapmode .maplegend{position:absolute;left:10px;bottom:76px;right:auto;max-w
 .s22skel .s22thumb{background:var(--paper)}
 .s22skel .skl{height:11px;border-radius:5px;background:var(--paper);margin:5px 0}
 .s22skel .skl.w70{width:70%}.s22skel .skl.w45{width:45%}.s22skel .skl.w60{width:60%}
-.s22h3{font-size:14px;margin:22px 2px 4px}
+/* ── 시각 체계 (2026-07-29 외부 진단 반영) ─────────────────────────────
+   Fraunces = 기록의 목소리(범죄 카운트), 산세리프 = 인터페이스(가격·거리·버튼).
+   가격이 산세리프에 남는 것이 중요하다 — 상거래와 경찰 데이터가 시각적으로 분리된다. */
+.n{font-family:var(--serif);font-weight:600;font-size:1.12em;font-variant-numeric:tabular-nums;font-feature-settings:"tnum";color:var(--ink)}
+/* 원장 헤드 — 라벨이 괘선 위에 앉는다: '장부'의 시각 언어. 섹션 라벨 통일 장치 */
+.s22h3{font-size:12px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--ink);border-bottom:1px solid var(--line-2);padding-bottom:7px;margin:26px 2px 12px}
+/* 블록 탤리 — 추적 블록 1개당 사각형 1개, 지도 범례와 같은 임계값으로 칠한다.
+   지도의 축소판 = 이 사이트만 가질 수 있는 마크. 항상 텍스트 카운트와 동행(색 단독 금지). */
+.tally{display:inline-flex;gap:2px;align-items:center;vertical-align:-1px;margin-right:6px}
+.tally i{width:6px;height:6px;border-radius:1px;background:var(--line-2)}
+.tally .tq{background:#22C55E}.tally .tm{background:#EAB308}.tally .tb{background:#EF4444}
+
 .s22blk.same{color:var(--ink-3);font-size:12px}
 /* 호텔 결과: 목록 먼저, 지도는 그 아래 (주차는 기존대로 지도 먼저) */
 .results.listfirst{display:flex;flex-direction:column}
@@ -1204,7 +1218,7 @@ function renderArea(){
   // 필요없는 정보 빼고" — unsolved·stolen·tent-camp 분해, peak 요일, 헤드라인과 중복되는 시간대 전부 삭제.
   // 남긴 것: 건수·반경·기간·순위%만 — 판정을 뒷받침하는 최소 근거).
   var count = a.nTod
-    ? '<span style="white-space:nowrap"><b>'+a.nTod+(a.nTod===1?' break-in or theft':' break-ins & thefts')+'</b></span> · <span style="white-space:nowrap">~3 blocks</span> · <span style="white-space:nowrap">past 12 mo</span>'+
+    ? '<span style="white-space:nowrap"><b class="n">'+a.nTod+'</b><b>'+(a.nTod===1?' break-in or theft':' break-ins & thefts')+'</b></span> · <span style="white-space:nowrap">~3 blocks</span> · <span style="white-space:nowrap">past 12 mo</span>'+
       (function(){ var t=a.lvl>=1?pctileTop(a.maxC12):null;
         return t!=null?' · <span style="white-space:nowrap">top '+t+'% of '+esc(CITY.name)+' blocks</span>':''; })()
     : 'None logged · <span style="white-space:nowrap">~3 blocks</span> · <span style="white-space:nowrap">past 12 mo</span>';
@@ -1962,10 +1976,23 @@ function renderCitySnapshot(){
   var qRate=quiet.c12/quiet.cells, bRate=busy.c12/busy.cells;
   var gap = qRate>0 ? bRate/qRate : null;
   var noun = isHotel ? 'robberies & assaults' : 'break-ins & thefts';
+  // 탤리 = 그 동네의 추적 블록당 사각형 1개, 지도 범례와 같은 임계값(호텔 0/6/20+, 주차 0/3/10+).
+  // 새 척도를 만들지 않는다 — 지도가 이미 하는 주장(범례)의 축소판일 뿐이다. 12개 초과는 비례 샘플.
+  var tallyOf = function(hood){
+    var cells = (isHotel ? WCELLS : CELLS).filter(function(c){ return c.hood===hood && c.c12!=null; })
+      .map(function(c){ return c.c12; }).sort(function(x,y){ return x-y; });
+    if (!cells.length) return '';
+    var pick = cells.length<=12 ? cells : cells.filter(function(_,i){ return i % Math.ceil(cells.length/12) === 0; }).slice(0,12);
+    // 라벨은 전체를 센다 — 샘플만 세면 라벨이 스스로 모순된다 ("18 blocks: 2+5+2")
+    var lo = isHotel?6:3, hi = isHotel?20:10, q=0,m=0,b=0;
+    for (var ci=0; ci<cells.length; ci++){ var v0=cells[ci]; if (v0<lo) q++; else if (v0<hi) m++; else b++; }
+    var sq = pick.map(function(v){ return '<i class="'+(v<lo?'tq':v<hi?'tm':'tb')+'"></i>'; }).join('');
+    return '<span class="tally" role="img" aria-label="'+cells.length+' blocks: '+q+' low, '+m+' mid, '+b+' high">'+sq+'</span>';
+  };
   var row = function(tag, a){
     return '<div class="cs-row"><span class="cs-tag">'+tag+'</span>'+
       '<button type="button" class="cs-hood" data-hood="'+esc(a.hood)+'">'+esc(a.hood)+'</button>'+
-      '<span class="cs-num">'+a.c12+' &middot; '+a.cells+' blk'+(a.cells===1?'':'s')+'</span></div>';
+      '<span class="cs-num">'+tallyOf(a.hood)+'<b>'+a.c12+'</b> &middot; '+a.cells+' blk'+(a.cells===1?'':'s')+'</span></div>';
   };
   var gapTxt = gap ? '~'+(gap>=10?Math.round(gap):Math.round(gap*10)/10)+'x more '+noun+' per block, same city'
                     : 'no reported '+noun+' at '+esc(quiet.hood);
