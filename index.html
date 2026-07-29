@@ -323,6 +323,14 @@ body.mapmode .maplegend{position:absolute;left:10px;bottom:76px;right:auto;max-w
 .s22ota{font-size:12px;text-decoration:none;color:var(--brand);border:1px solid var(--line-2);border-radius:999px;padding:4px 10px;white-space:nowrap}
 .s22ota b{font-weight:700}
 .s22ota.alt{color:var(--ink-3)}
+.s22ota.best{border-color:var(--brand)}
+.s22save{font-size:11.5px;color:var(--brand);align-self:center}
+.s22sub{display:block;font-size:12px;color:var(--ink-3);margin-top:2px}
+.s22park{font-size:12px;color:var(--ink-2);margin-top:6px;padding-top:6px;border-top:1px dashed var(--line)}
+.quieter{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:11px 14px;margin:12px 0 2px}
+.quieter b{font-size:13.5px}
+.quieter .qrow{font-size:13.5px;color:var(--ink-2);margin-top:4px}
+.quieter .qnote{font-size:11.5px;color:var(--ink-3);margin-top:5px}
 .gobtn{display:block;width:100%;margin:0;font:inherit;font-size:15.5px;font-weight:700;color:#fff;background:var(--brand);border:0;border-radius:0 0 16px 16px;padding:14px;cursor:pointer}
 .gobtn:hover{opacity:.92}
 .gobtn.armed{background:#1f6f45}
@@ -2141,6 +2149,7 @@ function renderHotels(){
   var s22 = STAY22.data && STAY22.key === stay22Key() ? STAY22.data.slice(0, 12) : null;
   if (s22 && s22.length){
     var sp = stayParams();
+    html += quieterNearbyHtml();
     html += '<p class="bhint" style="font-size:12.5px;color:var(--ink-3);margin:14px 2px 10px">Hotels near here — quietest block first. Prices are the total for the stay, taxes and mandatory fees included.</p>';
     for (var i=0;i<s22.length;i++) html += stay22Card(s22[i], i);
     lastListCount = s22.length; pinList = s22;   // 손잡이의 "N hotels"와 지도 핀도 실재고 기준으로
@@ -2199,7 +2208,7 @@ function setVMode(v){
   renderCitySnapshot();
   if (dest){
     if (v==='hotel'){ $('loading').style.display='block';
-      loadHotelData().then(function(){ $('loading').style.display='none'; renderHotels(); syncModeUrl(); });
+      Promise.all([loadHotelData(), loadStationData()]).then(function(){ $('loading').style.display='none'; renderHotels(); syncModeUrl(); });
     } else { render(); if (map&&mapReady){ applyModeLayers(); drawMapFocus(rank()); renderLegend(); renderLens(); } syncModeUrl(); }
   } else syncModeUrl();
 }
@@ -2316,7 +2325,7 @@ function commitDest(name,lat,lng,city){
   var mapFirst = window.innerWidth < 1020;   // 카카오맵 문법: 모바일은 지도가 기본 화면 (데스크톱은 스플릿뷰가 이미 지도 상주)
   if (vMode==='hotel'){   // 호텔 버티컬 — 주차 렌더·라이브 조회 대신 보행범죄 경로
     $('loading').style.display='block';
-    loadHotelData().then(function(){ $('loading').style.display='none'; renderHotels(); if (mapFirst) setMapMode(true); });
+    Promise.all([loadHotelData(), loadStationData()]).then(function(){ $('loading').style.display='none'; renderHotels(); if (mapFirst) setMapMode(true); });
     window.scrollTo({top:0,behavior:'smooth'});
     return;
   }
@@ -2673,31 +2682,104 @@ function loadStay22(){
     });
 }
 var OTA_NAME = { booking:'Booking.com', expedia:'Expedia', hotelscom:'Hotels.com', vrbo:'Vrbo' };
-function stay22Card(h, i){
-  var s = stayParams();
-  var others = [];
+
+/* 같은 값의 공급사는 하나로 묶는다 (2026-07-28 실측: 유니언스퀘어 12곳 중 7곳이 세 OTA 값이 완전히 동일,
+   Expedia와 Hotels.com은 12곳 중 11곳이 같다 — 같은 회사다). 칩 3개를 늘어놓으면 대부분 같은 숫자를
+   세 번 찍는 셈이라 노이즈다. 값이 갈릴 때만 차액이 눈에 띄게 한다 — 그게 실제로 쓸모 있는 유일한 경우다. */
+function otaGroups(h){
+  var byPrice = {}, order = [];
   for (var via in h.links){
     if (via.indexOf('_url') > 0) continue;
-    others.push({ via: via, price: h.links[via], url: h.links[via+'_url'] });
+    var p = h.links[via];
+    if (!byPrice[p]){ byPrice[p] = { price:+p, vias:[], url:h.links[via+'_url'] }; order.push(byPrice[p]); }
+    byPrice[p].vias.push(OTA_NAME[via]||via);
   }
-  others.sort(function(a,b){ return a.price-b.price; });
+  order.sort(function(a,b){ return a.price-b.price; });
+  return order;
+}
+// 블록의 성격 — 총합만으론 호텔에 안 맞는다. 호텔은 밤에 도착해 자는 상품이라 '언제'가 더 중요하고,
+// 좋아지는 중인지도 12개월 총합이 가린다. 둘 다 판정이 아니라 산수다.
+function blockDetail(c){
+  if (!c) return '';
+  var bits = [], b = c.bk12 || {};
+  var tot = (b.morning|0)+(b.afternoon|0)+(b.evening|0)+(b.night|0);
+  if (tot >= 5){   // 표본이 너무 적으면 비율이 요동친다 — 5건 미만은 비율을 주장하지 않는다
+    var dark = Math.round((((b.evening|0)+(b.night|0))/tot)*100);
+    bits.push(dark+'% after 6pm');
+  }
+  if (c.c12 >= 5 && c.c6 != null) bits.push(c.c6+' in the last 6 mo');
+  return bits.join(' · ');
+}
+/* 호텔 옆의 "차는 어디 대지" — 호텔 발렛은 SF에서 1박 $60~90인데 OTA는 "Parking: paid"에서 끝난다.
+   우리는 예약 가능한 차고(SpotHero)와 그 차고가 선 블록의 차량털이 건수를 둘 다 갖고 있다. */
+function nearestGarage(h){
+  if (!FACILITIES || !FACILITIES.length) return null;
+  var best = null, bd = 1e9;
+  for (var i=0;i<FACILITIES.length;i++){
+    var f = FACILITIES[i], d = hav(f, h);
+    if (d < bd){ bd = d; best = f; }
+  }
+  if (!best || bd > 600) return null;   // 600m 넘으면 '이 호텔의 주차'라고 부르기 어렵다
+  var c = containingCell(best);          // 차고가 선 블록의 차량범죄 (walk가 아니라 risk 격자)
+  return { f: best, d: Math.round(bd), c12: c ? (c.c12||0) : null };
+}
+function stay22Card(h, i){
+  var s = stayParams();
+  var groups = otaGroups(h);
   var meta = [];
   if (h.dist != null) meta.push(Math.round(h.dist)+' m');
   if (h.score) meta.push(h.score+'/10'+(h.reviews?' ('+h.reviews.toLocaleString()+')':''));
   if (h.free) meta.push('free cancellation');
+  var detail = blockDetail(h.cell);
+  var g = nearestGarage(h);
+  var save = groups.length > 1 ? groups[groups.length-1].price - groups[0].price : 0;
   return '<div class="s22card">'+
     (h.thumb ? '<img class="s22thumb" src="'+esc(h.thumb)+'" alt="" onerror="this.remove()">' : '') +
     '<div class="s22body">'+
       '<div class="s22name">'+(i+1)+'. '+esc(h.name)+'</div>'+
       '<div class="s22meta">'+esc(meta.join(' · '))+'</div>'+
-      '<div class="s22blk"><span class="s22dot" style="background:'+blockColor(h)+'"></span>'+hotelLine(h)+'</div>'+
-      '<div class="s22otas">'+ others.map(function(o){
-        return '<a class="s22ota" href="'+esc(o.url)+'" target="_blank" rel="noopener nofollow sponsored">'+
-          esc(OTA_NAME[o.via]||o.via)+' <b>$'+o.price+'</b></a>';
+      '<div class="s22blk"><span class="s22dot" style="background:'+blockColor(h)+'"></span>'+hotelLine(h)+
+        (detail ? '<span class="s22sub">'+esc(detail)+'</span>' : '')+'</div>'+
+      // 차 얘기는 OTA가 "Parking: paid"에서 끝내는 자리다. 우리는 그 차고 블록의 건수까지 안다.
+      (g ? '<div class="s22park">Parking: '+esc(String(g.f.title||'garage').split(' - ').slice(-1)[0]).slice(0,34)+
+            ' · '+g.d+' m'+(g.c12!=null ? ' · <span style="white-space:nowrap">'+g.c12+' break-ins on that block, past 12 mo</span>' : '')+'</div>' : '')+
+      '<div class="s22otas">'+ groups.map(function(o, gi){
+        return '<a class="s22ota'+(gi===0&&save>0?' best':'')+'" href="'+esc(o.url)+'" target="_blank" rel="noopener nofollow sponsored">'+
+          esc(o.vias.join(' · '))+' <b>$'+o.price+'</b></a>';
       }).join('') +
+      (save > 0 ? '<span class="s22save">$'+save+' less</span>' : '') +
       '<a class="s22ota alt" href="'+TRIP_HOTELS.urlFor(h)+'" target="_blank" rel="noopener nofollow sponsored">Trip.com</a>'+
       '<a class="s22ota alt" href="'+mapUrl(h)+'" target="_blank" rel="noopener">Maps</a></div>'+
     '</div></div>';
+}
+/* "여기가 시끄러우면 어디로?" — 목적지 블록이 도시 중앙값보다 눈에 띄게 높을 때만 뜬다.
+   판정("위험하다")이 아니라 사실 두 개로 답한다: 더 조용한 동네 + 거기서 가장 가까운 역까지의 거리.
+   역이 없으면 그 줄을 뺀다 — "역 없음"을 강조하면 그게 낙인이 된다. */
+function nearestStation(pt){
+  if (!CITY_STATIONS || !CITY_STATIONS.length) return null;
+  var best=null, bd=1e9;
+  for (var i=0;i<CITY_STATIONS.length;i++){ var d=hav(CITY_STATIONS[i], pt); if (d<bd){ bd=d; best=CITY_STATIONS[i]; } }
+  return best && bd<=1600 ? { s:best, d:Math.round(bd) } : null;
+}
+function quieterNearbyHtml(){
+  if (!dest || !WCELLS.length) return '';
+  var here = containingWalkCell(dest);
+  var ranks = nearbyHoodRanks();
+  if (!here || ranks.length < 2) return '';
+  // 아무 데서나 뜨면 신호가 죽는다. 두 조건을 다 넘을 때만: 표본이 충분히 크고,
+  // 대안이 최소 3배 조용할 것. (실측: 유니언스퀘어 블록 15건은 안 뜨고, 73건짜리 블록은 뜬다)
+  if (here.c12 < 20) return '';
+  var alt = null;
+  for (var i=0;i<ranks.length;i++){
+    var r = ranks[i], rate = r.c12/r.cells;
+    if (r.hood !== here.hood && rate * 3 <= here.c12){ alt = r; break; }   // 랭킹은 이미 블록당 오름차순
+  }
+  if (!alt) return '';
+  var st = nearestStation(alt);
+  return '<div class="quieter"><b>Quieter within a short ride</b>'+
+    '<div class="qrow">'+esc(alt.hood)+' · <span style="white-space:nowrap">'+(alt.c12/alt.cells).toFixed(1)+' per tracked block</span>'+
+    (st ? ' · <span style="white-space:nowrap">'+esc(st.s.name)+' station '+st.d+' m</span>' : '')+'</div>'+
+    '<div class="qnote">This block: '+here.c12+' · past 12 months. Area facts, not a guarantee about any address.</div></div>';
 }
 // 지도 범례와 같은 색 계단 — 새 문법을 만들지 않는다. 격자 밖은 회색(0건과 동급 아님).
 function blockColor(h){
