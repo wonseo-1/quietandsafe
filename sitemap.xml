@@ -204,6 +204,10 @@
   <url><loc>https://quietandsafe.com/p/tam/hyde-park-village/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/p/tam/channelside/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/p/tam/curtis-hixon-waterfront-park/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/p/mia/wynwood-walls/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/p/mia/bayside-marketplace/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/p/mia/little-havana/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/p/mia/vizcaya-museum-and-gardens/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/p/bos/fenway-park/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/p/bos/boston-common/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/p/bos/faneuil-hall/</loc><lastmod>2026-07-30</lastmod></url>
@@ -235,6 +239,7 @@
   <url><loc>https://quietandsafe.com/hotels/kc/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/hotels/sac/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/hotels/tam/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/mia/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/hotels/bos/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/parking/sf/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/parking/la/</loc><lastmod>2026-07-30</lastmod></url>
@@ -261,6 +266,7 @@
   <url><loc>https://quietandsafe.com/parking/kc/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/parking/sac/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/parking/tam/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/mia/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/parking/bos/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/hotels/sf/noe-valley/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/hotels/sf/golden-gate-park/</loc><lastmod>2026-07-30</lastmod></url>
@@ -1066,6 +1072,19 @@
   <url><loc>https://quietandsafe.com/hotels/tam/rainbow-heights/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/hotels/tam/downtown-river-arts/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/hotels/tam/historic-ybor/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/mia/flagami/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/mia/coral-way/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/mia/coconut-grove/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/mia/upper-east-side/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/mia/allapattah/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/mia/edgewater/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/mia/little-havana/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/mia/little-haiti/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/mia/brickell/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/mia/wynwood/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/mia/downtown/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/mia/model-city/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/mia/overtown/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/parking/sf/presidio/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/parking/sf/west-of-twin-peaks/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/parking/sf/seacliff/</loc><lastmod>2026-07-30</lastmod></url>
@@ -2007,6 +2026,19 @@
   <url><loc>https://quietandsafe.com/parking/tam/historic-ybor/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/parking/tam/downtown-river-arts/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/parking/tam/seminole-heights-east/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/mia/coconut-grove/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/mia/flagami/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/mia/coral-way/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/mia/upper-east-side/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/mia/little-haiti/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/mia/allapattah/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/mia/little-havana/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/mia/brickell/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/mia/model-city/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/mia/overtown/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/mia/edgewater/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/mia/wynwood/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/mia/downtown/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/incidents/sf/haight-ashbury/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/incidents/sf/marina/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/incidents/sf/pacific-heights/</loc><lastmod>2026-07-30</lastmod></url>
@@ -2866,6 +2898,20 @@
   <url><loc>https://quietandsafe.com/incidents/tam/ballast-point/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/incidents/tam/east-forest-hills/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/incidents/tam/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/incidents/mia/allapattah/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/incidents/mia/upper-east-side/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/incidents/mia/flagami/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/incidents/mia/overtown/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/incidents/mia/little-haiti/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/incidents/mia/little-havana/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/incidents/mia/wynwood/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/incidents/mia/edgewater/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/incidents/mia/model-city/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/incidents/mia/downtown/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/incidents/mia/coral-way/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/incidents/mia/coconut-grove/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/incidents/mia/brickell/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/incidents/mia/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/guides/sf/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/guides/la/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/guides/chi/</loc><lastmod>2026-07-30</lastmod></url>
@@ -2891,6 +2937,7 @@
   <url><loc>https://quietandsafe.com/guides/kc/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/guides/sac/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/guides/tam/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/guides/mia/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/guides/bos/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/guides/</loc><lastmod>2026-07-30</lastmod></url>
 </urlset>
