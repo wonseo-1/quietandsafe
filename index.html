@@ -1495,9 +1495,17 @@ function renderLugStrip(){
 $('cards').addEventListener('click',function(e){
   var t=e.target, b;
   if (t.closest && (b=t.closest('.hoodrow'))){
-    // 동네 카드 탭 = 지도 이동 + 그 자리에서 바로 정보 카드까지 (2026-07-23 유저: "여기서부터 어쩌라는지
-    // 모르겠음" — flyTo만 하고 끝내면 사용자가 육각형을 다시 찾아 눌러야 했음. 탭 한 번으로 결말까지.)
     var la=+b.getAttribute('data-lat'), ln=+b.getAttribute('data-lng'), hoodName=b.getAttribute('data-hood');
+    // 호텔 모드: 동네 탭 = 그 동네로 재검색 → 같은 Stay22 카드 흐름 (2026-07-30 유저: 지도 팝업 →
+    // 트립닷컴 경유가 "너무 힘들다" — 추천 동네도 본검색과 같은 흐름 하나로 통일. 조용함의 신호는
+    // 지도 팝업이 아니라 카드의 색점이 맡는다.) 주차 모드의 기존 동작(지도+정보카드)은 그대로.
+    if (vMode==='hotel' && hoodName && la && ln){
+      track('hood_card_open', {hood: hoodName, via: 'stay22-rerun'});
+      setDest(hoodName, la, ln);
+      return;
+    }
+    // 주차 모드 유지분 (2026-07-23 유저: "여기서부터 어쩌라는지 모르겠음" — flyTo만 하고 끝내면
+    // 사용자가 육각형을 다시 찾아 눌러야 했음. 탭 한 번으로 결말까지.)
     if (map && la && ln){
       if (typeof sheetOpen!=='undefined' && sheetOpen && typeof setSheet==='function') setSheet(false);
       try{ map.flyTo({center:[ln,la], zoom:14.6}); }catch(err){}
@@ -2273,9 +2281,11 @@ function renderHotels(){
     html += '<h3 class="s22h3">Quietest areas within a 15-min walk</h3>'+
       '<p class="bhint" style="font-size:12px;color:var(--ink-3);margin:0 2px 8px">Fewest reported robberies &amp; assaults per tracked block, past 12 months.</p>';
     for (var hi=0;hi<hoods.length;hi++){
-      var hd=hoods[hi];
+      var hd=hoods[hi], hr=hd.c12/hd.cells;
+      // 색점 = 지도 범례와 같은 눈금(블록당 건수, 호텔 임계 6/20) — "조용함"은 색이 말하고,
+      // 탭은 지도 팝업이 아니라 그 동네 Stay22 재검색으로 바로 간다 (2026-07-30 흐름 통일).
       html += '<div class="lugcard hoodrow" data-lat="'+hd.lat.toFixed(5)+'" data-lng="'+hd.lng.toFixed(5)+'" data-hood="'+esc(hd.hood)+'">'+
-        '<div class="lugtop"><b>'+(hi+1)+'. '+esc(hd.hood)+'</b><span class="hoodgo">view on map</span></div>'+
+        '<div class="lugtop"><b><span class="s22dot" style="background:'+(hr<6?'#22C55E':hr<20?'#EAB308':'#EF4444')+'"></span>'+esc(hd.hood)+'</b><span class="hoodgo">see hotels here →</span></div>'+
         '<p class="lugmeta"><span style="white-space:nowrap"><b>'+hd.c12+'</b> robberies &amp; assaults</span> · <span style="white-space:nowrap">'+hd.cells+' blocks tracked</span> · <span style="white-space:nowrap">past 12 mo</span></p></div>';
     }
   }
@@ -2940,8 +2950,13 @@ function quieterNearbyHtml(){
   }
   if (!alt) return '';
   var st = nearestStation(alt);
-  return '<div class="quieter"><b>Quieter within a short ride</b>'+
-    '<div class="qrow">'+esc(alt.hood)+' · <span style="white-space:nowrap">'+(alt.c12/alt.cells).toFixed(1)+' per tracked block</span>'+
+  var ar = alt.c12/alt.cells;
+  // 탭 = 그 동네로 Stay22 재검색 (2026-07-30 유저: 지도 팝업 → 트립닷컴 경유가 "너무 힘들다" —
+  // 추천도 본검색과 같은 카드 흐름 하나로. 조용함의 신호는 지도 범례와 같은 색점이 맡는다.)
+  return '<div class="quieter hoodrow" data-lat="'+alt.lat.toFixed(5)+'" data-lng="'+alt.lng.toFixed(5)+'" data-hood="'+esc(alt.hood)+'">'+
+    '<b><span class="s22dot" style="background:'+(ar<6?'#22C55E':ar<20?'#EAB308':'#EF4444')+'"></span>Quieter within a short ride</b>'+
+    '<span class="hoodgo" style="float:right">see hotels there →</span>'+
+    '<div class="qrow">'+esc(alt.hood)+' · <span style="white-space:nowrap">'+ar.toFixed(1)+' per tracked block</span>'+
     (st ? ' · <span style="white-space:nowrap">'+esc(st.s.name)+' station '+st.d+' m</span>' : '')+'</div>'+
     '<div class="qnote">This block: '+here.c12+' · past 12 months. Area facts, not a guarantee about any address.</div></div>';
 }
