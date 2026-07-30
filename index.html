@@ -11,8 +11,8 @@
   gtag('js', new Date());
   gtag('config', 'G-1QSJPMKT8E');
 </script>
-<title>Quiet & Safe — where to park & stay in 26 US cities, block by block</title>
-<meta name="description" content="Pick a quiet block to park and stay. Quiet & Safe maps every garage, lot and hotel near your destination in 26 US cities — quietest blocks first, grounded in public city records. Free, web-based, no app." />
+<title>Quiet & Safe — check the block before you book · hotels & parking, block by block</title>
+<meta name="description" content="Check the block before you book. Quiet & Safe maps reported crime for every block near your hotel or parking spot — hotel-area records in 32 US cities, parking in 54 — grounded in public police records. Free, web-based, no app." />
 <link rel="canonical" href="https://quietandsafe.com/" />
 <meta property="og:url" content="https://quietandsafe.com/" />
 <meta name="fo-verify" content="b7f40f1f-2fa9-49f7-bd1d-5604e5c55d5c" /> <!-- FlexOffers 사이트 소유권 확인, 2026-07-18 -->
@@ -469,14 +469,14 @@ body.searchopen .searchclose{display:flex;position:absolute;top:14px;right:14px;
        스타일 = 아이콘+알약 (2026-07-19 유저 확정: 에어비앤비·트립닷컴 실측 후 "알약형으로 교체" —
        DESIGN.md의 "테두리 알약 금지"는 배지/칩 규칙이고, 이 카테고리 전환 탭은 명시적 예외) -->
   <div class="vtabs" id="vtabs">
-    <button type="button" data-v="park" class="on"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13l1.6-4.8A2 2 0 016.5 7h11a2 2 0 011.9 1.2L21 13"/><path d="M3 13h18v4a1 1 0 01-1 1h-1a1 1 0 01-1-1v-1H6v1a1 1 0 01-1 1H4a1 1 0 01-1-1v-4z"/><circle cx="7.5" cy="17" r="1"/><circle cx="16.5" cy="17" r="1"/></svg>Parking</button>
-    <button type="button" data-v="hotel"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6.5a2 2 0 012-2h2.5a2 2 0 012 2V13"/><path d="M3 13h16.5a1.5 1.5 0 011.5 1.5V18"/><path d="M3 18v2M20 18v2"/><circle cx="6.8" cy="10.5" r="1.2"/></svg>Hotels</button>
+    <button type="button" data-v="hotel" class="on"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6.5a2 2 0 012-2h2.5a2 2 0 012 2V13"/><path d="M3 13h16.5a1.5 1.5 0 011.5 1.5V18"/><path d="M3 18v2M20 18v2"/><circle cx="6.8" cy="10.5" r="1.2"/></svg>Hotels</button>
+    <button type="button" data-v="park"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13l1.6-4.8A2 2 0 016.5 7h11a2 2 0 011.9 1.2L21 13"/><path d="M3 13h18v4a1 1 0 01-1 1h-1a1 1 0 01-1-1v-1H6v1a1 1 0 01-1 1H4a1 1 0 01-1-1v-4z"/><circle cx="7.5" cy="17" r="1"/><circle cx="16.5" cy="17" r="1"/></svg>Parking</button>
   </div>
 
   <!-- cold start -->
   <section class="hero" id="hero">
-    <h1 id="heroH1">Park where they<br>don’t break in.</h1>
-    <p id="heroP">See real break-in records for every block before you park. Free, no app, 49 US cities.</p>
+    <h1 id="heroH1">Check the block<br>before you book.</h1>
+    <p id="heroP">See real robbery &amp; assault records for every block before you book. Free, no app, 32 US cities.</p>
   </section>
 
   <!-- 요약 pill: 검색 후 알약이 이걸로 접힘 — 탭하면 다시 펼침 (에어비앤비 문법) -->
@@ -490,8 +490,8 @@ body.searchopen .searchclose{display:flex;position:absolute;top:14px;right:14px;
     <!-- 오버레이 전용 버티컬 탭 (2026-07-19 유저: 탭 열면 지도 밖 상단 탭이 가려져 렌터카·호텔 선택이 사라짐) —
          같은 .vtabs 클래스라 아래 document 위임 클릭·applyVModeChrome의 on-상태 동기화를 그대로 공유 */ -->
     <div class="vtabs vtabs-overlay" id="vtabsOverlay">
-      <button type="button" data-v="park" class="on"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13l1.6-4.8A2 2 0 016.5 7h11a2 2 0 011.9 1.2L21 13"/><path d="M3 13h18v4a1 1 0 01-1 1h-1a1 1 0 01-1-1v-1H6v1a1 1 0 01-1 1H4a1 1 0 01-1-1v-4z"/><circle cx="7.5" cy="17" r="1"/><circle cx="16.5" cy="17" r="1"/></svg>Parking</button>
-      <button type="button" data-v="hotel"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6.5a2 2 0 012-2h2.5a2 2 0 012 2V13"/><path d="M3 13h16.5a1.5 1.5 0 011.5 1.5V18"/><path d="M3 18v2M20 18v2"/><circle cx="6.8" cy="10.5" r="1.2"/></svg>Hotels</button>
+      <button type="button" data-v="hotel" class="on"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6.5a2 2 0 012-2h2.5a2 2 0 012 2V13"/><path d="M3 13h16.5a1.5 1.5 0 011.5 1.5V18"/><path d="M3 18v2M20 18v2"/><circle cx="6.8" cy="10.5" r="1.2"/></svg>Hotels</button>
+      <button type="button" data-v="park"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13l1.6-4.8A2 2 0 016.5 7h11a2 2 0 011.9 1.2L21 13"/><path d="M3 13h18v4a1 1 0 01-1 1h-1a1 1 0 01-1-1v-1H6v1a1 1 0 01-1 1H4a1 1 0 01-1-1v-4z"/><circle cx="7.5" cy="17" r="1"/><circle cx="16.5" cy="17" r="1"/></svg>Parking</button>
     </div>
     <div class="searchbox" id="searchbox">
       <!-- 도시선택 = 자체 줄 (2026-07-19 유저: 검색창 너비 실측 89px → 경쟁사(트립닷컴·SpotHero) 전부
@@ -552,7 +552,7 @@ body.searchopen .searchclose{display:flex;position:absolute;top:14px;right:14px;
         </select>
       </div>
     </div>
-    <button type="button" class="gobtn" id="gobtn">Find safe parking</button>
+    <button type="button" class="gobtn" id="gobtn">Check parking blocks</button>
   </div>
   <div class="shint"><button type="button" class="mapfind" id="mapfind">Find it on the map</button></div>
   <div class="citysnap" id="citysnap" style="display:none"></div>
@@ -631,7 +631,7 @@ body.searchopen .searchclose{display:flex;position:absolute;top:14px;right:14px;
     <div class="pickhint">Drag the map to your destination</div>
     <div class="pickpin"><svg width="30" height="40" viewBox="0 0 30 40" fill="currentColor"><path d="M15 0C6.7 0 0 6.7 0 15c0 10.5 15 25 15 25s15-14.5 15-25C30 6.7 23.3 0 15 0z"/><circle cx="15" cy="15" r="6" fill="#faf9f6"/></svg></div>
   </div>
-  <div class="pickfoot"><button class="pickgo" id="pickgo">Find safe parking here</button></div>
+  <div class="pickfoot"><button class="pickgo" id="pickgo">Check parking here</button></div>
 </div>
 
 <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
@@ -2310,7 +2310,7 @@ function applyVModeChrome(){   // 모드가 화면 전체를 바꾼다 (에어�
   var hotel = vMode==='hotel';
   var tabs=document.querySelectorAll('.vtabs button');
   for (var i=0;i<tabs.length;i++) tabs[i].classList.toggle('on', tabs[i].getAttribute('data-v')===vMode);
-  $('gobtn').textContent = hotel ? 'Find a safe stay' : 'Find safe parking';
+  $('gobtn').textContent = hotel ? 'Check hotel blocks' : 'Check parking blocks';
   $('whenrow').style.display = hotel ? 'none' : '';
   if ($('tripBanner')){   // 배너는 호텔 모드 전용 (dismiss 상태는 유지)
     var tbDis=false; try{ tbDis = localStorage.getItem('qs_tripbanner_dismissed')==='1'; }catch(e){}
@@ -2322,9 +2322,14 @@ function applyVModeChrome(){   // 모드가 화면 전체를 바꾼다 (에어�
     // 날짜가 틀린 가격은 단위가 틀린 가격보다 나쁘다 — 요약이 항상 보이게 둔다.
     $('stayrow').classList.toggle('on', hotel);
   }
-  if ($('heroH1')) $('heroH1').innerHTML = hotel ? 'Stay where the streets<br>are quiet at night.' : 'Park where they<br>don’t break in.';
+  // 판정어 정리 (2026-07-31, GPT-5.6-sol 검수): "don't break in"·"quiet at night"는 데이터가
+  // 보증 못 하는 약속이다(0건 블록 ≠ 안 털리는 곳). 헤드라인은 행동 지시("확인해라")로 —
+  // 사실만 말하고 판단은 사용자가 한다는 사이트 원칙과 같은 결.
+  // 도시 수는 CITIES에서 실계산 — 손으로 적은 26/49가 실제(32/54)와 어긋난 채 배포돼 있었다.
+  var nFull = Object.keys(CITIES).filter(function(k){ return !CITIES[k].nocrime; }).length;
+  if ($('heroH1')) $('heroH1').innerHTML = hotel ? 'Check the block<br>before you book.' : 'Check the block<br>before you park.';
   if ($('heroP')) $('heroP').textContent = hotel
-    ? 'See real robbery & assault records for every block before you book. Free, no app, '+Object.keys(CITIES).length+' US cities.'
+    ? 'See real robbery & assault records for every block before you book. Free, no app, '+nFull+' US cities.'
     : 'See real break-in records for every block before you park. Free, no app, '+Object.keys(CITIES).length+' US cities.';
   document.title = hotel ? 'Quiet & Safe — where to stay, block by block'
                          : 'Quiet & Safe — where to park, block by block';
@@ -2350,7 +2355,9 @@ function setVMode(v){
 function syncModeUrl(){
   try{
     var u=new URL(location.href);
-    if (vMode==='hotel') u.searchParams.set('mode','hotels'); else u.searchParams.delete('mode');
+    // 주차도 명시적으로 쓴다 (2026-07-31): 홈 기본이 호텔이 되면서, 주차 탭 상태를 mode 삭제로
+    // 표현하면 새로고침/공유 시 호텔로 되돌아간다 — 탭 선택이 URL에 살아남게 명시.
+    u.searchParams.set('mode', vMode==='hotel' ? 'hotels' : 'parking');
     history.replaceState(null,'',u.pathname+(u.search||''));
   }catch(e){}
 }
@@ -2638,7 +2645,7 @@ function pendDest(name,lat,lng,city){
   pending={name:name,lat:lat,lng:lng,city:city||''};
   $('q').value=name; closeSugg();
   var g=$('gobtn'); if(g){ g.classList.add('armed');
-    g.textContent=(vMode==='hotel'?'Find a safe stay near ':'Find safe parking near ')+(name.length>22?name.slice(0,22)+'…':name); }
+    g.textContent=(vMode==='hotel'?'Check hotel blocks near ':'Check parking blocks near ')+(name.length>22?name.slice(0,22)+'…':name); }
 }
 function go(){
   if (pending){ track('search_submit', {vertical: vMode, via: 'suggestion'}); setDest(pending.name,pending.lat,pending.lng,pending.city); return; }
@@ -2651,7 +2658,7 @@ function go(){
 }
 $('sform').addEventListener('submit',function(e){ e.preventDefault(); go(); });
 if ($('gobtn')) $('gobtn').addEventListener('click', go);
-$('q').addEventListener('input', function(){ pending=null; var g=$('gobtn'); if(g){ g.classList.remove('armed'); g.textContent=vMode==='hotel'?'Find a safe stay':'Find safe parking'; } });
+$('q').addEventListener('input', function(){ pending=null; var g=$('gobtn'); if(g){ g.classList.remove('armed'); g.textContent=vMode==='hotel'?'Check hotel blocks':'Check parking blocks'; } });
 $('locbtn').addEventListener('click',function(){
   if (!navigator.geolocation){ showErr('Location isn’t available in this browser.'); return; }
   track('use_my_location');
@@ -3218,10 +3225,13 @@ window.addEventListener('popstate', function(e){
   initTripBanner();
   var sp=new URLSearchParams(location.search), ll=sp.get('ll'), q=sp.get('q'), cp=sp.get('city');
   URL_LENS=sp.get('lens'); URL_Z=+sp.get('z')||0;   // 공유/디버그: 렌즈 상태·고정 줌 복원
-  if (sp.get('mode')==='hotels'){   // 호텔 버티컬 복원 — dest 처리 전에 모드부터 (탭·히어로·CTA·When 동기화)
-    vMode='hotel';
-    applyVModeChrome();
-  }
+  // 기본 버티컬 (2026-07-31 유저 결정: "호텔탭이 먼저"): 홈 착지는 호텔이 기본.
+  // 단, 목적지 딥링크(q/ll)에 mode가 없으면 예전처럼 주차 — 정적 주차 페이지 수백 장의
+  // "live map →" CTA가 전부 mode 없는 q&ll 링크라서, 기본을 통째로 바꾸면 그 링크가 다 틀어진다.
+  if (sp.get('mode')==='hotels' || (!sp.get('mode') && !ll && !q)) vMode='hotel';
+  // 모드와 무관하게 항상 동기화 — 정적 HTML의 class="on"이 호텔(홈 기본)이라, 주차 딥링크에서
+  // 이걸 안 돌리면 내용은 주차인데 탭 하이라이트만 호텔에 남는다 (2026-07-31 실측).
+  applyVModeChrome();
   var reLL=/^-?\d+\.?\d*,-?\d+\.?\d*$/, initKey='sf';
   if (ll && reLL.test(ll)){ var c0=ll.split(','); var cf=cityFor(+c0[0],+c0[1]); if(cf) initKey=cf.key; }
   else if (cp && CITIES[cp]) initKey=cp;
