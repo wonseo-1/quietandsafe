@@ -5,7 +5,7 @@
 Quiet & Safe (https://quietandsafe.com/) shows reported break-ins & thefts (parking) and robberies & aggravated assaults (hotels), by neighborhood, for the past 12 months, sourced from each city's official police data feed. Every figure on the site carries its source and the months it covers. No crime data is estimated or inferred — a "0" means zero reported incidents, not "no data."
 
 ## Coverage
-27 US cities with published crime-record feeds:
+28 US cities with published crime-record feeds:
 - San Francisco: /parking/sf/ · /hotels/sf/
 - Los Angeles: /parking/la/ · /hotels/la/
 - Chicago: /parking/chi/ · /hotels/chi/
@@ -20,6 +20,7 @@ Quiet & Safe (https://quietandsafe.com/) shows reported break-ins & thefts (park
 - Oakland: /parking/oak/ · /hotels/oak/
 - Washington, D.C.: /parking/dc/ · /hotels/dc/
 - Nashville: /parking/nsh/ · /hotels/nsh/
+- Tucson: /parking/tuc/ · /hotels/tuc/
 - Detroit: /parking/det/ · /hotels/det/
 - Baltimore: /parking/bal/ · /hotels/bal/
 - Cleveland: /parking/cle/ · /hotels/cle/

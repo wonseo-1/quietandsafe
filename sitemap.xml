@@ -117,6 +117,9 @@
   <url><loc>https://quietandsafe.com/p/nsh/the-parthenon-centennial-park/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/p/nsh/music-row/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/p/nsh/vanderbilt-university/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/p/tuc/university-of-arizona/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/p/tuc/4th-avenue/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/p/tuc/reid-park/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/p/det/campus-martius-park/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/p/det/comerica-park/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/p/det/detroit-institute-of-arts/</loc><lastmod>2026-07-30</lastmod></url>
@@ -228,6 +231,7 @@
   <url><loc>https://quietandsafe.com/hotels/oak/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/hotels/dc/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/hotels/nsh/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/tuc/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/hotels/det/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/hotels/bal/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/hotels/cle/</loc><lastmod>2026-07-30</lastmod></url>
@@ -255,6 +259,7 @@
   <url><loc>https://quietandsafe.com/parking/oak/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/parking/dc/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/parking/nsh/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/parking/det/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/parking/bal/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/parking/cle/</loc><lastmod>2026-07-30</lastmod></url>
@@ -600,6 +605,64 @@
   <url><loc>https://quietandsafe.com/hotels/dc/cluster-36/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/hotels/dc/cluster-2/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/hotels/dc/cluster-3/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/tuc/peter-howell/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/tuc/fairgrounds/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/tuc/arroyo-chico/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/tuc/colonia-del-valle/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/tuc/barrio-el-rio/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/tuc/rita-ranch/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/tuc/millville/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/tuc/palo-verde-park/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/tuc/south-park/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/tuc/a-mountain/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/tuc/cherry-avenue/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/tuc/toumey-park/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/tuc/south-harrison/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/tuc/stella-mann/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/tuc/julia-keen/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/tuc/avondale/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/tuc/elvira/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/tuc/cabrini/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/tuc/groves-lincoln-park/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/tuc/palo-verde/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/tuc/santa-cruz-southwest/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/tuc/bronx-park/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/tuc/oak-flower/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/tuc/barrio-nopal/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/tuc/sam-hughes/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/tuc/barrio-santa-rita-park-west-ochoa/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/tuc/bonanza/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/tuc/flowing-wells/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/tuc/garden-district/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/tuc/doolen-fruitvale/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/tuc/sunset-villa/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/tuc/amphi/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/tuc/dietz/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/tuc/hedrick-acres/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/tuc/pueblo-gardens/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/tuc/barrio-hollywood/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/tuc/keeling/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/tuc/las-vistas/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/tuc/midvale-park/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/tuc/miracle-manor/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/tuc/roberts/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/tuc/menlo-park/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/tuc/balboa-heights/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/tuc/myers/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/tuc/terra-del-sol/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/tuc/corbett/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/tuc/carriage-park/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/tuc/feldmans/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/tuc/bravo-park-lane/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/tuc/sunnyside/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/tuc/armory-park/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/tuc/campus-farm/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/tuc/west-university/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/tuc/miramonte/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/tuc/pie-allen/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/tuc/rose/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/tuc/downtown/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/hotels/tuc/dodge-flower/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/hotels/det/rouge-park/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/hotels/det/poletown-east/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/hotels/det/campau-banglatown/</loc><lastmod>2026-07-30</lastmod></url>
@@ -1478,6 +1541,77 @@
   <url><loc>https://quietandsafe.com/parking/dc/cluster-2/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/parking/dc/cluster-7/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/parking/dc/cluster-3/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/swan-way-park/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/houghton-south/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/las-vistas/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/a-mountain/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/westside/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/old-spanish-trail/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/midway-village/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/barrio-hollywood/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/mountain-view/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/bravo-park-lane/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/fairgrounds/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/miracle-manor/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/rosemont-west/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/rose/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/blenman-elm/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/south-harrison/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/menlo-park/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/julia-keen/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/midvale-park/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/dodge-flower/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/eastside/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/flowing-wells/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/roberts/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/stella-mann/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/bronx-park/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/copper-vista/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/sam-hughes/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/keeling/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/sunnyside/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/arroyo-chico/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/barrio-nopal/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/rillitobend/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/corbett/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/groves-lincoln-park/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/barrio-santa-rita-park-west-ochoa/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/cabrini/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/highland-vista-cinco-via/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/el-presidio/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/mitman/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/campus-farm/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/terra-del-sol/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/colonia-del-valle/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/dietz/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/rita-ranch/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/bonanza/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/jefferson-park/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/dunbar-spring/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/peter-howell/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/south-park/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/cherry-avenue/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/myers/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/rincon-heights/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/miramonte/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/north-dodge/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/feldmans/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/elvira/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/amphi/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/palo-verde-park/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/barrio-el-rio/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/armory-park/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/palo-verde/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/toumey-park/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/vista-del-monte/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/west-university/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/hedrick-acres/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/balboa-heights/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/carriage-park/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/garden-district/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/limberlost/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/oak-flower/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/parking/tuc/pie-allen/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/parking/det/delray/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/parking/det/oakwood-heights/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/parking/det/poletown-east/</loc><lastmod>2026-07-30</lastmod></url>
@@ -2926,6 +3060,7 @@
   <url><loc>https://quietandsafe.com/guides/oak/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/guides/dc/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/guides/nsh/</loc><lastmod>2026-07-30</lastmod></url>
+  <url><loc>https://quietandsafe.com/guides/tuc/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/guides/det/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/guides/bal/</loc><lastmod>2026-07-30</lastmod></url>
   <url><loc>https://quietandsafe.com/guides/cle/</loc><lastmod>2026-07-30</lastmod></url>
