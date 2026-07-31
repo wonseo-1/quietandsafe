@@ -11,8 +11,8 @@
   gtag('js', new Date());
   gtag('config', 'G-1QSJPMKT8E');
 </script>
-<title>Quiet & Safe — check the block before you book · hotels & parking, block by block</title>
-<meta name="description" content="Check the block before you book. Quiet & Safe maps reported crime for every block near your hotel or parking spot — hotel-area records in 32 US cities, parking in 54 — grounded in public police records. Free, web-based, no app." />
+<title>Quiet & Safe — check the block before you book</title>
+<meta name="description" content="Check the block before you book. Reported crime by block for hotels & parking, grounded in public police records. Free, no app." />
 <link rel="canonical" href="https://quietandsafe.com/" />
 <meta property="og:url" content="https://quietandsafe.com/" />
 <meta name="fo-verify" content="b7f40f1f-2fa9-49f7-bd1d-5604e5c55d5c" /> <!-- FlexOffers 사이트 소유권 확인, 2026-07-18 -->
@@ -2930,6 +2930,10 @@ function stay22Card(h, i, prev){
           esc(o.vias[0])+' <b>$'+o.price+'</b><span class="pn">/'+s.nights+'n</span>'+
           (gi===0 && showSave ? ' <span class="s22save">&minus;$'+save+'</span>' : '')+'</a>';
       }).join('') +
+      // Trip.com 재복원 (2026-07-31 유저 지시) — 예전엔 가격 없는 브랜드 "알약"이라 광고처럼
+      // 보여서 뺐다(바로 위 주석). 이번엔 다르게: 값 없는 강조 버튼이 아니라 Maps와 같은 급의
+      // 평범한 보조 링크로 — "가격 비교는 이미 위에 있고, 한 곳 더 보고 싶으면 여기"의 톤.
+      '<a class="s22ota alt" href="'+TRIP_HOTELS.urlFor(h)+'" target="_blank" rel="noopener nofollow sponsored">Trip.com</a>'+
       '<a class="s22ota alt" href="'+mapUrl(h)+'" target="_blank" rel="noopener">Maps</a></div>'+
     '</div></div>';
 }
