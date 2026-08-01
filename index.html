@@ -265,7 +265,11 @@ body.mapmode .searcharea{top:114px}   /* 렌즈 알약 아래로 한 줄 더 —
 .vtabs button svg{flex-shrink:0}
 .vtabs button.on{background:var(--ink);color:var(--paper)}
 .hd-chips .sw{width:14px;height:10px;border-radius:3px;display:inline-block}
-@media (min-width:1020px){ #heromap{height:300px} }
+@media (min-width:1020px){
+  /* 홈 화면은 600px 읽기 컬럼 유지, 데모 지도만 넓은 화면에서 900px로 이탈 — 나머지 텍스트는 줄 길이 유지 (2026-08-01 유저 요청) */
+  .herodemo{ width:900px; margin-left:calc(50% - 450px) }
+  #heromap{ height:380px }
+}
 /* 전체화면 지도 모드 — 리스트↔지도 왕복 토글 (Zillow·Airbnb 모바일 문법, 2026-07-17).
    핀 탭 정보는 팝업 대신 하단 미니카드(showInfo 단일 경로 재지향) — 지도만 보고 예약까지. */
 body.mapmode{overflow:hidden}
